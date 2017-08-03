@@ -28,12 +28,12 @@ add_compile_options(-std=c++14
 
 include_directories("/usr/include/irods")
 
-add_library(msiMakeUpperGenQuery     SHARED src/msiMakeUpperGenQuery.cc)
+add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 
 install(TARGETS
-        msiMakeUpperGenQuery
+        msiSetUpperCaseWhereQuery
         DESTINATION
-        /usr/lib/irods/plugins/microservices)
+        /var/lib/irods/plugins/microservices)
 
 # Packaging {{{
 
@@ -59,12 +59,10 @@ set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
-set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server = ${IRODS_VERSION}, irods-runtime = ${IRODS_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 
