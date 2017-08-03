@@ -65,87 +65,89 @@
 #include "rcMisc.h"
 
 
-int _makeQuery( char *sel, char *cond, char **sql ) {
-  *sql = ( char * ) malloc( strlen( sel ) + strlen( cond ) + 20 );
-  if ( strlen( cond ) >  0 ) {
-    sprintf( *sql, "SELECT %s WHERE %s", sel, cond );
+extern "C" {
+  _makeQuery( char *sel, char *cond, char **sql ) {
+    *sql = ( char * ) malloc( strlen( sel ) + strlen( cond ) + 20 );
+    if ( strlen( cond ) >  0 ) {
+      sprintf( *sql, "SELECT %s WHERE %s", sel, cond );
+    }
+    else {
+      sprintf( *sql, "SELECT %s ", sel );
+    }
+    return 0;
   }
-  else {
-    sprintf( *sql, "SELECT %s ", sel );
-  }
-  return 0;
-}
 
-int  msiMakeUpperGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei ) {
-  char *sel, *cond, *rawQuery, *query;
+  int  msiMakeUpperGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei ) {
+    char *sel, *cond, *rawQuery, *query;
 
 
-  RE_TEST_MACRO( "    Calling msiMakeUpperGenQuery" )
+    RE_TEST_MACRO( "    Calling msiMakeUpperGenQuery" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
-      rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input rei or rsComm is NULL." );
-      return SYS_INTERNAL_NULL_INPUT_ERR;
+      if ( rei == NULL || rei->rsComm == NULL ) {
+	rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input rei or rsComm is NULL." );
+	return SYS_INTERNAL_NULL_INPUT_ERR;
+      }
+
+    /* parse selectListStr */
+    if ( ( sel = parseMspForStr( selectListStr ) ) == NULL ) {
+      rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input selectListStr is NULL." );
+      return USER__NULL_INPUT_ERR;
     }
 
-  /* parse selectListStr */
-  if ( ( sel = parseMspForStr( selectListStr ) ) == NULL ) {
-    rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input selectListStr is NULL." );
-    return USER__NULL_INPUT_ERR;
-  }
+    /* parse condStr */
+    if ( ( cond = parseMspForStr( condStr ) ) == NULL ) {
+      rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input condStr is NULL." );
+      return USER__NULL_INPUT_ERR;
+    }
 
-  /* parse condStr */
-  if ( ( cond = parseMspForStr( condStr ) ) == NULL ) {
-    rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: input condStr is NULL." );
-    return USER__NULL_INPUT_ERR;
-  }
+    /* The code below is partly taken from msiMakeQuery and msiExecStrCondQuery. There may be a better way to do this. */
 
-  /* The code below is partly taken from msiMakeQuery and msiExecStrCondQuery. There may be a better way to do this. */
+    /* Generate raw SQL query string */
+    rei->status = _makeQuery( sel, cond, &rawQuery );
 
-  /* Generate raw SQL query string */
-  rei->status = _makeQuery( sel, cond, &rawQuery );
+    /* allocate more memory for query string with expanded variable names */
+    query = ( char * )malloc( strlen( rawQuery ) + 10 + MAX_NAME_LEN * 8 );
+    strcpy( query, rawQuery );
 
-  /* allocate more memory for query string with expanded variable names */
-  query = ( char * )malloc( strlen( rawQuery ) + 10 + MAX_NAME_LEN * 8 );
-  strcpy( query, rawQuery );
+    /* allocate memory for genQueryInp */
+    genQueryInp_t * genQueryInp = ( genQueryInp_t* )malloc( sizeof( genQueryInp_t ) );
+    memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
-  /* allocate memory for genQueryInp */
-  genQueryInp_t * genQueryInp = ( genQueryInp_t* )malloc( sizeof( genQueryInp_t ) );
-  memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
+    /* set up GenQueryInp */
+    genQueryInp->maxRows = MAX_SQL_ROWS;
+    genQueryInp->continueInx = 0;
 
-  /* set up GenQueryInp */
-  genQueryInp->maxRows = MAX_SQL_ROWS;
-  genQueryInp->continueInx = 0;
+    /* Ensure that the value in the 'where' condition will be made upper
+       case so one can do case-insensitive queries. */
+    genQueryInp->options = UPPER_CASE_WHERE;
 
-  /* Ensure that the value in the 'where' condition will be made upper
-     case so one can do case-insensitive queries. */
-  genQueryInp->options = UPPER_CASE_WHERE;
+    rei->status = fillGenQueryInpFromStrCond( query, genQueryInp );
+    if ( rei->status < 0 ) {
+      rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: fillGenQueryInpFromStrCond failed." );
+      freeGenQueryInp( &genQueryInp );
+      free( rawQuery ); // cppcheck - Memory leak: rawQuery
+      free( query );
+      return rei->status;
+    }
 
-  rei->status = fillGenQueryInpFromStrCond( query, genQueryInp );
-  if ( rei->status < 0 ) {
-    rodsLog( LOG_ERROR, "msiMakeUpperGenQuery: fillGenQueryInpFromStrCond failed." );
-    freeGenQueryInp( &genQueryInp );
-    free( rawQuery ); // cppcheck - Memory leak: rawQuery
+    /* return genQueryInp through GenQueryInpParam */
+    genQueryInpParam->type = strdup( GenQueryInp_MS_T );
+    genQueryInpParam->inOutStruct = genQueryInp;
+
+    /* cleanup */
+    free( rawQuery );
     free( query );
+
     return rei->status;
   }
 
-  /* return genQueryInp through GenQueryInpParam */
-  genQueryInpParam->type = strdup( GenQueryInp_MS_T );
-  genQueryInpParam->inOutStruct = genQueryInp;
 
-  /* cleanup */
-  free( rawQuery );
-  free( query );
+  irods::ms_table_entry* plugin_factory() {
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
-  return rei->status;
-}
+    msvc->add_operation("msiMakeUpperGenQuery",
+			std::function<decltype(msiMakeUpperGenQuery)>(msiMakeUpperGenQuery));
 
-
-irods::ms_table_entry* plugin_factory() {
-  irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
-
-  msvc->add_operation("msiMakeUpperGenQuery",
-		      std::function<decltype(msiMakeUpperGenQuery)>(msiMakeUpperGenQuery));
-
-  return msvc;
+    return msvc;
+  }
 }
