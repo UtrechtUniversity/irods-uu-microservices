@@ -35,10 +35,10 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
-add_library(msiMakeUpperGenQuery     SHARED src/msiMakeUpperGenQuery.cc)
+add_library(msiSetUpperCaseWhereQuery     SHARED src/msiSetUpperCaseWhereQuery.cc)
 
 install(TARGETS
-        msiMakeUpperGenQuery
+        msiSetUpperCaseWhereQuery
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
