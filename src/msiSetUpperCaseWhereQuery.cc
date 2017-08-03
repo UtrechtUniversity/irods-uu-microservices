@@ -65,8 +65,6 @@
 
 
 extern "C" {
-  int _makeQuery( char *sel, char *cond, char **sql );
-
   int msiSetUpperCaseWhereQuery( msParam_t* genQueryParam, ruleExecInfo_t *rei ) {
     genQueryInp_t *genQueryInp;
 
