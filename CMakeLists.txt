@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+set(IRODS_VERSION "4.1.x")
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
 # Note: Microservices for iRODS >=4.2 need to be built with the compiler and
