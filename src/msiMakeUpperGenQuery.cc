@@ -142,7 +142,7 @@ int  msiMakeUpperGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam
 
 
 irods::ms_table_entry* plugin_factory() {
-  irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
+  irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
   msvc->add_operation("msiMakeUpperGenQuery",
 		      std::function<decltype(msiMakeUpperGenQuery)>(msiMakeUpperGenQuery));
