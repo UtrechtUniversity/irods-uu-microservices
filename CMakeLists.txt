@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-find_package(IRODS 4.2.1 EXACT REQUIRED)
-
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
 # Note: Microservices for iRODS >=4.2 need to be built with the compiler and
@@ -11,15 +9,12 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang3.8-0
 
-set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
-
 project(uu-msis CXX)
 
 add_compile_options(-std=c++14
                     -Os
                     -fPIC
                     -DRODS_SERVER
-                    -nostdinc++
                     -Wall
                     -Wextra
                     -Wpedantic
@@ -30,9 +25,6 @@ add_compile_options(-std=c++14
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-link_libraries(c++abi)
-include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
 add_library(msiMakeUpperGenQuery     SHARED src/msiMakeUpperGenQuery.cc)
@@ -57,7 +49,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.1_0.1.0")
+set(CPACK_PACKAGE_VERSION "4.1.10_0.1.0")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous microservices developed by Utrecht university.")

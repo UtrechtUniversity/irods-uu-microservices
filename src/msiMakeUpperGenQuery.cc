@@ -60,13 +60,13 @@
  */
 
 #include "irods_includes.hh"
+#include "reGlobalsExtern.hpp"
 #include "genQuery.h"
-#include "rsGenQuery.hpp"
 #include "rcMisc.h"
 
 
 extern "C" {
-  _makeQuery( char *sel, char *cond, char **sql ) {
+  int _makeQuery( char *sel, char *cond, char **sql ) {
     *sql = ( char * ) malloc( strlen( sel ) + strlen( cond ) + 20 );
     if ( strlen( cond ) >  0 ) {
       sprintf( *sql, "SELECT %s WHERE %s", sel, cond );
@@ -145,8 +145,7 @@ extern "C" {
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
-    msvc->add_operation("msiMakeUpperGenQuery",
-			std::function<decltype(msiMakeUpperGenQuery)>(msiMakeUpperGenQuery));
+    msvc->add_operation("msiMakeUpperGenQuery", "msiMakeUpperGenQuery");
 
     return msvc;
   }
