@@ -66,7 +66,7 @@
 
 
 extern "C" {
-  _makeQuery( char *sel, char *cond, char **sql ) {
+  int _makeQuery( char *sel, char *cond, char **sql ) {
     *sql = ( char * ) malloc( strlen( sel ) + strlen( cond ) + 20 );
     if ( strlen( cond ) >  0 ) {
       sprintf( *sql, "SELECT %s WHERE %s", sel, cond );
