@@ -30,15 +30,15 @@ add_compile_options(-std=c++14
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery     SHARED src/msiSetUpperCaseWhereQuery.cc)
+add_library(msiStrToUpper                 SHARED src/msiStrToUpper.cc)
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
+        msiStrToUpper
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
