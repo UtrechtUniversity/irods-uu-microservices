@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
 project(uu-msis CXX)
 
-add_compile_options(-std=c++14
+add_compile_options(-std=c++11
                     -Os
                     -fPIC
                     -DRODS_SERVER
@@ -29,9 +29,11 @@ add_compile_options(-std=c++14
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
+add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
+        msiStrToUpper
         DESTINATION
         /var/lib/irods/plugins/microservices)
 
