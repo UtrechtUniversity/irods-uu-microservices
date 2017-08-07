@@ -27,16 +27,39 @@
 #include "reGlobalsExtern.hpp"
 #include "genQuery.h"
 
-#include <boost/algorithm/string.hpp>
-#include <string>
+#include <codecvt>
+#include <iostream>
+#include <locale>
 
+
+std::locale const utf8("en_US.UTF-8");
+
+/* Convert UTF-8 byte string to wstring. */
+std::wstring toWstring( std::string const& s ) {
+  std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+  return conv.from_bytes(s);
+}
+
+/* Convert wstring to UTF-8 byte string. */
+std::string toString( std::wstring const& s ) {
+  std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+  return conv.to_bytes(s);
+}
+
+/* Converts a UTF-8 encoded string to upper case. */
+std::string toUpper( std::string const& s ) {
+  auto ss = toWstring(s);
+  for (auto& c : ss) {
+    c = std::toupper(c, utf8);
+  }
+  return toString(ss);
+}
 
 extern "C" {
   int msiStrToUpper( msParam_t* in, msParam_t* out, ruleExecInfo_t* rei ) {
         std::string inStr = parseMspForStr( in );
 
-        std::locale englishUTF8locale("en_GB.UTF-8");
-        std::string outStr = boost::to_upper_copy(inStr, englishUTF8locale);
+        std::string outStr = toUpper(inStr);
 
         fillStrInMsParam(out, outStr.c_str());
 
