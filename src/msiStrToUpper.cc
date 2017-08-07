@@ -34,8 +34,9 @@
 extern "C" {
   int msiStrToUpper( msParam_t* in, msParam_t* out, ruleExecInfo_t* rei ) {
         std::string inStr = parseMspForStr( in );
-        
-        std::string outStr = boost::to_upper_copy(inStr);
+
+        std::locale englishUTF8locale("en_GB.UTF-8");
+        std::string outStr = boost::to_upper_copy(inStr, englishUTF8locale);
 
         fillStrInMsParam(out, outStr.c_str());
 
