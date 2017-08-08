@@ -24,42 +24,20 @@
  */
 
 #include "irods_includes.hh"
-#include "genQuery.h"
 #include "rsGenQuery.hpp"
 
-#include <boost/locale/encoding_utf.hpp>
+#include <boost/locale.hpp>
 #include <string>
 #include <locale>
-
-using boost::locale::conv::utf_to_utf;
-
-std::locale const utf8("en_US.UTF-8");
-
-/* Convert UTF-8 byte string to wstring. */
-std::wstring toWstring(const std::string& str) {
-  return utf_to_utf<wchar_t>(str.c_str(), str.c_str() + str.size());
-}
-
-/* Convert wstring to UTF-8 byte string. */
-std::string toString(const std::wstring& str) {
-  return utf_to_utf<char>(str.c_str(), str.c_str() + str.size());
-}
-
-/* Converts a UTF-8 encoded string to upper case. */
-std::string toUpper( std::string const& s ) {
-  auto ss = toWstring(s);
-  for (auto& c : ss) {
-    c = std::toupper(c, utf8);
-  }
-  return toString(ss);
-}
 
 
 extern "C" {
   int msiStrToUpper( msParam_t* in, msParam_t* out, ruleExecInfo_t* rei ) {
         std::string inStr = parseMspForStr( in );
 
-        std::string outStr = toUpper(inStr);
+        boost::locale::generator gen;
+        std::locale utf8(gen("en_US.UTF-8"));
+        auto outStr = boost::locale::to_upper(inStr, utf8);
 
         fillStrInMsParam(out, outStr.c_str());
 
