@@ -30,10 +30,12 @@ include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
+add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
+	msiRegisterDataCiteDOI
         DESTINATION
         /var/lib/irods/plugins/microservices)
 
