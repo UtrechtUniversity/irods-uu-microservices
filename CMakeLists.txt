@@ -26,11 +26,15 @@ add_compile_options(-std=c++11
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
 
+find_package(Boost 1.51 COMPONENTS locale REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
+target_link_libraries(msiStrToUpper LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -63,6 +67,7 @@ set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost-locale >= 1.51")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
