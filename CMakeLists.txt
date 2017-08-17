@@ -34,12 +34,15 @@ include_directories("/usr/include/irods")
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
+add_library(msiGenerateYodaDOI        SHARED src/msiGenerateYodaDOI.cc)
+
 target_link_libraries(msiStrToUpper LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
 	msiRegisterDataCiteDOI
+	msiGenerateYodaDOI
         DESTINATION
         /var/lib/irods/plugins/microservices)
 
