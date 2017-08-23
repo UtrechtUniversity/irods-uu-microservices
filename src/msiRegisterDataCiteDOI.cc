@@ -59,7 +59,7 @@ extern "C" {
     }
 
     /* Read XML file. */
-    std::ifstream t(xml.c_str());
+    std::ifstream t(xml);
     std::string xmlStream((std::istreambuf_iterator<char>(t)),
                            std::istreambuf_iterator<char>());
 
