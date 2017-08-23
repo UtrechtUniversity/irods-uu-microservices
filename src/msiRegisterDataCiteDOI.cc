@@ -27,13 +27,15 @@
 #include "reGlobalsExtern.hpp"
 
 #include <string>
+#include <fstream>
+#include <streambuf>
 #include <curl/curl.h>
 
 extern "C" {
-  int msiRegisterDataCiteDOI(msParam_t* url,
-			     msParam_t* username,
-			     msParam_t* password,
-			     msParam_t* xml,
+  int msiRegisterDataCiteDOI(msParam_t* urlIn,
+			     msParam_t* usernameIn,
+			     msParam_t* passwordIn,
+			     msParam_t* xmlIn,
 			     ruleExecInfo_t *rei)
   {
     CURL *curl;
@@ -58,9 +60,14 @@ extern "C" {
       return SYS_INVALID_INPUT_PARAM;
     }
 
+    /* Parse input paramaters. */
+    std::string url      = parseMspForStr(urlIn);
+    std::string username = parseMspForStr(usernameIn);
+    std::string password = parseMspForStr(passwordIn);
+    std::string xml      = parseMspForStr(xmlIn);
+
     /* Read XML file. */
-    std::string xmlFile = parseMspForStr(xml);
-    std::ifstream t(xmlFile);
+    std::ifstream t(xmlFile.c_str());
     std::string xmlStream((std::istreambuf_iterator<char>(t)),
                            std::istreambuf_iterator<char>());
 
