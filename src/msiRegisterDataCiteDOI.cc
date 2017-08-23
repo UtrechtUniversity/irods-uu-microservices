@@ -59,7 +59,8 @@ extern "C" {
     }
 
     /* Read XML file. */
-    std::ifstream t((std::string)xml);
+    std::string xmlFile = parseMspForStr(xml);
+    std::ifstream t(xmlFile);
     std::string xmlStream((std::istreambuf_iterator<char>(t)),
                            std::istreambuf_iterator<char>());
 
