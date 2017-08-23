@@ -39,7 +39,6 @@ extern "C" {
     CURL *curl;
     CURLcode res;
 
-
     /* Check if user is priviliged. */
     if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return SYS_USER_NO_PERMISSION;
@@ -58,6 +57,11 @@ extern "C" {
     if (strcmp(xml->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
+
+    /* Read XML file. */
+    std::ifstream t(xml.c_str());
+    std::string xmlStream((std::istreambuf_iterator<char>(t)),
+                           std::istreambuf_iterator<char>());
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -79,7 +83,7 @@ extern "C" {
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
 
       /* Add DataCite Metadata XML to POST. */
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, xml);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, xmlStream.c_str());
 
       /* Perform the request, res will get the return code. */
       res = curl_easy_perform(curl);
