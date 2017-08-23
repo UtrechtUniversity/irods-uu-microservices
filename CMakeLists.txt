@@ -29,6 +29,9 @@ add_compile_options(-std=c++11
 find_package(Boost 1.51 COMPONENTS locale REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIRS})
+
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
@@ -36,7 +39,8 @@ add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateYodaDOI        SHARED src/msiGenerateYodaDOI.cc)
 
-target_link_libraries(msiStrToUpper LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msiStrToUpper          LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msiRegisterDataCiteDOI LINK_PUBLIC ${CURL_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
