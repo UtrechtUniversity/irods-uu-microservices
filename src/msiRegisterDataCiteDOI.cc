@@ -66,11 +66,6 @@ extern "C" {
     std::string password = parseMspForStr(passwordIn);
     std::string xml      = parseMspForStr(xmlIn);
 
-    /* Read XML file. */
-    std::ifstream t(xml);
-    std::string xmlStream((std::istreambuf_iterator<char>(t)),
-                           std::istreambuf_iterator<char>());
-
     /* Get a curl handle. */
     curl = curl_easy_init();
 
@@ -91,7 +86,7 @@ extern "C" {
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
 
       /* Add DataCite Metadata XML to POST. */
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, xmlStream.c_str());
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, xml.c_str());
 
       /* Perform the request, res will get the return code. */
       res = curl_easy_perform(curl);
