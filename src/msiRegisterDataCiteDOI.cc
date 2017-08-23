@@ -145,7 +145,7 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(5);
 
     msvc->add_operation("msiRegisterDataCiteDOI", "msiRegisterDataCiteDOI");
 
