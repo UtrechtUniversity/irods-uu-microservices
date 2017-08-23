@@ -36,6 +36,7 @@ extern "C" {
 			     msParam_t* usernameIn,
 			     msParam_t* passwordIn,
 			     msParam_t* xmlIn,
+			     msParam_t* httpCodeOut,
 			     ruleExecInfo_t *rei)
   {
     CURL *curl;
@@ -98,6 +99,7 @@ extern "C" {
       } else {
 	long http_code = 0;
 	curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+        fillStrInMsParam(httpCodeOut, std::to_string(http_code).c_str());
 
 	/* 201 Created */
 	if (http_code == 201) {
@@ -121,7 +123,7 @@ extern "C" {
 		   "msiRegisterDataCiteDOI: Login problem, quota exceeded or dataset belongs to another party");
 	  return SYS_INTERNAL_NULL_INPUT_ERR;
 	}
-	/* 415 Forbidden */
+	/* 415 Unsupported Media Type */
 	else if (http_code == 415) {
 	  rodsLog(LOG_ERROR,
 		   "msiRegisterDataCiteDOI: Not including content type in the header");
