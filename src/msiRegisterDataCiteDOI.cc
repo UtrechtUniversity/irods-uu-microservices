@@ -76,14 +76,14 @@ extern "C" {
 
     if(curl) {
       /* First set the URL that is about to receive our POST. */
-      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_URL, url.c_string());
 
       /* Set http authentication to basic. */
       curl_easy_setopt(curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_BASIC);
 
       /* Set username and password for http authentication. */
-      curl_easy_setopt(curl, CURLOPT_USERNAME, username);
-      curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+      curl_easy_setopt(curl, CURLOPT_USERNAME, username.c_string());
+      curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_string());
 
       /* Set HTTP header Content-Type. */
       struct curl_slist *list = NULL;
