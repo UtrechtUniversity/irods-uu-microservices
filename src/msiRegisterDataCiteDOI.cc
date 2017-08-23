@@ -47,16 +47,16 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(url->type, STR_MS_T)) {
+    if (strcmp(urlIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(username->type, STR_MS_T)) {
+    if (strcmp(usernameIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(password->type, STR_MS_T)) {
+    if (strcmp(passwordIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(xml->type, STR_MS_T)) {
+    if (strcmp(xmlIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
