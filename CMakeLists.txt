@@ -38,6 +38,7 @@ add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateYodaDOI        SHARED src/msiGenerateYodaDOI.cc)
+add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 
 target_link_libraries(msiStrToUpper          LINK_PUBLIC ${Boost_LIBRARIES})
@@ -48,6 +49,7 @@ install(TARGETS
         msiStrToUpper
 	msiRegisterDataCiteDOI
 	msiGenerateYodaDOI
+        msiGenerateRandomID
 	msiGetDataCiteDOI
         DESTINATION
         /var/lib/irods/plugins/microservices)
