@@ -1,7 +1,8 @@
 /**
  * \file
- * \brief     iRODS microservice to register a DOI with DataCite.
+ * \brief     iRODS microservice to resolve a DOI with DataCite.
  * \author    Lazlo Westerhof
+ * \author    Paul Frederiks
  * \copyright Copyright (c) 2017, Utrecht University
  *
  * Copyright (c) 2017, Utrecht University
@@ -31,21 +32,28 @@
 #include <streambuf>
 #include <curl/curl.h>
 
-extern "C" {
-  int msiRegisterDataCiteDOI(msParam_t* urlIn,
-			     msParam_t* usernameIn,
-			     msParam_t* passwordIn,
-			     msParam_t* payloadIn,
-			     msParam_t* httpCodeOut,
-			     ruleExecInfo_t *rei)
+
+namespace DataCite {
+
+  /* Curl requires a static callback function to write the output of a GET request to.
+   * This callback simply puts the result in a std::string at *userp */
+  static size_t writeCallback(void *contents, size_t size, size_t nmemb, void *userp)
+  {
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
+  }
+
+
+  int getDOI(msParam_t* urlIn,
+             msParam_t* usernameIn,
+             msParam_t* passwordIn,
+             msParam_t* resultOut,
+             msParam_t* httpCodeOut,
+             ruleExecInfo_t *rei)
   {
     CURL *curl;
     CURLcode res;
 
-    /* Check if user is priviliged. */
-    if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return SYS_USER_NO_PERMISSION;
-    }
 
     /* Check input parameters. */
     if (strcmp(urlIn->type, STR_MS_T)) {
@@ -57,21 +65,20 @@ extern "C" {
     if (strcmp(passwordIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(payloadIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
 
     /* Parse input paramaters. */
     std::string url      = parseMspForStr(urlIn);
     std::string username = parseMspForStr(usernameIn);
     std::string password = parseMspForStr(passwordIn);
-    std::string payload  = parseMspForStr(payloadIn);
+
+    /* declare result buffer for result */ 
+    std::string resultBuffer;
 
     /* Get a curl handle. */
     curl = curl_easy_init();
 
     if(curl) {
-      /* First set the URL that is about to receive our POST. */
+      /* First set the URL . */
       curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
       /* Set http authentication to basic. */
@@ -81,86 +88,58 @@ extern "C" {
       curl_easy_setopt(curl, CURLOPT_USERNAME, username.c_str());
       curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
 
-      /* Check if payload is XML */
-      bool isXml;
-      std::string xmlPrefix = "<?xml";
-      if (payload.substr(0, xmlPrefix.size()) == xmlPrefix) {
-        isXml = true;
-      } else {
-        isXml = false;
-      }
-
-      /* Set HTTP header Content-Type. */
-      struct curl_slist *list = NULL;
-      if (isXml) {
-        list = curl_slist_append(list, "Content-Type:application/xml;charset=UTF-8");
-      } else {
-        list = curl_slist_append(list, "Content-Type:text/plain;charset=UTF-8");
-      }
-      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-
-      /* Add DataCite payload to POST. */
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+     /* Add write callback for result */
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultBuffer);
 
       /* Perform the request, res will get the return code. */
       res = curl_easy_perform(curl);
 
       /* Check for errors. */
       if(res != CURLE_OK) {
-	rodsLog(LOG_ERROR, "msiRegisterDataCiteDOI: curl error: %s", curl_easy_strerror(res));
+	rodsLog(LOG_ERROR, "msiGetDataCiteDOI: curl error: %s", curl_easy_strerror(res));
 	return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
+        /* get HTTP return code */
 	long http_code = 0;
 	curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+        
+        /* fill output params */
         fillStrInMsParam(httpCodeOut, std::to_string(http_code).c_str());
+        fillStrInMsParam(resultOut, resultBuffer.c_str());
 
-	/* 201 Created */
-	if (http_code == 201) {
+	/* 200  */
+	if (http_code == 200) {
 	  // Operation successful.
 	}
 	/* 400 Bad Request */
-	else if (http_code == 400) {
-          if (isXml) {
-	    rodsLog(LOG_ERROR,
-		    "msiRegisterDataCiteDOI: invalid XML, wrong prefix");
-          } else {
-	    rodsLog(LOG_ERROR,
-		    "msiRegisterDataCiteDOI:request body must be exactly two lines: DOI and URL; wrong domain, wrong prefix");
-          }
+	else if (http_code == 204) {
+       	    rodsLog(LOG_ERROR,
+		    "msiGetDataCiteDOI: DOI is known to MDS, but is not minted (or not resolvable e.g. due to handle's latency)");
 	}
 	/* 401 Unauthorized */
 	else if (http_code == 401) {
 	  rodsLog( LOG_ERROR,
-		   "msiRegisterDataCiteDOI: No login");
+		   "msiGetDataCiteDOI: No login");
 	}
 	/* 403 Forbidden */
 	else if (http_code == 403) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterDataCiteDOI: Login problem, quota exceeded or dataset belongs to another party");
+		   "msiGetDataCiteDOI: Login problem, quota exceeded or dataset belongs to another party");
 	}
         /* 410 Gone */
-        else if (http_code == 410) {
+        else if (http_code == 404) {
           rodsLog(LOG_ERROR,
-                  "msiRegisterDataCiteDOI: the requested dataset was marked inactive (using DELETE method");
+                  "msiGetDataCiteDOI: Not Found");
         }
-        /* 412 Precondition Failed */
-        else if (http_code == 412) {
-          rodsLog(LOG_ERROR,
-                  "msiRegisterDataCiteDOI: Metadata must be uploaded first");
-        }
-	/* 415 Unsupported Media Type */
-	else if (http_code == 415) {
-	  rodsLog(LOG_ERROR,
-		   "msiRegisterDataCiteDOI: Not including content type in the header");
-	}
         /* 500 Internal Server Error */
         else if (http_code == 500) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterDataCiteDOI: server internal error, try later and if problem persists please contact DataCite");
+		   "msiGetDataCiteDOI: server internal error, try later and if problem persists please contact DataCite");
         }
 	else {
 	  rodsLog(LOG_ERROR,
-		  "msiRegisterDataCiteDOI: HTTP error code: %lu", http_code);
+		  "msiGetDataCiteDOI: HTTP error code: %lu", http_code);
   	}
       }
 
@@ -173,10 +152,24 @@ extern "C" {
     return 0;
   }
 
+}
+
+extern "C" {
+
+  int msiGetDataCiteDOI(msParam_t* urlIn,
+                        msParam_t* usernameIn,
+                        msParam_t* passwordIn,
+                        msParam_t* resultOut,
+                        msParam_t* httpCodeOut,
+		        ruleExecInfo_t *rei) {
+       return DataCite::getDOI(urlIn, usernameIn, passwordIn, resultOut, httpCodeOut, rei);
+  }
+
+
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(5);
 
-    msvc->add_operation("msiRegisterDataCiteDOI", "msiRegisterDataCiteDOI");
+    msvc->add_operation("msiGetDataCiteDOI", "msiGetDataCiteDOI");
 
     return msvc;
   }
