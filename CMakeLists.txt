@@ -37,7 +37,6 @@ include_directories("/usr/include/irods")
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
-add_library(msiGenerateYodaDOI        SHARED src/msiGenerateYodaDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 
@@ -49,7 +48,6 @@ install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
 	msiRegisterDataCiteDOI
-	msiGenerateYodaDOI
         msiGenerateRandomID
 	msiGetDataCiteDOI
         DESTINATION
