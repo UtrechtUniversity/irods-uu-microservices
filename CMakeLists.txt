@@ -43,6 +43,7 @@ add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 
 target_link_libraries(msiStrToUpper          LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiGetDataCiteDOI      LINK_PUBLIC ${CURL_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -69,7 +70,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.1.10_0.1.0")
+set(CPACK_PACKAGE_VERSION "4.1.10_0.1.1")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous microservices developed by Utrecht university.")
