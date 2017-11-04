@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
 set(IRODS_VERSION "4.1.x")
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -35,6 +35,12 @@ include_directories(${CURL_INCLUDE_DIRS})
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 
+find_package(LibXslt REQUIRED)
+include_directories(${LIBXSLT_INCLUDE_DIR})
+
+find_package(Jansson REQUIRED)
+include_directories(${JANSSON_INCLUDE_DIRS})
+
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
@@ -43,12 +49,19 @@ add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
+add_library(msiXmlDocSchemaValidate   SHARED src/msiXmlDocSchemaValidate.cc)
+add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
+add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
+add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 
-target_link_libraries(msiStrToUpper          LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msiRegisterDataCiteDOI LINK_PUBLIC ${CURL_LIBRARIES})
-target_link_libraries(msiGetDataCiteDOI      LINK_PUBLIC ${CURL_LIBRARIES})
-target_link_libraries(msiLoadMetadataFromXml LINK_PUBLIC ${LIBXML2_LIBRARIES})
-
+target_link_libraries(msiStrToUpper           LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msiRegisterDataCiteDOI  LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiGetDataCiteDOI       LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiLoadMetadataFromXml  LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXmlDocSchemaValidate LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXsltApply            LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
+target_link_libraries(msi_json_arrayops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_json_objops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -57,6 +70,10 @@ install(TARGETS
         msiGenerateRandomID
 	msiGetDataCiteDOI
 	msiLoadMetadataFromXml
+	msiXmlDocSchemaValidate
+	msiXsltApply
+	msi_json_arrayops
+	msi_json_objops
         DESTINATION
         /var/lib/irods/plugins/microservices)
 
@@ -75,7 +92,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.1.10_0.1.1")
+set(CPACK_PACKAGE_VERSION "4.1.11_0.3.0")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous microservices developed by Utrecht university.")
@@ -87,6 +104,7 @@ set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
 set(CPACK_RPM_PACKAGE_REQUIRES "boost-locale >= 1.51")
 set(CPACK_RPM_PACKAGE_REQUIRES "libcurl >= 7.29.0")
 set(CPACK_RPM_PACKAGE_REQUIRES "libxml2 >= 2.9.1")
+set(CPACK_RPM_PACKAGE_REQUIRES "libxslt >= 1.1.28")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
