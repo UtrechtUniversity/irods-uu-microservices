@@ -32,6 +32,9 @@ include_directories(${Boost_INCLUDE_DIR})
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
 
+find_package(LibXml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
+
 include_directories("/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
@@ -39,10 +42,13 @@ add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
+add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
 
 target_link_libraries(msiStrToUpper          LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI LINK_PUBLIC ${CURL_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI      LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiLoadMetadataFromXml LINK_PUBLIC ${LIBXML2_LIBRARIES})
+
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -50,6 +56,7 @@ install(TARGETS
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
 	msiGetDataCiteDOI
+	msiLoadMetadataFromXml
         DESTINATION
         /var/lib/irods/plugins/microservices)
 
@@ -79,6 +86,7 @@ set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
 set(CPACK_RPM_PACKAGE_REQUIRES "boost-locale >= 1.51")
 set(CPACK_RPM_PACKAGE_REQUIRES "libcurl >= 7.29.0")
+set(CPACK_RPM_PACKAGE_REQUIRES "libxml2 >= 2.9.1")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
