@@ -114,12 +114,13 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 	
 	/* for new AVU creation */
 	modAVUMetadataInp_t modAVUMetadataInp;
-	const int MAX_ATTR_NAME_LEN = 2700;
-        const int MAX_ATTR_VALUE_LEN = 2700;
-	const int MAX_ATTR_UNIT_LEN = 250;
+	const size_t MAX_ATTR_NAME_LEN = 2700;
+        const size_t MAX_ATTR_VALUE_LEN = 2700;
+	const size_t MAX_ATTR_UNIT_LEN = 250;
 	char* attrName;
 	char* attrValue;
 	char* attrUnit;
+	size_t attrNameLen, attrValueLen, attrUnitLen;
 	rodsLong_t coll_id;
 
 
@@ -152,16 +153,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 	}
 
 
-	/* Get path of XML document */
-	/*
-	rei->status = parseMspForDataObjInp (xmlObj, &xmlDataObjInp, &myXmlDataObjInp, 0);
-	if (rei->status < 0)
-	{
-		rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: input xmlObj error. status = %d", rei->status);
-		return (rei->status);
-	}
 
-	*/
 
 
 	if ( strcmp( xmlParam->type, BUF_LEN_MS_T) == 0 && xmlParam->inpOutBuf != NULL) {
@@ -170,6 +162,14 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 		xmlXmlChar = xmlCharStrndup((char*)xmlBuf->buf, xmlBuf->len);
 		
 	} else if ( strcmp( xmlParam->type, STR_MS_T) == 0 || strcmp( xmlParam->type, DataObjInp_MS_T) == 0) {
+
+		/* Get path of XML document */
+		rei->status = parseMspForDataObjInp (xmlParam, &xmlDataObjInp, &myXmlDataObjInp, 0);
+		if (rei->status < 0)
+		{
+			rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: input xmlObj error. status = %d", rei->status);
+			return (rei->status);
+		}
 
 		/******************************** OPEN AND READ FROM XML OBJECT ********************************/
 
@@ -264,32 +264,43 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 			attrName = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Attribute"));
 			if (!attrName) {
 				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: AVU does not contain an Attribute element");
-				break;
+				continue;
 			}
-			if (strlen(attrName) > MAX_ATTR_NAME_LEN) {
-				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute name is too large (>%d) - %s",
-					MAX_ATTR_NAME_LEN, attrName);
-				break;
+			attrNameLen = strlen(attrName);
+			if (attrNameLen > MAX_ATTR_NAME_LEN) {
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute name for AVU #%d is too large (%d>%d)",
+					i + 1, attrNameLen, MAX_ATTR_NAME_LEN, attrName);
+				continue;
+			} else if (attrNameLen == 0) {
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute name for AVU #%d is empty",
+					i + 1);
 			}
 
 			attrValue = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Value"));
 			if (!attrValue) {
-				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: AVU does not contain an Value element");
-				break;
+				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: AVU #%d does not contain a Value element",
+					i + 1);
+				continue;
 			}
-			if (strlen(attrValue) > MAX_ATTR_VALUE_LEN) {
-				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute value is too large (>%d) - %s",
-					MAX_ATTR_VALUE_LEN, attrValue);
-				break;
+			attrValueLen = strlen(attrValue);
+			if (attrValueLen > MAX_ATTR_VALUE_LEN) {
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute value is too large (%d>%d) - %s",
+					attrValueLen, MAX_ATTR_VALUE_LEN, attrValue);
+				continue;
+			} else if (attrValueLen == 0) {
+				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: attribute value in AVU #%d with name '%s' is empty",
+					i + 1, attrName);
+				continue;
 			}
 	
 			attrUnit = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Unit"));
 			/* attrUnit can be null */
 			if (attrUnit) {
-				if (strlen(attrUnit) > MAX_ATTR_UNIT_LEN) {
-					rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute unit is too large (>%d) - %s",
-					MAX_ATTR_UNIT_LEN, attrUnit);
-					break;
+				attrUnitLen = strlen(attrUnit);
+				if (attrUnitLen > MAX_ATTR_UNIT_LEN) {
+					rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute unit in AVU #%d is too large (%d>%d)",
+					i + 1, attrUnitLen, MAX_ATTR_UNIT_LEN, attrUnit);
+					continue;
 				}
 			}
 
