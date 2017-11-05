@@ -270,7 +270,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 
 			attrName = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], attribute));
 			if (!attrName) {
-				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: AVU does not contain an Attribute element");
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: AVU does not contain an <Attribute> element");
 				continue;
 			}
 			attrNameLen = strlen(attrName);
@@ -281,22 +281,23 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 			} else if (attrNameLen == 0) {
 				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute name for AVU #%d is empty",
 					i + 1);
+				continue;
 			}
 
 			attrValue = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], value));
 			if (!attrValue) {
-				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: AVU #%d does not contain a Value element",
+				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: AVU #%d does not contain a <Value> element",
 					i + 1);
 				continue;
 			}
 			attrValueLen = strlen(attrValue);
 			if (attrValueLen > MAX_ATTR_VALUE_LEN) {
-				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute value is too large (%d>%d) - %s",
-					attrValueLen, MAX_ATTR_VALUE_LEN, attrValue);
+				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: attribute value in AVU #%d is too large (%d>%d)",
+					i + 1, attrValueLen, MAX_ATTR_VALUE_LEN);
 				continue;
 			} else if (attrValueLen == 0) {
-				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: attribute value in AVU #%d with name '%s' is empty",
-					i + 1, attrName);
+				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: attribute value in AVU #%d is empty",
+					i + 1);
 				continue;
 			}
 	
