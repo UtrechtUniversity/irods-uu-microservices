@@ -18,30 +18,30 @@ add_compile_options(-std=c++11
                     -DRODS_SERVER
                     -Wall
                     -Wextra
-                    -Wpedantic
                     -Wcast-align
                     -Wredundant-decls
                     -Wuninitialized
+		    -Wpedantic
                     -Wconversion
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
 
 find_package(Boost 1.51 COMPONENTS locale REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 
 find_package(CURL REQUIRED)
-include_directories(${CURL_INCLUDE_DIRS})
+include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 
 find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
+include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
 
 find_package(LibXslt REQUIRED)
-include_directories(${LIBXSLT_INCLUDE_DIR})
+include_directories(SYSTEM ${LIBXSLT_INCLUDE_DIR})
 
 find_package(Jansson REQUIRED)
-include_directories(${JANSSON_INCLUDE_DIRS})
+include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
-include_directories("/usr/include/irods")
+include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
@@ -92,19 +92,17 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.1.11_0.3.3")
+set(CPACK_PACKAGE_VERSION "4.1.11_0.5.1")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous microservices developed by Utrecht university.")
 
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_RELEASE "4")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
-set(CPACK_RPM_PACKAGE_REQUIRES "boost-locale >= 1.51")
-set(CPACK_RPM_PACKAGE_REQUIRES "libcurl >= 7.29.0")
-set(CPACK_RPM_PACKAGE_REQUIRES "libxml2 >= 2.9.1")
-set(CPACK_RPM_PACKAGE_REQUIRES "libxslt >= 1.1.28")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost-locale >= 1.51, libcurl >= 7.29.0, libxml2 >= 2.9.1, libxslt >= 1.1.28, jansson >= 2.10")
+set(CPACK_RPM_PACKAGE_CONFLICTS "rit-irods-microservices, irods-microservice-plugins-loadmeta")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)

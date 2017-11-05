@@ -114,6 +114,13 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 	
 	/* for new AVU creation */
 	modAVUMetadataInp_t modAVUMetadataInp;
+	char attribute[] = "Attribute";
+	char value[] = "Value";
+	char unit[] = "Unit";
+	char target[] = "Target";
+	char add[] = "add";
+	char collection[] = "-C";
+	char dataObject[] = "-d";
 	const size_t MAX_ATTR_NAME_LEN = 2700;
         const size_t MAX_ATTR_VALUE_LEN = 2700;
 	const size_t MAX_ATTR_UNIT_LEN = 250;
@@ -261,7 +268,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 		if (nodes->nodeTab[i])
 		{
 
-			attrName = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Attribute"));
+			attrName = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], attribute));
 			if (!attrName) {
 				rodsLog (LOG_ERROR, "msiLoadMetadataFromXml: AVU does not contain an Attribute element");
 				continue;
@@ -276,7 +283,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 					i + 1);
 			}
 
-			attrValue = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Value"));
+			attrValue = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], value));
 			if (!attrValue) {
 				rodsLog(LOG_ERROR, "msiLoadMetadataFromXml: AVU #%d does not contain a Value element",
 					i + 1);
@@ -293,7 +300,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 				continue;
 			}
 	
-			attrUnit = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Unit"));
+			attrUnit = (char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], unit));
 			/* attrUnit can be null */
 			if (attrUnit) {
 				attrUnitLen = strlen(attrUnit);
@@ -306,7 +313,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 
 			/* init modAVU input */
 			memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
-			modAVUMetadataInp.arg0 = "add";
+			modAVUMetadataInp.arg0 = add;
 
 			/* Use target object if one was provided, otherwise look for it in the XML doc */
 			if (myTargetObjInp->objPath != NULL && strlen(myTargetObjInp->objPath) > 0)
@@ -315,15 +322,15 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 			}
 			else
 			{
-				modAVUMetadataInp.arg2 = xmlURIUnescapeString((char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], "Target")),
+				modAVUMetadataInp.arg2 = xmlURIUnescapeString((char*)xmlNodeGetContent(getChildNodeByName(nodes->nodeTab[i], target)),
 						MAX_NAME_LEN, NULL);
 			}
 
 			/* check if data or collection */
 			if (isColl(rsComm, modAVUMetadataInp.arg2, &coll_id) < 0) {
-				modAVUMetadataInp.arg1 = "-d";
+				modAVUMetadataInp.arg1 = dataObject;
 			} else {
-				modAVUMetadataInp.arg1 = "-C";
+				modAVUMetadataInp.arg1 = collection;
 			}
 
 			modAVUMetadataInp.arg3 = attrName;
