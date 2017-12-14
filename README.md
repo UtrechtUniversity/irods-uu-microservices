@@ -1,35 +1,24 @@
 # irods-uu-microservices
 Miscellaneous iRODS microservices developed or modified by Utrecht university.
 
+### Included microservices
+Developed at the UU:
+  * msiGetDataCiteDOI: API call to retrieve record of a DOI from DataCite 
+  * msiRegisterDataCiteDOI: API call to register a DOI with metadata or to mint a DOI
+  * msiStrToUpper: Returns an uppercase string
+  * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
+  * msiGenerateRandomID: Generate a Random ID to use as basis for a new DOI
 
+
+Forward ported from iRODS 3:
+  * msiLoadMetadataFromXml:
+     load metadata from an xml file. Modified to accept both irods data objects as string buffers. Also skips AVU's exceeding the iRODS byte limit
+  * msiXsltApply: apply a XSLT to and XML. Modified to handle invalid input without crashing and added exslt support
+  * msiXmlDocSchemaValidate: Validate an XML against an XSD
+
+Developed at Donders Institute:
+  * msi\_json\_objops: get, add and set values in a json object
+  * msi\_json\_arrayops: get, add and set values in a json array. modified to handle arrays of arrays
+		
 msi\_json\_arrayops and msi\_json\_objops microservices are derived from
-work from the Donders Institute. The license below applies
-
-### Copyright and license for msi_json_arrayops and msi_json_objops
-
-This microservice has kindly been provided by the Donders Institute for
-Brain, Cognition and Behaviour.
-
-Copyright (c) 2016, Radboud University, Nijmegen, The Netherlands
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ork from the Donders Institute. The license in DONDERS-LICENSE applies
