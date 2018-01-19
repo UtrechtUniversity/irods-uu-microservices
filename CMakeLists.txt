@@ -35,10 +35,51 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
-add_library(msiSetUpperCaseWhereQuery     SHARED src/msiSetUpperCaseWhereQuery.cc)
+find_package(CURL REQUIRED)
+include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
+
+find_package(LibXml2 REQUIRED)
+include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
+
+find_package(LibXslt REQUIRED)
+include_directories(SYSTEM ${LIBXSLT_INCLUDE_DIR})
+
+find_package(Jansson REQUIRED)
+include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
+
+include_directories(SYSTEM "/usr/include/irods")
+
+add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
+add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
+add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
+add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
+add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
+add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
+add_library(msiXmlDocSchemaValidate   SHARED src/msiXmlDocSchemaValidate.cc)
+add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
+add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
+add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
+
+target_link_libraries(msiStrToUpper           LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msiRegisterDataCiteDOI  LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiGetDataCiteDOI       LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiLoadMetadataFromXml  LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXmlDocSchemaValidate LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXsltApply            LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
+target_link_libraries(msi_json_arrayops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_json_objops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
+        msiStrToUpper
+	msiRegisterDataCiteDOI
+        msiGenerateRandomID
+	msiGetDataCiteDOI
+	msiLoadMetadataFromXml
+	msiXmlDocSchemaValidate
+	msiXsltApply
+	msi_json_arrayops
+	msi_json_objops
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
