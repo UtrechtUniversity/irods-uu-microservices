@@ -60,8 +60,8 @@
  */
 
 #include "irods_includes.hh"
+#include "reGlobalsExtern.hpp"
 #include "genQuery.h"
-#include "rsGenQuery.hpp"
 
 
 extern "C" {
@@ -83,8 +83,7 @@ extern "C" {
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(1);
 
-    msvc->add_operation("msiSetUpperCaseWhereQuery",
-			std::function<decltype(msiSetUpperCaseWhereQuery)>(msiSetUpperCaseWhereQuery));
+    msvc->add_operation("msiSetUpperCaseWhereQuery", "msiSetUpperCaseWhereQuery");
 
     return msvc;
   }
