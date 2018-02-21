@@ -36,6 +36,9 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
+find_package(Boost COMPONENTS locale REQUIRED)
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
+
 find_package(CURL REQUIRED)
 include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 
@@ -67,8 +70,8 @@ target_link_libraries(msiGetDataCiteDOI       LINK_PUBLIC ${CURL_LIBRARIES})
 target_link_libraries(msiLoadMetadataFromXml  LINK_PUBLIC ${LIBXML2_LIBRARIES})
 target_link_libraries(msiXmlDocSchemaValidate LINK_PUBLIC ${LIBXML2_LIBRARIES})
 target_link_libraries(msiXsltApply            LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
-target_link_libraries(msi_json_arrayops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(msi_json_objops      LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_json_arrayops       LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_json_objops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -99,7 +102,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.2_0.2.0")
+set(CPACK_PACKAGE_VERSION "4.2.2_0.2.1")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")
