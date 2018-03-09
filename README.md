@@ -39,6 +39,7 @@ To build from source, the following build-time dependencies must be installed:
 - `irods-devel`
 - `irods-externals-clang3.8-0`
 - `boost-devel`
+- `boost-locale`
 - `openssl-devel`
 - `libcurl-devel`
 - `libxml2-devel`
