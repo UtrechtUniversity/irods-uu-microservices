@@ -58,6 +58,7 @@ add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
+add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
 add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
 add_library(msiXmlDocSchemaValidate   SHARED src/msiXmlDocSchemaValidate.cc)
 add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
@@ -67,6 +68,7 @@ add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 target_link_libraries(msiStrToUpper           LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI  LINK_PUBLIC ${CURL_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI       LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES})
 target_link_libraries(msiLoadMetadataFromXml  LINK_PUBLIC ${LIBXML2_LIBRARIES})
 target_link_libraries(msiXmlDocSchemaValidate LINK_PUBLIC ${LIBXML2_LIBRARIES})
 target_link_libraries(msiXsltApply            LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
@@ -79,6 +81,7 @@ install(TARGETS
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
 	msiGetDataCiteDOI
+	msiRemoveDataCiteMetadata
 	msiLoadMetadataFromXml
 	msiXmlDocSchemaValidate
 	msiXsltApply
