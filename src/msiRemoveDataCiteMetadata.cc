@@ -25,7 +25,6 @@
  */
 
 #include "irods_includes.hh"
-#include "reGlobalsExtern.hpp"
 
 #include <string>
 #include <fstream>
@@ -134,7 +133,18 @@ extern "C" {
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
-    msvc->add_operation("msiRemoveDataCiteMetadata", "msiRemoveDataCiteMetadata");
+    msvc->add_operation<
+        msParam_t*,
+        msParam_t*,
+        msParam_t*,
+        msParam_t*,
+        ruleExecInfo_t*>("msiRemoveDataCiteMetadata",
+                         std::function<int(
+                             msParam_t*,
+                             msParam_t*,
+                             msParam_t*,
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiRemoveDataCiteMetadata));
 
     return msvc;
   }
