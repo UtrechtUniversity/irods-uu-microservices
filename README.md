@@ -34,10 +34,10 @@ You can also build the microservices yourself, see [Building from source](#build
 ## Building from source
 To build from source, the following build-time dependencies must be installed:
 
-- `cmake`
 - `make`
 - `gcc-c++`
 - `irods-devel`
+- `irods-externals-cmake3.5.2-0`
 - `irods-externals-clang3.8-0`
 - `boost-devel`
 - `boost-locale`
@@ -49,7 +49,7 @@ To build from source, the following build-time dependencies must be installed:
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install cmake make gcc-c++ irods-devel irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
+sudo yum install make gcc-c++ ddirods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
@@ -63,6 +63,7 @@ Follow these instructions to build from source:
 
 - Compile the project
 ```bash
+export PATH=/opt/irods-externals/cmake3.5.2-0/bin:$PATH
 cmake .
 make
 ```
