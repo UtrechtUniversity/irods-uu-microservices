@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief     iRODS microservice to enroll an external user for COmanage.
+ * \brief     iRODS microservice to enroll an external user in COmanage.
  * \author    Lazlo Westerhof
  * \copyright Copyright (c) 2018, Utrecht University
  *
@@ -30,7 +30,6 @@
 
 extern "C" {
   int msiEnrollExternalUser(msParam_t* urlIn,
-   		            msParam_t* usernameIn,
 			    msParam_t* httpCodeOut,
 			    ruleExecInfo_t *rei)
   {
@@ -46,13 +45,9 @@ extern "C" {
     if (strcmp(urlIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(usernameIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
 
     /* Parse input paramaters. */
     std::string url      = parseMspForStr(urlIn);
-    std::string username = parseMspForStr(usernameIn);
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -113,15 +108,13 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiEnrollExternalUser",
                          std::function<int(
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              ruleExecInfo_t*)>(msiEnrollExternalUser));
