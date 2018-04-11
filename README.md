@@ -36,6 +36,7 @@ To build from source, the following build-time dependencies must be installed:
 
 - `cmake`
 - `make`
+- `gcc-c++`
 - `irods-devel`
 - `irods-externals-clang3.8-0`
 - `boost-devel`
@@ -48,7 +49,7 @@ To build from source, the following build-time dependencies must be installed:
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install cmake make irods-devel irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
+sudo yum install cmake make gcc-c++ irods-devel irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
