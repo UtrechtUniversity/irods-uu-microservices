@@ -47,6 +47,10 @@ To build from source, the following build-time dependencies must be installed:
 - `jansson-devel`
 - `rpmdevtools` (if you are creating an RPM)
 
+```
+sudo yum install cmake make irods-devel irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
+```
+
 Follow these instructions to build from source:
 
 - First, browse to the directory where you have unpacked the source
