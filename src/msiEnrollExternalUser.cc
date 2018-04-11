@@ -24,8 +24,6 @@
 #include "irods_includes.hh"
 
 #include <string>
-#include <fstream>
-#include <streambuf>
 #include <curl/curl.h>
 
 extern "C" {

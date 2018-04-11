@@ -2,9 +2,7 @@
  * \file
  * \brief     iRODS microservice to register a DOI with DataCite.
  * \author    Lazlo Westerhof
- * \copyright Copyright (c) 2017, Utrecht University
- *
- * Copyright (c) 2017, Utrecht University
+ * \copyright Copyright (c) 2017-2018, Utrecht University
  *
  * This file is part of irods-uu-microservices.
  *
@@ -115,7 +113,7 @@ extern "C" {
 
 	/* 201 Created */
 	if (http_code == 201) {
-	  // Operation successful.
+	  /* Operation successful.*/
 	}
 	/* 400 Bad Request */
 	else if (http_code == 400) {
