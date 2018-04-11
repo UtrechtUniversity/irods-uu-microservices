@@ -49,7 +49,7 @@ To build from source, the following build-time dependencies must be installed:
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ ddirods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
