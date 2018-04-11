@@ -34,11 +34,6 @@ extern "C" {
     CURL *curl;
     CURLcode res;
 
-    /* Check if user is priviliged. */
-    if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return SYS_USER_NO_PERMISSION;
-    }
-
     /* Check input parameters. */
     if (strcmp(urlIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
