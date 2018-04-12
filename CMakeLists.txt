@@ -56,6 +56,7 @@ include_directories(SYSTEM "/usr/include/irods")
 add_library(msiEnrollExternalUser     SHARED src/msiEnrollExternalUser.cc)
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
+add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
@@ -81,6 +82,7 @@ install(TARGETS
         msiEnrollExternalUser
         msiSetUpperCaseWhereQuery
         msiStrToUpper
+        msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
 	msiGetDataCiteDOI
