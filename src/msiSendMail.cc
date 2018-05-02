@@ -71,7 +71,7 @@ extern "C" {
       "abcdefghijklmnopqrstuvwxyz";
 
     while (ret.size() < MESSAGE_ID_LEN) {
-      ret += alphaNum[rand() % (sizeof(alphaNum) - 1)];
+      ret += alphaNum[(size_t) rand() % (sizeof(alphaNum) - 1)];
     }
 
     return ret;
