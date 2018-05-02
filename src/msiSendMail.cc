@@ -164,7 +164,7 @@ extern "C" {
 
       /* Check for errors. */      
       if (res != CURLE_OK) {
-       	rodsLog(LOG_ERROR, "msiSendMail: curl error: %s", curl_easy_strerror(ret));
+       	rodsLog(LOG_ERROR, "msiSendMail: curl error: %s", curl_easy_strerror(res));
       }
 
       curl_slist_free_all(recipients);
