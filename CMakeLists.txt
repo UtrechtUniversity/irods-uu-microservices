@@ -5,7 +5,7 @@ find_package(IRODS 4.2.2 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
-# Note: Microservices for iRODS >=4.2 need to be built with the compiler and
+# Note: Microservices for iRODS >= 4.2 need to be built with the compiler and
 # standard libarary provided by iRODS-externals packages.
 # The following packages need to be installed to build the uu microservices:
 #
@@ -57,6 +57,7 @@ add_library(msiEnrollExternalUser     SHARED src/msiEnrollExternalUser.cc)
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
+add_library(msiSendMail               SHARED src/msiSendMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
@@ -67,21 +68,23 @@ add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 
-target_link_libraries(msiEnrollExternalUser   LINK_PUBLIC ${CURL_LIBRARIES})
-target_link_libraries(msiStrToUpper           LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msiRegisterDataCiteDOI  LINK_PUBLIC ${CURL_LIBRARIES})
-target_link_libraries(msiGetDataCiteDOI       LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiEnrollExternalUser     LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiSendMail               LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msiEnrollExternalUser     LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES})
-target_link_libraries(msiLoadMetadataFromXml  LINK_PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(msiXmlDocSchemaValidate LINK_PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(msiXsltApply            LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
-target_link_libraries(msi_json_arrayops       LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(msi_json_objops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msiLoadMetadataFromXml    LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXmlDocSchemaValidate   LINK_PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(msiXsltApply              LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
+target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS
         msiEnrollExternalUser
         msiSetUpperCaseWhereQuery
         msiStrToUpper
+	msiSendMail
         msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
@@ -110,7 +113,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.2_0.7.0")
+set(CPACK_PACKAGE_VERSION "4.2.2_0.7.2")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")
