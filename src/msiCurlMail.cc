@@ -173,7 +173,7 @@ CURLcode sendMail(const std::string to,
 }
 
 extern "C" {
-  int msiSendMail(msParam_t* toIn,
+  int msiCurlMail(msParam_t* toIn,
 		  msParam_t* fromIn,
 		  msParam_t* nameFromIn,
 		  msParam_t* subjectIn,
@@ -247,7 +247,7 @@ extern "C" {
       msParam_t*,
       msParam_t*,
       msParam_t*,
-      ruleExecInfo_t*>("msiSendMail",
+      ruleExecInfo_t*>("msiCurlMail",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
@@ -258,7 +258,7 @@ extern "C" {
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiSendMail));
+                             ruleExecInfo_t*)>(msiCurlMail));
 
     return msvc;
   }
