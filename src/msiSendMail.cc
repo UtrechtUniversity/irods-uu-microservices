@@ -238,15 +238,15 @@ extern "C" {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(9);
 
     msvc->add_operation<
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
       ruleExecInfo_t*>("msiSendMail",
                          std::function<int(
                              msParam_t*,
