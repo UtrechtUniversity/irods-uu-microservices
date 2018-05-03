@@ -27,153 +27,152 @@
 #include <string>
 #include <curl/curl.h>
 
-extern "C" {
+std::string dateTimeNow()
+{
+  const int RFC5322_TIME_LEN = 32;
 
-  std::string dateTimeNow()
-  {
-    const int RFC5322_TIME_LEN = 32;
+  std::string ret;
+  ret.resize(RFC5322_TIME_LEN);
 
-    std::string ret;
-    ret.resize(RFC5322_TIME_LEN);
+  tm tv, *t = &tv;
+  time_t tt = time(&tt);
+  localtime_r(&tt, t);
 
-    tm tv, *t = &tv;
-    time_t tt = time(&tt);
-    localtime_r(&tt, t);
+  strftime(&ret[0], RFC5322_TIME_LEN, "%a, %d %b %Y %H:%M:%S %z", t);
 
-    strftime(&ret[0], RFC5322_TIME_LEN, "%a, %d %b %Y %H:%M:%S %z", t);
+  return ret;
+}
 
-    return ret;
+std::string messageId()
+{
+  const int MESSAGE_ID_LEN = 37;
+
+  tm t;
+  time_t tt;
+  time(&tt);
+
+  std::string ret;
+  ret.resize(15);
+
+  gmtime_r(&tt, &t);
+
+  strftime(const_cast<char *>(ret.c_str()),
+	   MESSAGE_ID_LEN,
+	   "%Y%m%d%H%M%S.",
+	   &t);
+
+  ret.reserve(MESSAGE_ID_LEN);
+
+  static const char alphaNum[] =
+    "0123456789"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz";
+
+  while (ret.size() < MESSAGE_ID_LEN) {
+    ret += alphaNum[(size_t) rand() % (sizeof(alphaNum) - 1)];
   }
 
-  std::string messageId()
-  {
-    const int MESSAGE_ID_LEN = 37;
+  return ret;
+}
 
-    tm t;
-    time_t tt;
-    time(&tt);
+std::string setPayloadText(const std::string &to,
+			   const std::string &from,
+			   const std::string &nameFrom,
+			   const std::string &subject,
+			   const std::string &body)
+{
+  std::string ret;
 
-    std::string ret;
-    ret.resize(15);
+  ret += "Date: "  + dateTimeNow() + ">\r\n";
+  ret += "To: <"   + to   + ">\r\n";
+  ret += "From: <" + from + "> (" + nameFrom + ")\r\n";
+  ret += "Message-ID: <"  + messageId() + "@" + from.substr(from.find('@') + 1) + ">\r\n";
+  ret += "Subject: "      + subject + "\r\n";
+  ret += "\r\n";
+  ret += body + "\r\n";
+  ret += "\r\n";
+  ret += "\r\n"; // "It could be a lot of lines, could be MIME encoded, whatever.\r\n";
+  ret += "\r\n"; // "Check RFC5322.\r\n";
 
-    gmtime_r(&tt, &t);
+  return ret;
+}
 
-    strftime(const_cast<char *>(ret.c_str()),
-             MESSAGE_ID_LEN,
-             "%Y%m%d%H%M%S.",
-             &t);
+struct uploadStatus { int linesRead; };
 
-    ret.reserve(MESSAGE_ID_LEN);
+struct StringData
+{
+  std::string msg;
+  size_t bytesleft;
 
-    static const char alphaNum[] =
-      "0123456789"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      "abcdefghijklmnopqrstuvwxyz";
+  StringData(std::string &&m) : msg{ m }, bytesleft{ msg.size() } {}
+  StringData(std::string  &m) = delete;
+};
 
-    while (ret.size() < MESSAGE_ID_LEN) {
-      ret += alphaNum[(size_t) rand() % (sizeof(alphaNum) - 1)];
-    }
+size_t payloadSource(void *ptr, size_t size, size_t nmemb, void *userp)
+{
+  StringData *text = reinterpret_cast<StringData *>(userp);
 
-    return ret;
-  }
-
-  std::string setPayloadText(const std::string &to,
-			     const std::string &from,
-			     const std::string &nameFrom,
-			     const std::string &subject,
-			     const std::string &body)
-  {
-    std::string ret;
-
-    ret += "Date: "  + dateTimeNow() + ">\r\n";
-    ret += "To: <"   + to   + ">\r\n";
-    ret += "From: <" + from + "> (" + nameFrom + ")\r\n";
-    ret += "Message-ID: <"  + messageId() + "@" + from.substr(from.find('@') + 1) + ">\r\n";
-    ret += "Subject: "      + subject + "\r\n";
-    ret += "\r\n";
-    ret += body + "\r\n";
-    ret += "\r\n";
-    ret += "\r\n"; // "It could be a lot of lines, could be MIME encoded, whatever.\r\n";
-    ret += "\r\n"; // "Check RFC5322.\r\n";
-
-    return ret;
-  }
-
-  struct uploadStatus { int linesRead; };
-
-  struct StringData
-  {
-    std::string msg;
-    size_t bytesleft;
-
-    StringData(std::string &&m) : msg{ m }, bytesleft{ msg.size() } {}
-    StringData(std::string  &m) = delete;
-  };
-
-  size_t payloadSource(void *ptr, size_t size, size_t nmemb, void *userp)
-  {
-    StringData *text = reinterpret_cast<StringData *>(userp);
-
-    if ((size == 0) || (nmemb == 0) || ((size*nmemb) < 1) || (text->bytesleft == 0)) {
-      return 0;
-    }
-
-    if ((nmemb * size) >= text->msg.size()) {
-      text->bytesleft = 0;
-      return text->msg.copy(reinterpret_cast<char *>(ptr), text->msg.size());
-    }
-
+  if ((size == 0) || (nmemb == 0) || ((size*nmemb) < 1) || (text->bytesleft == 0)) {
     return 0;
   }
 
-  CURLcode sendMail(const std::string to,
-		    const std::string from,
-		    const std::string nameFrom,
-		    const std::string subject,
-		    const std::string body,
-		    const std::string url,
-		    const std::string userName,		   
-		    const std::string password)
-  {
-    CURLcode res = CURLE_OK;
-
-    struct curl_slist *recipients = NULL;
-
-    /* Get a curl handle. */
-    CURL *curl = curl_easy_init();
-
-    StringData textData { setPayloadText(to, from, nameFrom, subject, body) };
-
-    if (curl) {
-      curl_easy_setopt(curl, CURLOPT_USERNAME,     userName.c_str());
-      curl_easy_setopt(curl, CURLOPT_PASSWORD,     password.c_str());
-      curl_easy_setopt(curl, CURLOPT_URL,          url     .c_str());
-
-      curl_easy_setopt(curl, CURLOPT_USE_SSL,      (long)CURLUSESSL_ALL);
-
-      curl_easy_setopt(curl, CURLOPT_MAIL_FROM,    ("<" + from + ">").c_str());
-      recipients = curl_slist_append(recipients,   ("<" + to   + ">").c_str());
-
-      curl_easy_setopt(curl, CURLOPT_MAIL_RCPT,    recipients);
-      curl_easy_setopt(curl, CURLOPT_READFUNCTION, payloadSource);
-      curl_easy_setopt(curl, CURLOPT_READDATA,     &textData);
-      curl_easy_setopt(curl, CURLOPT_UPLOAD,       1L);
-
-      /* Perform the request, res will get the return code. */      
-      res = curl_easy_perform(curl);
-
-      /* Check for errors. */      
-      if (res != CURLE_OK) {
-       	rodsLog(LOG_ERROR, "msiSendMail: curl error: %s", curl_easy_strerror(res));
-      }
-
-      curl_slist_free_all(recipients);
-      curl_easy_cleanup(curl);
-    }
-
-    return res;
+  if ((nmemb * size) >= text->msg.size()) {
+    text->bytesleft = 0;
+    return text->msg.copy(reinterpret_cast<char *>(ptr), text->msg.size());
   }
 
+  return 0;
+}
+
+CURLcode sendMail(const std::string to,
+		  const std::string from,
+		  const std::string nameFrom,
+		  const std::string subject,
+		  const std::string body,
+		  const std::string url,
+		  const std::string userName,
+		  const std::string password)
+{
+  CURLcode res = CURLE_OK;
+
+  struct curl_slist *recipients = NULL;
+
+  /* Get a curl handle. */
+  CURL *curl = curl_easy_init();
+
+  StringData textData { setPayloadText(to, from, nameFrom, subject, body) };
+
+  if (curl) {
+    curl_easy_setopt(curl, CURLOPT_USERNAME,     userName.c_str());
+    curl_easy_setopt(curl, CURLOPT_PASSWORD,     password.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL,          url     .c_str());
+
+    curl_easy_setopt(curl, CURLOPT_USE_SSL,      (long)CURLUSESSL_ALL);
+
+    curl_easy_setopt(curl, CURLOPT_MAIL_FROM,    ("<" + from + ">").c_str());
+    recipients = curl_slist_append(recipients,   ("<" + to   + ">").c_str());
+
+    curl_easy_setopt(curl, CURLOPT_MAIL_RCPT,    recipients);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, payloadSource);
+    curl_easy_setopt(curl, CURLOPT_READDATA,     &textData);
+    curl_easy_setopt(curl, CURLOPT_UPLOAD,       1L);
+
+    /* Perform the request, res will get the return code. */
+    res = curl_easy_perform(curl);
+
+    /* Check for errors. */
+    if (res != CURLE_OK) {
+      rodsLog(LOG_ERROR, "msiSendMail: curl error: %s", curl_easy_strerror(res));
+    }
+
+    curl_slist_free_all(recipients);
+    curl_easy_cleanup(curl);
+  }
+
+  return res;
+}
+
+extern "C" {
   int msiSendMail(msParam_t* toIn,
 		  msParam_t* fromIn,
 		  msParam_t* nameFromIn,
@@ -190,8 +189,8 @@ extern "C" {
     /* Check if user is priviliged. */
     if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return SYS_USER_NO_PERMISSION;
-    }    
-    
+    }
+
     /* Check input parameters. */
     if (strcmp(toIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
@@ -217,7 +216,7 @@ extern "C" {
     if (strcmp(passwordIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    
+
     /* Parse input paramaters. */
     std::string to         = parseMspForStr(toIn);
     std::string from       = parseMspForStr(fromIn);
@@ -227,9 +226,9 @@ extern "C" {
     std::string smtpServer = parseMspForStr(smtpServerIn);
     std::string userName   = parseMspForStr(userNameIn);
     std::string password   = parseMspForStr(passwordIn);
-  
+
     curlCode = sendMail(to, from, nameFrom, subject, body, smtpServer, userName, password);
-  
+
     fillStrInMsParam(curlCodeOut, std::to_string(curlCode).c_str());
 
     return 0;
