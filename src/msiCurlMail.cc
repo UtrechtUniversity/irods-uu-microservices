@@ -91,8 +91,8 @@ std::string setPayloadText(const std::string &to,
   ret += "\r\n";
   ret += body + "\r\n";
   ret += "\r\n";
-  ret += "\r\n"; // "It could be a lot of lines, could be MIME encoded, whatever.\r\n";
-  ret += "\r\n"; // "Check RFC5322.\r\n";
+  ret += "\r\n";
+  ret += "\r\n";
 
   return ret;
 }
