@@ -129,7 +129,7 @@ CURLcode sendMail(const std::string to,
 		  const std::string nameFrom,
 		  const std::string subject,
 		  const std::string body,
-		  const std::string url,
+		  const std::string smtpServer,
 		  const std::string userName,
 		  const std::string password)
 {
@@ -143,26 +143,26 @@ CURLcode sendMail(const std::string to,
   StringData textData { setPayloadText(to, from, nameFrom, subject, body) };
 
   if (curl) {
-    curl_easy_setopt(curl, CURLOPT_USERNAME,     userName.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD,     password.c_str());
-    curl_easy_setopt(curl, CURLOPT_URL,          url     .c_str());
+    curl_easy_setopt(curl, CURLOPT_USERNAME, userName.c_str());
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, smtpServer.c_str());
 
-    curl_easy_setopt(curl, CURLOPT_USE_SSL,      (long)CURLUSESSL_ALL);
+    curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
 
-    curl_easy_setopt(curl, CURLOPT_MAIL_FROM,    ("<" + from + ">").c_str());
-    recipients = curl_slist_append(recipients,   ("<" + to   + ">").c_str());
+    curl_easy_setopt(curl, CURLOPT_MAIL_FROM, ("<" + from + ">").c_str());
+    recipients = curl_slist_append(recipients, ("<" + to   + ">").c_str());
 
-    curl_easy_setopt(curl, CURLOPT_MAIL_RCPT,    recipients);
+    curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, payloadSource);
-    curl_easy_setopt(curl, CURLOPT_READDATA,     &textData);
-    curl_easy_setopt(curl, CURLOPT_UPLOAD,       1L);
+    curl_easy_setopt(curl, CURLOPT_READDATA, &textData);
+    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
     /* Perform the request, res will get the return code. */
     res = curl_easy_perform(curl);
 
     /* Check for errors. */
     if (res != CURLE_OK) {
-      rodsLog(LOG_ERROR, "msiSendMail: curl error: %s", curl_easy_strerror(res));
+      rodsLog(LOG_ERROR, "msiCurlMail: curl error: %s", curl_easy_strerror(res));
     }
 
     curl_slist_free_all(recipients);
