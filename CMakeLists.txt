@@ -61,6 +61,7 @@ add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
 add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
+add_library(msiGenerateEpicPID        SHARED src/msiGenerateEpicPID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
 add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
@@ -87,6 +88,7 @@ install(TARGETS
         msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
+	msiGenerateEpicPID
 	msiGetDataCiteDOI
 	msiRemoveDataCiteMetadata
 	msiLoadMetadataFromXml
