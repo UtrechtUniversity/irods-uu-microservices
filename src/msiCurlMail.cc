@@ -79,6 +79,7 @@ std::string setPayloadText(const std::string &to,
 			   const std::string &from,
 			   const std::string &nameFrom,
 			   const std::string &subject,
+			   const std::string &replyTo,
 			   const std::string &body)
 {
   std::string ret;
@@ -88,6 +89,7 @@ std::string setPayloadText(const std::string &to,
   ret += "From: <" + from + "> (" + nameFrom + ")\r\n";
   ret += "Message-ID: <"  + messageId() + "@" + from.substr(from.find('@') + 1) + ">\r\n";
   ret += "Subject: "      + subject + "\r\n";
+  ret += "Reply-To: <"   + replyTo   + ">\r\n";
   ret += "\r\n";
   ret += body + "\r\n";
   ret += "\r\n";
@@ -128,6 +130,7 @@ CURLcode sendMail(const std::string to,
 		  const std::string from,
 		  const std::string nameFrom,
 		  const std::string subject,
+		  const std::string replyTo,
 		  const std::string body,
 		  const std::string smtpServer,
 		  const std::string userName,
@@ -140,7 +143,7 @@ CURLcode sendMail(const std::string to,
   /* Get a curl handle. */
   CURL *curl = curl_easy_init();
 
-  StringData textData { setPayloadText(to, from, nameFrom, subject, body) };
+  StringData textData { setPayloadText(to, from, nameFrom, subject, replyTo, body) };
 
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_USERNAME, userName.c_str());
@@ -177,6 +180,7 @@ extern "C" {
 		  msParam_t* fromIn,
 		  msParam_t* nameFromIn,
 		  msParam_t* subjectIn,
+		  msParam_t* replyToIn,
 		  msParam_t* bodyIn,
 		  msParam_t* smtpServerIn,
 		  msParam_t* userNameIn,
@@ -204,6 +208,9 @@ extern "C" {
     if (strcmp(subjectIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
+    if (strcmp(replyToIn->type, STR_MS_T)) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
     if (strcmp(bodyIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
@@ -222,12 +229,13 @@ extern "C" {
     std::string from       = parseMspForStr(fromIn);
     std::string nameFrom   = parseMspForStr(nameFromIn);
     std::string subject    = parseMspForStr(subjectIn);
+    std::string replyTo    = parseMspForStr(replyToIn);
     std::string body       = parseMspForStr(bodyIn);
     std::string smtpServer = parseMspForStr(smtpServerIn);
     std::string userName   = parseMspForStr(userNameIn);
     std::string password   = parseMspForStr(passwordIn);
 
-    curlCode = sendMail(to, from, nameFrom, subject, body, smtpServer, userName, password);
+    curlCode = sendMail(to, from, nameFrom, subject, replyTo, body, smtpServer, userName, password);
 
     fillStrInMsParam(curlCodeOut, std::to_string(curlCode).c_str());
 
@@ -235,7 +243,7 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(9);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(10);
 
     msvc->add_operation<
       msParam_t*,
@@ -247,8 +255,10 @@ extern "C" {
       msParam_t*,
       msParam_t*,
       msParam_t*,
+      msParam_t*,
       ruleExecInfo_t*>("msiCurlMail",
                          std::function<int(
+                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
