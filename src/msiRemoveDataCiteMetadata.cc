@@ -25,16 +25,17 @@
  */
 
 #include "irods_includes.hh"
+#include "CredentialsStore.hh"
 
 #include <string>
 #include <fstream>
 #include <streambuf>
 #include <curl/curl.h>
 
+static CredentialsStore credentials;
+
 extern "C" {
-  int msiRemoveDataCiteMetadata(msParam_t* urlIn,
-				msParam_t* usernameIn,
-				msParam_t* passwordIn,
+  int msiRemoveDataCiteMetadata(msParam_t* doiIn,
 				msParam_t* httpCodeOut,
 				ruleExecInfo_t *rei)
   {
@@ -47,20 +48,19 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(urlIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(usernameIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(passwordIn->type, STR_MS_T)) {
+    if (strcmp(doiIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string url      = parseMspForStr(urlIn);
-    std::string username = parseMspForStr(usernameIn);
-    std::string password = parseMspForStr(passwordIn);
+    std::string doi = parseMspForStr(doiIn);
+
+    /* Get parameters from credentials store. */
+    std::string url(credentials.get("datacite_url"));
+    url += "/metadata/" + doi;
+    std::string username(credentials.get("datacite_username"));
+    std::string password(credentials.get("datacite_password"));
+
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -131,17 +131,13 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
-        msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiRemoveDataCiteMetadata",
                          std::function<int(
-                             msParam_t*,
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              ruleExecInfo_t*)>(msiRemoveDataCiteMetadata));

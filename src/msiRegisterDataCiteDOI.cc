@@ -22,17 +22,17 @@
  */
 
 #include "irods_includes.hh"
+#include "CredentialsStore.hh"
 
 #include <string>
 #include <fstream>
 #include <streambuf>
 #include <curl/curl.h>
 
+static CredentialsStore credentials;
+
 extern "C" {
-  int msiRegisterDataCiteDOI(msParam_t* urlIn,
-			     msParam_t* usernameIn,
-			     msParam_t* passwordIn,
-			     msParam_t* payloadIn,
+  int msiRegisterDataCiteDOI(msParam_t* payloadIn,
 			     msParam_t* httpCodeOut,
 			     ruleExecInfo_t *rei)
   {
@@ -45,24 +45,27 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(urlIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(usernameIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(passwordIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
     if (strcmp(payloadIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string url      = parseMspForStr(urlIn);
-    std::string username = parseMspForStr(usernameIn);
-    std::string password = parseMspForStr(passwordIn);
     std::string payload  = parseMspForStr(payloadIn);
+
+    /* Check if payload is XML */
+    bool isXml;
+    std::string xmlPrefix = "<?xml";
+    if (payload.substr(0, xmlPrefix.size()) == xmlPrefix) {
+      isXml = true;
+    } else {
+      isXml = false;
+    }
+
+    /* Get parameters from credentials store. */
+    std::string url(credentials.get("datacite_url"));
+    url += (isXml) ? "/metadata" : "/doi";
+    std::string username(credentials.get("datacite_username"));
+    std::string password(credentials.get("datacite_password"));
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -77,15 +80,6 @@ extern "C" {
       /* Set username and password for http authentication. */
       curl_easy_setopt(curl, CURLOPT_USERNAME, username.c_str());
       curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
-
-      /* Check if payload is XML */
-      bool isXml;
-      std::string xmlPrefix = "<?xml";
-      if (payload.substr(0, xmlPrefix.size()) == xmlPrefix) {
-        isXml = true;
-      } else {
-        isXml = false;
-      }
 
       /* Set HTTP header Content-Type. */
       struct curl_slist *list = NULL;
@@ -171,19 +165,13 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(5);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiRegisterDataCiteDOI",
                          std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              ruleExecInfo_t*)>(msiRegisterDataCiteDOI));
