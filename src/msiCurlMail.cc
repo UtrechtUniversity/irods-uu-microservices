@@ -22,10 +22,13 @@
  */
 
 #include "irods_includes.hh"
+#include "CredentialsStore.hh"
 
 #include <ctime>
 #include <string>
 #include <curl/curl.h>
+
+static CredentialsStore credentials;
 
 std::string dateTimeNow()
 {
@@ -177,14 +180,8 @@ CURLcode sendMail(const std::string to,
 
 extern "C" {
   int msiCurlMail(msParam_t* toIn,
-		  msParam_t* fromIn,
-		  msParam_t* nameFromIn,
 		  msParam_t* subjectIn,
-		  msParam_t* replyToIn,
 		  msParam_t* bodyIn,
-		  msParam_t* smtpServerIn,
-		  msParam_t* userNameIn,
-		  msParam_t* passwordIn,
 	          msParam_t* curlCodeOut,
 		  ruleExecInfo_t *rei)
   {
@@ -199,43 +196,27 @@ extern "C" {
     if (strcmp(toIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(fromIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(nameFromIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
     if (strcmp(subjectIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(replyToIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
     if (strcmp(bodyIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(smtpServerIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(userNameIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(passwordIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
 
     /* Parse input paramaters. */
     std::string to         = parseMspForStr(toIn);
-    std::string from       = parseMspForStr(fromIn);
-    std::string nameFrom   = parseMspForStr(nameFromIn);
     std::string subject    = parseMspForStr(subjectIn);
-    std::string replyTo    = parseMspForStr(replyToIn);
     std::string body       = parseMspForStr(bodyIn);
-    std::string smtpServer = parseMspForStr(smtpServerIn);
-    std::string userName   = parseMspForStr(userNameIn);
-    std::string password   = parseMspForStr(passwordIn);
 
-    curlCode = sendMail(to, from, nameFrom, subject, replyTo, body, smtpServer, userName, password);
+    /* obtain parameters from the credentials store */
+    std::string from(credentials.get("notifications_sender_email"));
+    std::string nameFrom(credentials.get("notifications_sender_name"));
+    std::string replyTo(credentials.get("notifications_reply_to"));
+    std::string smtpServer(credentials.get("smtp_server"));
+    std::string smtpUserName(credentials.get("smtp_username"));
+    std::string smtpPassword(credentials.get("smtp_password"));
+
+    curlCode = sendMail(to, from, nameFrom, subject, replyTo, body, smtpServer, smtpUserName, smtpPassword);
 
     fillStrInMsParam(curlCodeOut, std::to_string(curlCode).c_str());
 
@@ -243,27 +224,15 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(10);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
       msParam_t*,
       msParam_t*,
       msParam_t*,
       msParam_t*,
-      msParam_t*,
-      msParam_t*,
-      msParam_t*,
-      msParam_t*,
-      msParam_t*,
-      msParam_t*,
       ruleExecInfo_t*>("msiCurlMail",
                          std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,

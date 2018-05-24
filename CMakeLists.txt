@@ -69,7 +69,7 @@ add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 
-target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES})
+target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
