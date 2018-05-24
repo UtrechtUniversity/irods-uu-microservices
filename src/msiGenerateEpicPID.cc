@@ -22,6 +22,7 @@
  */
 
 #include "irods_includes.hh"
+#include "CredentialsStore.hh"
 
 #include <string>
 #include <fstream>
@@ -29,6 +30,7 @@
 #include <curl/curl.h>
 #include <uuid/uuid.h>
 
+static CredentialsStore credentials;
 static size_t length;
 
 extern "C" {
@@ -56,11 +58,7 @@ extern "C" {
   }
 
 
-  int msiGenerateEpicPID(msParam_t* urlIn,
-			 msParam_t* prefixIn,
-			 msParam_t* valueIn,
-			 msParam_t* keyIn,
-			 msParam_t* certificateIn,
+  int msiGenerateEpicPID(msParam_t* valueIn,
 			 msParam_t* pidOut,
 			 msParam_t* httpCodeOut,
 			 ruleExecInfo_t *rei)
@@ -74,36 +72,23 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(urlIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(prefixIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
     if (strcmp(valueIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(keyIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(certificateIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string url         = parseMspForStr(urlIn);
-    std::string prefix      = parseMspForStr(prefixIn);
     std::string value       = parseMspForStr(valueIn);
-    std::string key         = parseMspForStr(keyIn);
-    std::string certificate = parseMspForStr(certificateIn);
 
     /* Minimally verify that these will embed nicely in a payload. */
-    if (prefix.find('"') != std::string::npos) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
     if (value.find('"') != std::string::npos) {
       return SYS_INVALID_INPUT_PARAM;
     }
+
+    /* Retriece parameters from the credentials store. */
+    std::string url(credentials.get("epic_url"));
+    std::string prefix(credentials.get("epic_handle_prefix"));
+    std::string key(credentials.get("epic_key"));
+    std::string certificate(credentials.get("epic_cert"));
 
     /* generate UUID. */
     uuid_t uuid;
@@ -211,22 +196,14 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(7);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiGenerateEpicPID",
                          std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
