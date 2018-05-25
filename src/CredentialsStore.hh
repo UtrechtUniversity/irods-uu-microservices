@@ -1,4 +1,5 @@
 #include "jansson.h"
+#include "irods_includes.hh"
 
 # define CREDS_STORE	"/var/lib/irods/.credentials_store/store_config.json"
 
@@ -13,6 +14,9 @@ public:
 	json_error_t error;
 
 	store = json_load_file(CREDS_STORE, 0, &error);
+	if (store == NULL) {
+	    rodsLog(LOG_ERROR, "Failed to load credentials store");
+	}
 	// store is returned with refcount 1
     }
     // free stored values
@@ -33,6 +37,7 @@ public:
 	    }
 	}
 
+	rodsLog(LOG_ERROR, "Failed to retrieve credential \"%s\"", key);
 	return NULL;
     }
 
