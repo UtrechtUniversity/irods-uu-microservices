@@ -53,6 +53,9 @@ include_directories(SYSTEM ${LIBXSLT_INCLUDE_DIR})
 find_package(Jansson REQUIRED)
 include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
+find_package(uuid REQUIRED)
+include_directories(SYSTEM ${UUID_INCLUDE_DIR})
+
 include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
@@ -61,6 +64,7 @@ add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
 add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
+add_library(msiGenerateEpicPID        SHARED src/msiGenerateEpicPID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
 add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
@@ -72,6 +76,7 @@ add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiGenerateEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiLoadMetadataFromXml    LINK_PUBLIC ${LIBXML2_LIBRARIES})
@@ -87,6 +92,7 @@ install(TARGETS
         msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
+	msiGenerateEpicPID
 	msiGetDataCiteDOI
 	msiRemoveDataCiteMetadata
 	msiLoadMetadataFromXml
