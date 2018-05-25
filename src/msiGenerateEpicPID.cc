@@ -88,21 +88,24 @@ extern "C" {
     std::string url(credentials.get("epic_url"));
     std::string prefix(credentials.get("epic_handle_prefix"));
     std::string key(credentials.get("epic_key"));
-    std::string certificate(credentials.get("epic_cert"));
+    std::string certificate(credentials.get("epic_certificate"));
 
     /* generate UUID. */
     uuid_t uuid;
-    char pid[37];
+    char buffer[37];
     uuid_generate(uuid);
-    uuid_unparse_upper(uuid, pid);
-    fillStrInMsParam(pidOut, pid);
+    uuid_unparse_upper(uuid, buffer);
+
+    /* Obtain PID. */
+    std::string pid(prefix + "/" + buffer);
+    fillStrInMsParam(pidOut, pid.c_str());
 
     /* Get a curl handle. */
     curl = curl_easy_init();
 
     if(curl) {
       /* First set the URL that is about to receive our PUT. */
-      url += "/" + prefix + "/" + pid;
+      url += "/" + pid;
       curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
       /* Set HTTP headers. */
