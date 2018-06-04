@@ -43,6 +43,7 @@ To build from source, the following build-time dependencies must be installed:
 - `boost-locale`
 - `openssl-devel`
 - `libcurl-devel`
+- `libuuid-devel`
 - `libxml2-devel`
 - `libxslt-devel`
 - `jansson-devel`

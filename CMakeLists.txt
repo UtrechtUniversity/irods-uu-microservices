@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.2 EXACT REQUIRED)
+find_package(IRODS 4.2.3 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -118,7 +118,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.2_0.7.5")
+set(CPACK_PACKAGE_VERSION "4.2.3_0.7.5")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")
