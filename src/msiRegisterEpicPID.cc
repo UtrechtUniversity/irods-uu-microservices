@@ -58,7 +58,7 @@ extern "C" {
 
 
   int msiRegisterEpicPID(msParam_t* valueIn,
-			 msParam_t* UUIDIn,
+			 msParam_t* idInOut,
 			 msParam_t* httpCodeOut,
 			 ruleExecInfo_t *rei)
   {
@@ -77,7 +77,7 @@ extern "C" {
 
     /* Parse input paramaters. */
     std::string value       = parseMspForStr(valueIn);
-    std::string uuid        = parseMspForStr(UUIDIn);
+    std::string uuid        = parseMspForStr(idInOut);
 
     /* Minimally verify that these will embed nicely in a payload. */
     if (value.find('"') != std::string::npos) {
@@ -145,6 +145,7 @@ extern "C" {
 	/* 201 Created */
 	if (http_code == 200 || http_code == 201) {
 	  /* Operation successful.*/
+	  fillStrInMsParam(idInOut, pid.c_str());
 	}
 	/* 400 Bad Request */
 	else if (http_code == 400) {
