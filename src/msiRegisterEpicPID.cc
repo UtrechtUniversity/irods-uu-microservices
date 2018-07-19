@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief     iRODS microservice to generate a PID registered with EPIC.
+ * \brief     iRODS microservice to register a PID with EPIC.
  * \author    Felix Croes
  * \copyright Copyright (c) 2018, Utrecht University
  *
@@ -28,7 +28,6 @@
 #include <fstream>
 #include <streambuf>
 #include <curl/curl.h>
-#include <uuid/uuid.h>
 
 static CredentialsStore credentials;
 static size_t length;
@@ -58,8 +57,8 @@ extern "C" {
   }
 
 
-  int msiGenerateEpicPID(msParam_t* valueIn,
-			 msParam_t* pidOut,
+  int msiRegisterEpicPID(msParam_t* valueIn,
+			 msParam_t* UUIDIn,
 			 msParam_t* httpCodeOut,
 			 ruleExecInfo_t *rei)
   {
@@ -78,6 +77,7 @@ extern "C" {
 
     /* Parse input paramaters. */
     std::string value       = parseMspForStr(valueIn);
+    std::string uuid        = parseMspForStr(UUIDIn);
 
     /* Minimally verify that these will embed nicely in a payload. */
     if (value.find('"') != std::string::npos) {
@@ -90,15 +90,8 @@ extern "C" {
     std::string key(credentials.get("epic_key"));
     std::string certificate(credentials.get("epic_certificate"));
 
-    /* generate UUID. */
-    uuid_t uuid;
-    char buffer[37];
-    uuid_generate(uuid);
-    uuid_unparse_upper(uuid, buffer);
-
     /* Obtain PID. */
-    std::string pid(prefix + "/" + buffer);
-    fillStrInMsParam(pidOut, pid.c_str());
+    std::string pid(prefix + "/" + uuid);
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -205,12 +198,12 @@ extern "C" {
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        ruleExecInfo_t*>("msiGenerateEpicPID",
+        ruleExecInfo_t*>("msiRegisterEpicPID",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiGenerateEpicPID));
+                             ruleExecInfo_t*)>(msiRegisterEpicPID));
 
     return msvc;
   }

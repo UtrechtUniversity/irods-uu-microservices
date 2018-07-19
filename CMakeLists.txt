@@ -64,7 +64,8 @@ add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
 add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
-add_library(msiGenerateEpicPID        SHARED src/msiGenerateEpicPID.cc)
+add_library(msiGenerateUUID           SHARED src/msiGenerateUUID.cc)
+add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
 add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
@@ -76,7 +77,8 @@ add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGenerateEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
+target_link_libraries(msiGenerateUUID           LINK_PUBLIC ${UUID_LIBRARIES})
+target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiLoadMetadataFromXml    LINK_PUBLIC ${LIBXML2_LIBRARIES})
@@ -92,7 +94,8 @@ install(TARGETS
         msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
-	msiGenerateEpicPID
+	msiGenerateUUID
+	msiRegisterEpicPID
 	msiGetDataCiteDOI
 	msiRemoveDataCiteMetadata
 	msiLoadMetadataFromXml
@@ -118,7 +121,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.3_0.7.5")
+set(CPACK_PACKAGE_VERSION "4.2.3_0.7.6")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")
