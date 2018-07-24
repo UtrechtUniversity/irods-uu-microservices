@@ -55,6 +55,11 @@ static CredentialsStore credentials;
     CURLcode res;
 
 
+    /* Bail early if the credential store could not be loaded */
+    if (!credentials.isLoaded()) {
+      return SYS_CONFIG_FILE_ERR;
+    }
+
     /* Check input parameters. */
     if (strcmp(doiIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;

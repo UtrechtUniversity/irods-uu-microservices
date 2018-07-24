@@ -26,6 +26,11 @@ public:
 	}
     }
 
+    // check that the store is properly initialized
+    bool isLoaded() {
+	return (store != NULL);
+    }
+
     // get a credential from the store
     const char *get(const char *key) {
 	if (store != NULL) {
