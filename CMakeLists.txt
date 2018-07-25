@@ -60,7 +60,6 @@ include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
-add_library(msiSecureExecCmd          SHARED src/msiSecureExecCmd.cc)
 add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
@@ -91,7 +90,6 @@ install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
 	msiCurlMail
-        msiSecureExecCmd
 	msiRegisterDataCiteDOI
         msiGenerateRandomID
 	msiGenerateUUID
@@ -121,7 +119,7 @@ set(CPACK_GENERATOR "RPM")
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.3_0.7.7")
+set(CPACK_PACKAGE_VERSION "4.2.3_0.7.8")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")
