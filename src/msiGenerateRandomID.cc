@@ -25,7 +25,6 @@
  */
 
 #include "irods_includes.hh"
-#include "reGlobalsExtern.hpp"
 
 #include <string>
 #include <vector>
@@ -35,8 +34,8 @@
 
 extern "C" {
   int msiGenerateRandomID(msParam_t* lengthIn,
-			 msParam_t* randomIdOut,
-			 ruleExecInfo_t *rei)
+		 	  msParam_t* randomIdOut,
+			  ruleExecInfo_t *rei)
   {
     /* Check input parameters. */
     if (strcmp(lengthIn->type, INT_MS_T)) {
@@ -80,7 +79,14 @@ extern "C" {
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
 
-    msvc->add_operation("msiGenerateRandomID", "msiGenerateRandomID");
+    msvc->add_operation<
+        msParam_t*,
+        msParam_t*,
+        ruleExecInfo_t*>("msiGenerateRandomID",
+                         std::function<int(
+                             msParam_t*,
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiGenerateRandomID));
 
     return msvc;
   }

@@ -2,9 +2,7 @@
  * \file
  * \brief     iRODS microservice to convert a string to uppercase.
  * \author    Lazlo Westerhof
- * \copyright Copyright (c) 2017, Utrecht University
- *
- * Copyright (c) 2017, Utrecht University
+ * \copyright Copyright (c) 2017-2018, Utrecht University
  *
  * This file is part of irods-uu-microservices.
  *
@@ -24,30 +22,55 @@
  */
 
 #include "irods_includes.hh"
-#include "reGlobalsExtern.hpp"
 
-#include <boost/locale.hpp>
+#include <boost/locale/encoding_utf.hpp>
 #include <string>
 #include <locale>
 
+using boost::locale::conv::utf_to_utf;
 
+std::locale const utf8("en_US.UTF-8");
+
+/* Convert UTF-8 byte string to wstring. */
+std::wstring toWstring(const std::string& str) {
+  return utf_to_utf<wchar_t>(str.c_str(), str.c_str() + str.size());
+}
+
+/* Convert wstring to UTF-8 byte string. */
+std::string toString(const std::wstring& str) {
+  return utf_to_utf<char>(str.c_str(), str.c_str() + str.size());
+}
+
+/* Converts a UTF-8 encoded string to upper case. */
+std::string toUpper( std::string const& s ) {
+  auto ss = toWstring(s);
+  for (auto& c : ss) {
+    c = std::toupper(c, utf8);
+  }
+  return toString(ss);
+}
+ 
 extern "C" {
   int msiStrToUpper( msParam_t* in, msParam_t* out, ruleExecInfo_t* rei ) {
-        std::string inStr = parseMspForStr( in );
+    std::string inStr = parseMspForStr( in );
 
-        boost::locale::generator gen;
-        std::locale utf8(gen("en_US.UTF-8"));
-        auto outStr = boost::locale::to_upper(inStr, utf8);
+    std::string outStr = toUpper(inStr);
 
-        fillStrInMsParam(out, outStr.c_str());
+    fillStrInMsParam(out, outStr.c_str());
 
-        return 0;
+    return 0;
   }
 
   irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
-
-    msvc->add_operation("msiStrToUpper", "msiStrToUpper");
+    msvc->add_operation<
+        msParam_t*,
+        msParam_t*,
+        ruleExecInfo_t*>("msiStrToUpper",
+                         std::function<int(
+                             msParam_t*,
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiStrToUpper));
 
     return msvc;
   }

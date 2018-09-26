@@ -12,14 +12,20 @@
 #include <libxml/xpathInternals.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/uri.h>
-#include "apiHeaderAll.hpp"
-#include "msParam.hpp"
-#include "reGlobalsExtern.hpp"
 #include "irods_ms_plugin.hpp"
-#include "irods_server_api_call.hpp"
-#include "microservice.hpp"
 #include "objMetaOpr.hpp"
 #include "miscUtil.h"
+#include "rcMisc.h"
+#include "rsObjStat.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsModAVUMetadata.hpp"
+
+#include "irods_error.hpp"
+#include "irods_ms_plugin.hpp"
+
+
 
 
 
@@ -317,7 +323,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlParam, ruleExecInfo_t
 			modAVUMetadataInp.arg0 = add;
 
 			/* Use target object if one was provided, otherwise look for it in the XML doc */
-			if (myTargetObjInp->objPath != NULL && strlen(myTargetObjInp->objPath) > 0)
+			if (strlen(myTargetObjInp->objPath) > 0)
 			{
 				modAVUMetadataInp.arg2 = myTargetObjInp->objPath;
 			}
@@ -377,7 +383,15 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 irods::ms_table_entry * plugin_factory() {
     irods::ms_table_entry* msvc = new irods::ms_table_entry(2);
-    msvc->add_operation("msiLoadMetadataFromXml","msiLoadMetadataFromXml");
+    msvc->add_operation<
+        msParam_t*,
+        msParam_t*,
+        ruleExecInfo_t*>("msiLoadMetadataFromXml",
+                         std::function<int(
+                             msParam_t*,
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiLoadMetadataFromXml));
+
     return msvc;
 }
 

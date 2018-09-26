@@ -25,7 +25,7 @@
  */
 
 #include "irods_includes.hh"
-#include "reGlobalsExtern.hpp"
+#include "CredentialsStore.hh"
 
 #include <string>
 #include <fstream>
@@ -34,6 +34,8 @@
 
 
 namespace DataCite {
+
+static CredentialsStore credentials;
 
   /* Curl requires a static callback function to write the output of a GET request to.
    * This callback simply puts the result in a std::string at *userp */
@@ -44,10 +46,8 @@ namespace DataCite {
   }
 
 
-  int getDOI(msParam_t* urlIn,
-             msParam_t* usernameIn,
-             msParam_t* passwordIn,
-             msParam_t* resultOut,
+  int getDOI(msParam_t* doiIn,
+	     msParam_t* resultOut,
              msParam_t* httpCodeOut,
              ruleExecInfo_t *rei)
   {
@@ -55,21 +55,24 @@ namespace DataCite {
     CURLcode res;
 
 
+    /* Bail early if the credential store could not be loaded */
+    if (!credentials.isLoaded()) {
+      return SYS_CONFIG_FILE_ERR;
+    }
+
     /* Check input parameters. */
-    if (strcmp(urlIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(usernameIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-    if (strcmp(passwordIn->type, STR_MS_T)) {
+    if (strcmp(doiIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string url      = parseMspForStr(urlIn);
-    std::string username = parseMspForStr(usernameIn);
-    std::string password = parseMspForStr(passwordIn);
+    std::string doi      = parseMspForStr(doiIn);
+
+    /* obtain parameters from the credentials store */
+    std::string url(credentials.get("datacite_url"));
+    url += "/doi/" + doi;
+    std::string username(credentials.get("datacite_username"));
+    std::string password(credentials.get("datacite_password"));
 
     /* declare result buffer for result */ 
     std::string resultBuffer;
@@ -156,21 +159,27 @@ namespace DataCite {
 
 extern "C" {
 
-  int msiGetDataCiteDOI(msParam_t* urlIn,
-                        msParam_t* usernameIn,
-                        msParam_t* passwordIn,
-                        msParam_t* resultOut,
+  int msiGetDataCiteDOI(msParam_t* doiIn,
+			msParam_t* resultOut,
                         msParam_t* httpCodeOut,
 		        ruleExecInfo_t *rei) {
-       return DataCite::getDOI(urlIn, usernameIn, passwordIn, resultOut, httpCodeOut, rei);
+       return DataCite::getDOI(doiIn, resultOut, httpCodeOut, rei);
   }
 
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(5);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
-    msvc->add_operation("msiGetDataCiteDOI", "msiGetDataCiteDOI");
-
+    msvc->add_operation<
+      msParam_t*,
+      msParam_t*,
+      msParam_t*,
+      ruleExecInfo_t*>("msiGetDataCiteDOI",
+		       std::function<int(
+					 msParam_t*,
+					 msParam_t*,
+					 msParam_t*,
+					 ruleExecInfo_t*)>(msiGetDataCiteDOI));
     return msvc;
   }
 }

@@ -11,15 +11,14 @@
 #include <libexslt/exslt.h>
 #include <libexslt/exsltconfig.h>
 #include <iostream>
-#include "apiHeaderAll.hpp"
-#include "msParam.hpp"
-#include "reGlobalsExtern.hpp"
-#include "irods_ms_plugin.hpp"
-#include "irods_server_api_call.hpp"
-#include "microservice.hpp"
-#include "objMetaOpr.hpp"
-#include "miscUtil.h"
 
+#include "rcMisc.h"
+#include "rsObjStat.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjClose.hpp"
+#include "irods_error.hpp"
+#include "irods_ms_plugin.hpp"
 
 extern int xmlLoadExtDtdDefaultValue;
 
@@ -247,7 +246,7 @@ extern "C" {
 			/* copy the result string into an output buffer */
 			mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
 			mybuf->buf = (void *)outStr;
-			mybuf->len = strlen(outStr);
+			mybuf->len = (int) strlen(outStr);
 
 
 			/* send results out to msParamOut */
@@ -261,12 +260,19 @@ extern "C" {
 	irods::ms_table_entry* plugin_factory() {
 		irods::ms_table_entry* msvc = new irods::ms_table_entry(3);
 
-		msvc->add_operation( "msiXsltApply", "msiXsltApply" );
+		msvc->add_operation<
+		  msParam_t*,
+		  msParam_t*,
+	          msParam_t*,
+		  ruleExecInfo_t*>("msiXsltApply",
+				   std::function<int(
+						     msParam_t*,
+						     msParam_t*,
+						     msParam_t*,
+						     ruleExecInfo_t*)>(msiXsltApply));
 
 		return msvc;
 	}
-
-
 
 } // extern "C"
 

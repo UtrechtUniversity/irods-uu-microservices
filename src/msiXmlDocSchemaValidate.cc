@@ -10,36 +10,35 @@
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/uri.h>
-#include "apiHeaderAll.hpp"
-#include "msParam.hpp"
-#include "reGlobalsExtern.hpp"
+
+#include "irods_error.hpp"
 #include "irods_ms_plugin.hpp"
-#include "irods_server_api_call.hpp"
-#include "microservice.hpp"
-#include "objMetaOpr.hpp"
-#include "miscUtil.h"
 
-
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsObjStat.hpp"
+#include "rcMisc.h"
 
 
 extern "C" {
 
 
-/* custom handler to catch XML validation errors and print them to a buffer */
-static int 
-myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
-{
-	va_list ap;
-	char tmpStr[MAX_NAME_LEN];
-	int written;
+    /* custom handler to catch XML validation errors and print them to a buffer */
+    static int 
+    myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
+    {
+        va_list ap;
+        char tmpStr[MAX_NAME_LEN];
+        int written;
 
-	va_start(ap, errMsg);
-	written = vsnprintf(tmpStr, MAX_NAME_LEN, errMsg, ap);
-	va_end(ap);
+        va_start(ap, errMsg);
+        written = vsnprintf(tmpStr, MAX_NAME_LEN, errMsg, ap);
+        va_end(ap);
 
-	appendToByteBuf(errBuf, tmpStr);
-	return (written);
-}
+        appendToByteBuf(errBuf, tmpStr);
+        return (written);
+    }
 
 
 /**
@@ -360,11 +359,20 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 }
 
 
-irods::ms_table_entry * plugin_factory() {
-    irods::ms_table_entry* msvc = new irods::ms_table_entry(3);
-    msvc->add_operation("msiXmlDocSchemaValidate","msiXmlDocSchemaValidate");
-    return msvc;
-}
+    irods::ms_table_entry * plugin_factory() {
+        irods::ms_table_entry* msvc = new irods::ms_table_entry(3);
+        msvc->add_operation<
+            msParam_t*,
+            msParam_t*,
+            msParam_t*,
+            ruleExecInfo_t*>("msiXmlDocSchemaValidate",
+                             std::function<int(
+                                 msParam_t*,
+                                 msParam_t*,
+                                 msParam_t*,
+                                 ruleExecInfo_t*)>(msiXmlDocSchemaValidate));
+        return msvc;
+    }
 
 } // extern "C"
 
