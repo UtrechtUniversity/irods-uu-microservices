@@ -2,6 +2,7 @@
  * \file
  * \brief     iRODS microservice to register a PID with EPIC.
  * \author    Felix Croes
+ * \author    Lazlo Westerhof
  * \copyright Copyright (c) 2018, Utrecht University
  *
  * This file is part of irods-uu-microservices.
@@ -27,13 +28,37 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <sstream>
+#include <iomanip>
 #include <curl/curl.h>
 
 static CredentialsStore credentials;
 static size_t length;
 
-extern "C" {
+std::string escapeJson(const std::string &s) {
+    std::ostringstream o;
+    for (auto c = s.cbegin(); c != s.cend(); c++) {
+        switch (*c) {
+        case '"': o << "\\\""; break;
+        case '\\': o << "\\\\"; break;
+        case '\b': o << "\\b"; break;
+        case '\f': o << "\\f"; break;
+        case '\n': o << "\\n"; break;
+        case '\r': o << "\\r"; break;
+        case '\t': o << "\\t"; break;
+        default:
+            if ('\x00' <= *c && *c <= '\x1f') {
+                o << "\\u"
+                  << std::hex << std::setw(4) << std::setfill('0') << (int)*c;
+            } else {
+                o << *c;
+            }
+        }
+    }
+    return o.str();
+}
 
+extern "C" {
   /* Curl requires a static callback function to read the input of a PUT request from.
    * This callback simply copies the payload. */
   static size_t readCallback(void *buffer, size_t size, size_t nmemb, void *userp)
@@ -84,11 +109,6 @@ extern "C" {
     std::string value       = parseMspForStr(valueIn);
     std::string uuid        = parseMspForStr(idInOut);
 
-    /* Minimally verify that these will embed nicely in a payload. */
-    if (value.find('"') != std::string::npos) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
-
     /* Retriece parameters from the credentials store. */
     std::string url(credentials.get("epic_url"));
     std::string prefix(credentials.get("epic_handle_prefix"));
@@ -118,7 +138,7 @@ extern "C" {
 
       /* Create payload. */
       std::string payload = "{\"values\":[{\"index\":1,\"type\":\"URL\",\"data\":{\"format\":\"string\",\"value\":\"" +
-			    value +
+			    escapeJson(value) +
 			    "\"}},{\"index\":100,\"type\":\"HS_ADMIN\",\"data\":{\"format\":\"admin\",\"value\":{\"handle\":\"0.NA/" +
 			    prefix +
 			    "\",\"index\":200,\"permissions\":\"011111110011\"}}}]}";
@@ -127,7 +147,7 @@ extern "C" {
       length = payload.length();
       curl_easy_setopt(curl, CURLOPT_INFILESIZE, (long) length);
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard);
-	
+
       /* Don't verify the server certificate. */
       curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
       curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
