@@ -149,6 +149,11 @@ extern "C" {
 	  rodsLog(LOG_ERROR,
 		   "msiRegisterDataCiteDOI: Not including content type in the header");
 	}
+	/* 422 Unprocessable Entity */
+	else if (http_code == 422) {
+	  rodsLog(LOG_ERROR,
+		   "msiRegisterDataCiteDOI: Metadata failed validation against the DataCite Schema");
+	}
         /* 500 Internal Server Error */
         else if (http_code == 500) {
 	  rodsLog(LOG_ERROR,
