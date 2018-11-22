@@ -31,6 +31,11 @@ public:
 	return (store != NULL);
     }
 
+    // check that the store has a credential
+    bool has(const char *key) {
+	return (store != NULL && json_object_get(store, key) != NULL);
+    }
+
     // get a credential from the store
     const char *get(const char *key) {
 	if (store != NULL) {

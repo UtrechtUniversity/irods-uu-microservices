@@ -109,7 +109,13 @@ extern "C" {
     std::string value       = parseMspForStr(valueIn);
     std::string uuid        = parseMspForStr(idInOut);
 
-    /* Retriece parameters from the credentials store. */
+    /* Bail if there is no EPIC server configured. */
+    if (!credentials.has("epic_url")) {
+      fillStrInMsParam(httpCodeOut, "0");
+      return 0;
+    }
+
+    /* Retrieve parameters from the credentials store. */
     std::string url(credentials.get("epic_url"));
     std::string prefix(credentials.get("epic_handle_prefix"));
     std::string key(credentials.get("epic_key"));
