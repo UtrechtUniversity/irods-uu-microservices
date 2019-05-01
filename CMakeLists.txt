@@ -12,6 +12,8 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang3.8-0
 
+set(UU_RELEASE_VERSION "0.8.0")
+
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
 project(uu-msis CXX)
@@ -72,6 +74,8 @@ add_library(msiXmlDocSchemaValidate   SHARED src/msiXmlDocSchemaValidate.cc)
 add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
+add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
+add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
 target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
@@ -85,6 +89,8 @@ target_link_libraries(msiXmlDocSchemaValidate   LINK_PUBLIC ${LIBXML2_LIBRARIES}
 target_link_libraries(msiXsltApply              LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
         msiSetUpperCaseWhereQuery
@@ -101,6 +107,8 @@ install(TARGETS
 	msiXsltApply
 	msi_json_arrayops
 	msi_json_objops
+        msi_add_avu
+        msi_rmw_avu	
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
@@ -114,12 +122,23 @@ install(TARGETS
 
 set(CPACK_MONOLITHIC_INSTALL 1)
 set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
-#set(CPACK_GENERATOR "DEB")
-set(CPACK_GENERATOR "RPM")
+
+# Run custom CMake module to detect OS family
+include(${CMAKE_MODULE_PATH}/DetectOS.cmake)
+message(STATUS "Found Linux distro ${DETECTED_OS}")
+
+# Determine which type of package should be generated
+if(DETECTED_OS MATCHES "^(Ubuntu|Debian)$")
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}-${UU_RELEASE_VERSION}")
+elseif(DETECTED_OS MATCHES "^(CentOS|RedHatCompatible)$")
+    set(CPACK_GENERATOR "RPM")
+    set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}_${UU_RELEASE_VERSION}")
+endif()
+
 set(CPACK_PACKAGE_NAME "irods-uu-microservices")
 set(CPACK_PACKAGE_VENDOR "Utrecht University <fbyoda@uu.nl>")
 set(CPACK_PACKAGE_CONTACT "Utrecht University <fbyoda@uu.nl>")
-set(CPACK_PACKAGE_VERSION "4.2.5_0.7.11")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package/description.txt")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices developed or modified by Utrecht University.")

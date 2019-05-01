@@ -1,0 +1,17 @@
+# CMake module that will detect which Linux distro we're building on
+
+if(EXISTS "/etc/centos-release")
+    set(DETECTED_OS "CentOS")
+elseif(EXISTS "/etc/redhat-release")
+    set(DETECTED_OS "RedHatCompatible")
+elseif(EXISTS "/etc/SuSE-release")
+    set(DETECTED_OS "SuSE")
+elseif(EXISTS "/etc/arch-release")
+    set(DETECTED_OS "ArchLinux")
+elseif(EXISTS "/etc/lsb-release")
+    set(DETECTED_OS "Ubuntu")
+elseif(EXISTS "/etc/debian_version")
+    set(DETECTED_OS "Debian")
+elseif(EXISTS "/etc/sw_vers")
+    set(DETECTED_OS "MacOSX")
+endif()
