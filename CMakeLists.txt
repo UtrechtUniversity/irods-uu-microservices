@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.6 EXACT REQUIRED)
+find_package(IRODS 4.2.7 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang3.8-0
 
-set(UU_RELEASE_VERSION "0.8.0")
+set(UU_RELEASE_VERSION "0.8.1")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
@@ -64,8 +64,6 @@ add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
-add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
-add_library(msiGenerateUUID           SHARED src/msiGenerateUUID.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
@@ -80,7 +78,6 @@ add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGenerateUUID           LINK_PUBLIC ${UUID_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
@@ -95,18 +92,16 @@ target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
-	msiCurlMail
-	msiRegisterDataCiteDOI
-        msiGenerateRandomID
-	msiGenerateUUID
-	msiRegisterEpicPID
-	msiGetDataCiteDOI
-	msiRemoveDataCiteMetadata
-	msiLoadMetadataFromXml
-	msiXmlDocSchemaValidate
-	msiXsltApply
-	msi_json_arrayops
-	msi_json_objops
+        msiCurlMail
+        msiRegisterDataCiteDOI
+        msiRegisterEpicPID
+        msiGetDataCiteDOI
+        msiRemoveDataCiteMetadata
+        msiLoadMetadataFromXml
+        msiXmlDocSchemaValidate
+        msiXsltApply
+        msi_json_arrayops
+        msi_json_objops
         msi_add_avu
         msi_rmw_avu
         DESTINATION
