@@ -9,12 +9,6 @@ Developed at Utrecht University:
   * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
   * msiGenerateRandomID: Generate a Random ID to use as basis for a new DOI
 
-Forward ported from iRODS 3:
-  * msiLoadMetadataFromXml:
-     load metadata from an xml file. Modified to accept both irods data objects as string buffers. Also skips AVU's exceeding the iRODS byte limit
-  * msiXsltApply: apply a XSLT to and XML. Modified to handle invalid input without crashing and added exslt support
-  * msiXmlDocSchemaValidate: Validate an XML against an XSD
-
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
   * msi\_json\_arrayops: get, add and set values in a json array. modified to handle arrays of arrays
@@ -39,20 +33,17 @@ To build from source, the following build-time dependencies must be installed:
 - `gcc-c++`
 - `irods-devel`
 - `irods-externals-cmake3.5.2-0`
-- `irods-externals-clang3.8-0`
+- `irods-externals-clang6.0-0`
 - `boost-devel`
 - `boost-locale`
 - `openssl-devel`
 - `libcurl-devel`
 - `libuuid-devel`
-- `libxml2-devel`
-- `libxslt-devel`
 - `jansson-devel`
-- `libuuid-devel`
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 boost-devel boost-locale openssl-devel libcurl-devel libxml2-devel libxslt-devel jansson-devel libuuid-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:

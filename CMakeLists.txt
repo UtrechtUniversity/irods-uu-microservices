@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.6 EXACT REQUIRED)
+find_package(IRODS 4.2.8 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -10,9 +10,9 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # The following packages need to be installed to build the uu microservices:
 #
 # irods-externals-clang-runtime3.8-0
-# irods-externals-clang3.8-0
+# irods-externals-clang6.0-0
 
-set(UU_RELEASE_VERSION "0.8.0")
+set(UU_RELEASE_VERSION "0.8.2")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
@@ -46,12 +46,6 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 find_package(CURL REQUIRED)
 include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 
-find_package(LibXml2 REQUIRED)
-include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
-
-find_package(LibXslt REQUIRED)
-include_directories(SYSTEM ${LIBXSLT_INCLUDE_DIR})
-
 find_package(Jansson REQUIRED)
 include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
@@ -62,31 +56,20 @@ include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
-add_library(msiCurlMail               SHARED src/msiCurlMail.cc)
 add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
-add_library(msiGenerateRandomID       SHARED src/msiGenerateRandomID.cc)
-add_library(msiGenerateUUID           SHARED src/msiGenerateUUID.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
 add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
 add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
-add_library(msiLoadMetadataFromXml    SHARED src/msiLoadMetadataFromXml.cc)
-add_library(msiXmlDocSchemaValidate   SHARED src/msiXmlDocSchemaValidate.cc)
-add_library(msiXsltApply              SHARED src/msiXsltApply.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
-target_link_libraries(msiCurlMail               LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGenerateUUID           LINK_PUBLIC ${UUID_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiLoadMetadataFromXml    LINK_PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(msiXmlDocSchemaValidate   LINK_PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(msiXsltApply              LINK_PUBLIC ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${LIBXSLT_EXSLT_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
@@ -95,18 +78,12 @@ target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
-	msiCurlMail
-	msiRegisterDataCiteDOI
-        msiGenerateRandomID
-	msiGenerateUUID
-	msiRegisterEpicPID
-	msiGetDataCiteDOI
-	msiRemoveDataCiteMetadata
-	msiLoadMetadataFromXml
-	msiXmlDocSchemaValidate
-	msiXsltApply
-	msi_json_arrayops
-	msi_json_objops
+        msiRegisterDataCiteDOI
+        msiRegisterEpicPID
+        msiGetDataCiteDOI
+        msiRemoveDataCiteMetadata
+        msi_json_arrayops
+        msi_json_objops
         msi_add_avu
         msi_rmw_avu
         DESTINATION
