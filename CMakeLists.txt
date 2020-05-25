@@ -78,14 +78,10 @@ target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
-        msiCurlMail
         msiRegisterDataCiteDOI
         msiRegisterEpicPID
         msiGetDataCiteDOI
         msiRemoveDataCiteMetadata
-        msiLoadMetadataFromXml
-        msiXmlDocSchemaValidate
-        msiXsltApply
         msi_json_arrayops
         msi_json_objops
         msi_add_avu
