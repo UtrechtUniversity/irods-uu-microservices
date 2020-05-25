@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.7 EXACT REQUIRED)
+find_package(IRODS 4.2.8 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang3.8-0
 
-set(UU_RELEASE_VERSION "0.8.1")
+set(UU_RELEASE_VERSION "0.8.2")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
