@@ -10,7 +10,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # The following packages need to be installed to build the uu microservices:
 #
 # irods-externals-clang-runtime3.8-0
-# irods-externals-clang3.8-0
+# irods-externals-clang6.0-0
 
 set(UU_RELEASE_VERSION "0.8.2")
 
