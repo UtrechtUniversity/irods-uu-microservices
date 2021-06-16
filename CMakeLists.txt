@@ -91,15 +91,19 @@ install(TARGETS
 set(CPACK_MONOLITHIC_INSTALL 1)
 set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
 
-# Run custom CMake module to detect OS family
-include(${CMAKE_MODULE_PATH}/DetectOS.cmake)
-message(STATUS "Found Linux distro ${DETECTED_OS}")
+execute_process(
+  COMMAND "python" "-c" "from __future__ import print_function; import platform; print(platform.linux_distribution()[0].split()[0].strip().lower(), end='')"
+  RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME
+  OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_NAME
+)
+
+message(STATUS "Found Linux distro ${IRODS_LINUX_DISTRIBUTION_NAME}")
 
 # Determine which type of package should be generated
-if(DETECTED_OS MATCHES "^(Ubuntu|Debian)$")
+if(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(ubuntu|debian)$")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}-${UU_RELEASE_VERSION}")
-elseif(DETECTED_OS MATCHES "^(CentOS|RedHatCompatible)$")
+elseif(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(centos)$")
     set(CPACK_GENERATOR "RPM")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}_${UU_RELEASE_VERSION}")
 endif()
