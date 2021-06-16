@@ -18,7 +18,7 @@ set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
 project(uu-msis CXX)
 
-add_compile_options(-std=c++14
+add_compile_options(-std=c++17
                     -Os
                     -fPIC
                     -DRODS_SERVER
@@ -38,7 +38,7 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
-set(BOOST_ROOT "/opt/irods-externals/boost1.60.0-0")
+set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
 find_package(Boost REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
