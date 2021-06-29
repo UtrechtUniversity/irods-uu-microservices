@@ -49,9 +49,6 @@ include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 find_package(Jansson REQUIRED)
 include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
-find_package(uuid REQUIRED)
-include_directories(SYSTEM ${UUID_INCLUDE_DIR})
-
 include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
@@ -67,7 +64,7 @@ add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
+target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
