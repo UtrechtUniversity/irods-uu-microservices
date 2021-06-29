@@ -49,12 +49,18 @@ include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
+add_library(msiPutEpicPID        SHARED src/msiPutEpicPID.cc)
+add_library(msiGetEpicPID        SHARED src/msiGetEpicPID.cc)
+add_library(msiDeleteEpicPID     SHARED src/msiDeleteEpicPID.cc)
 
-target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiPutEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiGetEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiDeleteEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 
 install(TARGETS
-        msiRegisterEpicPID
+        msiPutEpicPID
+        msiGetEpicPID
+        msiDeleteEpicPID
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 

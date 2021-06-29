@@ -82,10 +82,11 @@ extern "C" {
   }
 
 
-  int msiRegisterEpicPID(msParam_t* valueIn,
-			 msParam_t* idInOut,
-			 msParam_t* httpCodeOut,
-			 ruleExecInfo_t *rei)
+  int msiPutEpicPID(msParam_t* idInOut,
+		    msParam_t* valueIn,
+		    msParam_t* metadataIn,
+		    msParam_t* httpCodeOut,
+		    ruleExecInfo_t *rei)
   {
     CURL *curl;
     CURLcode res;
@@ -101,13 +102,20 @@ extern "C" {
     }
 
     /* Check input parameters. */
+    if (strcmp(idInOut->type, STR_MS_T)) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
     if (strcmp(valueIn->type, STR_MS_T)) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    if (strcmp(metadataIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string value       = parseMspForStr(valueIn);
-    std::string uuid        = parseMspForStr(idInOut);
+    std::string id        = parseMspForStr(idInOut);
+    std::string value     = parseMspForStr(valueIn);
+    std::string metadata  = parseMspForStr(metadataIn);
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {
@@ -122,7 +130,7 @@ extern "C" {
     std::string certificate(credentials.get("epic_certificate"));
 
     /* Obtain PID. */
-    std::string pid(prefix + "/" + uuid);
+    std::string pid(prefix + "/" + id);
 
     /* Get a curl handle. */
     curl = curl_easy_init();
@@ -145,6 +153,8 @@ extern "C" {
       /* Create payload. */
       std::string payload = "{\"values\":[{\"index\":1,\"type\":\"URL\",\"data\":{\"format\":\"string\",\"value\":\"" +
 			    escapeJson(value) +
+			    "\"}},{\"index\":2,\"type\":\"IRODS/METADATA\",\"data\":{\"format\":\"string\",\"value\":\"" +
+			    escapeJson(metadata) +
 			    "\"}},{\"index\":100,\"type\":\"HS_ADMIN\",\"data\":{\"format\":\"admin\",\"value\":{\"handle\":\"0.NA/" +
 			    prefix +
 			    "\",\"index\":200,\"permissions\":\"011111110011\"}}}]}";
@@ -166,7 +176,7 @@ extern "C" {
 
       /* Check for errors. */
       if(res != CURLE_OK) {
-	rodsLog(LOG_ERROR, "msiRegisterEpicPID: curl error: %s", curl_easy_strerror(res));
+	rodsLog(LOG_ERROR, "msiPutEpicPID: curl error: %s", curl_easy_strerror(res));
 	return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
 	long http_code = 0;
@@ -181,36 +191,36 @@ extern "C" {
 	/* 400 Bad Request */
 	else if (http_code == 400) {
 	  rodsLog(LOG_ERROR,
-		  "msiRegisterEpicPID: Invalid handle");
+		  "msiPutEpicPID: Invalid handle");
 	}
 	/* 401 Unauthorized */
 	else if (http_code == 401) {
 	  rodsLog( LOG_ERROR,
-		   "msiRegisterEpicPID: Authentication needed");
+		   "msiPutEpicPID: Authentication needed");
 	}
 	/* 403 Forbidden */
 	else if (http_code == 403) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterEpicPID: Permission denied");
+		   "msiPutEpicPID: Permission denied");
 	}
 	/* 404 Not Found */
 	else if (http_code == 404) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterEpicPID: Handle not found");
+		   "msiPutEpicPID: Handle not found");
 	}
 	/* 409 Conflict */
 	else if (http_code == 409) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterEpicPID: Handle or value already exists");
+		   "msiPutEpicPID: Handle or value already exists");
 	}
         /* 500 Internal Server Error */
         else if (http_code == 500) {
 	  rodsLog(LOG_ERROR,
-		   "msiRegisterEpicPID: Server internal error");
+		   "msiPutEpicPID: Server internal error");
         }
 	else {
 	  rodsLog(LOG_ERROR,
-		  "msiRegisterEpicPID: HTTP error code: %lu", http_code);
+		  "msiPutEpicPID: HTTP error code: %lu", http_code);
   	}
       }
 
@@ -224,18 +234,20 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        ruleExecInfo_t*>("msiRegisterEpicPID",
+        msParam_t*,
+        ruleExecInfo_t*>("msiPutEpicPID",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiRegisterEpicPID));
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiPutEpicPID));
 
     return msvc;
   }
