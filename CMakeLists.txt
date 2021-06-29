@@ -49,38 +49,12 @@ include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
-add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
-add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
-add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
-add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
-add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
-add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
-add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
-add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
-target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
-        msiSetUpperCaseWhereQuery
-        msiStrToUpper
-        msiRegisterDataCiteDOI
         msiRegisterEpicPID
-        msiGetDataCiteDOI
-        msiRemoveDataCiteMetadata
-        msi_json_arrayops
-        msi_json_objops
-        msi_add_avu
-        msi_rmw_avu
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 

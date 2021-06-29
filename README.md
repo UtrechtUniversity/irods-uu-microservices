@@ -3,22 +3,7 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
-  * msiGetDataCiteDOI: API call to retrieve record of a DOI from DataCite
-  * msiRegisterDataCiteDOI: API call to register a DOI with metadata or to mint a DOI
-  * msiStrToUpper: Returns an uppercase string
-  * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
-  * msiGenerateRandomID: Generate a Random ID to use as basis for a new DOI
-
-Developed at Donders Institute:
-  * msi\_json\_objops: get, add and set values in a json object
-  * msi\_json\_arrayops: get, add and set values in a json array. modified to handle arrays of arrays
-
-  The msi\_json\_arrayops and msi\_json\_objops microservices are derived from
-  ork from the Donders Institute. The license in DONDERS-LICENSE applies
-
-Developed at Maastricht University:
-  * msi\_add\_avu: Microservice to add AVU
-  * msi\_rmw\_avu: Microservice to remove AVU
+  * msiRegisterEpicPID: API call to register an Epic PID
 
 ## Installation
 iRODS UU microservices can be installed using the packages provided on the
@@ -38,7 +23,6 @@ To build from source, the following build-time dependencies must be installed:
 - `boost-locale`
 - `openssl-devel`
 - `libcurl-devel`
-- `libuuid-devel`
 - `jansson-devel`
 - `rpmdevtools` (if you are creating an RPM)
 
