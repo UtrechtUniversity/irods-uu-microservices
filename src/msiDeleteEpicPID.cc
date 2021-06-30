@@ -66,7 +66,7 @@ extern "C" {
   }
 
 
-  int msiDeleteEpicPID(msParam_t* idIn,
+  int msiDeleteEpicPID(msParam_t* handleIn,
 		       msParam_t* httpCodeOut,
 		       ruleExecInfo_t *rei)
   {
@@ -84,12 +84,12 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(idIn->type, STR_MS_T)) {
+    if (strcmp(handleIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string id        = parseMspForStr(idIn);
+    std::string handle = parseMspForStr(handleIn);
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {
@@ -103,15 +103,12 @@ extern "C" {
     std::string key(credentials.get("epic_key"));
     std::string certificate(credentials.get("epic_certificate"));
 
-    /* Obtain PID. */
-    std::string pid(prefix + "/" + id);
-
     /* Get a curl handle. */
     curl = curl_easy_init();
 
     if(curl) {
       /* First set the URL that is about to receive our DELETE. */
-      url += "/" + pid;
+      url += "/" + handle;
       curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
       /* Set HTTP headers. */
