@@ -2,8 +2,8 @@
 Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
-Developed at Utrecht University:
-  * msiRegisterEpicPID: API call to register an Epic PID
+Originally developed at Utrecht University:
+  * msiPutEpicPID: API call to register an Epic PID
 
 ## Installation
 iRODS UU microservices can be installed using the packages provided on the
@@ -15,19 +15,15 @@ You can also build the microservices yourself, see [Building from source](#build
 To build from source, the following build-time dependencies must be installed:
 
 - `make`
-- `gcc-c++`
-- `irods-devel`
-- `irods-externals-cmake3.5.2-0`
-- `irods-externals-clang6.0-0`
-- `boost-devel`
-- `boost-locale`
-- `openssl-devel`
-- `libcurl-devel`
-- `jansson-devel`
-- `rpmdevtools` (if you are creating an RPM)
+- `irods-dev`
+- `irods-externals-cmake3.11.4`
+- `irods-externals-clang6.0`
+- `libboost-dev`
+- `libcurl-openssl-dev`
+- `libjansson-dev`
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel rpmdevtools
+apt-get install irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev
 ```
 
 Follow these instructions to build from source:
@@ -41,7 +37,7 @@ Follow these instructions to build from source:
 
 - Compile the project
 ```bash
-export PATH=/opt/irods-externals/cmake3.5.2-0/bin:$PATH
+export PATH=/opt/irods-externals/cmake3.11.4-0/bin:$PATH
 cmake .
 make
 ```
