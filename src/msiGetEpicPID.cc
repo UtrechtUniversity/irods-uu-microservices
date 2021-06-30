@@ -117,7 +117,20 @@ extern "C" {
 	/* 201 Created */
 	if (http_code == 200 || http_code == 201) {
 	  /* Operation successful.*/
-	  fillStrInMsParam(valueOut, payload.c_str());
+	  json_t *result, *json;
+	  json_error_t error;
+
+	  result = json_loads(payload.c_str(), 0, &error);
+	  if (result == NULL) {
+	    rodsLog(LOG_ERROR, "msiGetEpicPID: Invalid JSON");
+	  } else {
+	    json = json_object_get(result, "values");
+	    json = json_array_get(json, 0);
+	    json = json_object_get(json, "data");
+	    json = json_object_get(json, "value");
+	    fillStrInMsParam(valueOut, json_string_value(json));
+	    json_decref(result);
+	  }
 	}
 	/* 400 Bad Request */
 	else if (http_code == 400) {
