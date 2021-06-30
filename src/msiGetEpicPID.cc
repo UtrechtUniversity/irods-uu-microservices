@@ -45,9 +45,8 @@ extern "C" {
   }
 
 
-  int msiGetEpicPID(msParam_t* idInOut,
+  int msiGetEpicPID(msParam_t* handleIn,
 		    msParam_t* valueOut,
-		    msParam_t* metadataOut,
 		    msParam_t* httpCodeOut,
 		    ruleExecInfo_t *rei)
   {
@@ -65,12 +64,12 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(idInOut->type, STR_MS_T)) {
+    if (strcmp(handleIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string id        = parseMspForStr(idInOut);
+    std::string handle = parseMspForStr(handleIn);
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {
@@ -84,21 +83,19 @@ extern "C" {
     std::string key(credentials.get("epic_key"));
     std::string certificate(credentials.get("epic_certificate"));
 
-    /* Obtain PID. */
-    std::string pid(prefix + "/" + id);
-
     /* Get a curl handle. */
     curl = curl_easy_init();
 
     if(curl) {
       /* First set the URL that is about to receive our GET. */
-      url += "/" + pid;
+      url += "/" + handle;
       curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
       /* Specify the key and certificate. */
       curl_easy_setopt(curl, CURLOPT_SSLKEY, key.c_str());
       curl_easy_setopt(curl, CURLOPT_SSLCERT, certificate.c_str());
 
+      payload = "";
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, receive);
 
       /* Don't verify the server certificate. */
@@ -120,9 +117,7 @@ extern "C" {
 	/* 201 Created */
 	if (http_code == 200 || http_code == 201) {
 	  /* Operation successful.*/
-	  fillStrInMsParam(idInOut, pid.c_str());
-	  fillStrInMsParam(valueOut, "value");
-	  fillStrInMsParam(metadataOut, "metadata");
+	  fillStrInMsParam(valueOut, payload.c_str());
 	}
 	/* 400 Bad Request */
 	else if (http_code == 400) {
@@ -170,16 +165,14 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiGetEpicPID",
                          std::function<int(
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
