@@ -84,7 +84,6 @@ extern "C" {
 
   int msiPutEpicPID(msParam_t* idInOut,
 		    msParam_t* valueIn,
-		    msParam_t* metadataIn,
 		    msParam_t* httpCodeOut,
 		    ruleExecInfo_t *rei)
   {
@@ -108,14 +107,10 @@ extern "C" {
     if (strcmp(valueIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(metadataIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
-    }
 
     /* Parse input paramaters. */
     std::string id        = parseMspForStr(idInOut);
     std::string value     = parseMspForStr(valueIn);
-    std::string metadata  = parseMspForStr(metadataIn);
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {
@@ -153,8 +148,6 @@ extern "C" {
       /* Create payload. */
       std::string payload = "{\"values\":[{\"index\":1,\"type\":\"URL\",\"data\":{\"format\":\"string\",\"value\":\"" +
 			    escapeJson(value) +
-			    "\"}},{\"index\":2,\"type\":\"IRODS/METADATA\",\"data\":{\"format\":\"string\",\"value\":\"" +
-			    escapeJson(metadata) +
 			    "\"}},{\"index\":100,\"type\":\"HS_ADMIN\",\"data\":{\"format\":\"admin\",\"value\":{\"handle\":\"0.NA/" +
 			    prefix +
 			    "\",\"index\":200,\"permissions\":\"011111110011\"}}}]}";
@@ -234,16 +227,14 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        msParam_t*,
         ruleExecInfo_t*>("msiPutEpicPID",
                          std::function<int(
-                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
