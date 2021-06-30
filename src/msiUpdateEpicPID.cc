@@ -82,15 +82,16 @@ extern "C" {
   }
 
 
-  int msiPutEpicPID(msParam_t* idInOut,
-		    msParam_t* valueIn,
-		    msParam_t* httpCodeOut,
-		    ruleExecInfo_t *rei)
+  int msiUpdateEpicPID(msParam_t* idInOut,
+		       msParam_t* keyIn,
+		       msParam_t* valueIn,
+		       msParam_t* httpCodeOut,
+		       ruleExecInfo_t *rei)
   {
     CURL *curl;
     CURLcode res;
 
-    /* Check if user is priviliged. */
+    /* Check if user is privileged. */
     if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return SYS_USER_NO_PERMISSION;
     }
@@ -169,7 +170,7 @@ extern "C" {
 
       /* Check for errors. */
       if(res != CURLE_OK) {
-	rodsLog(LOG_ERROR, "msiPutEpicPID: curl error: %s", curl_easy_strerror(res));
+	rodsLog(LOG_ERROR, "msiUpdateEpicPID: curl error: %s", curl_easy_strerror(res));
 	return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
 	long http_code = 0;
@@ -184,36 +185,36 @@ extern "C" {
 	/* 400 Bad Request */
 	else if (http_code == 400) {
 	  rodsLog(LOG_ERROR,
-		  "msiPutEpicPID: Invalid handle");
+		  "msiUpdateEpicPID: Invalid handle");
 	}
 	/* 401 Unauthorized */
 	else if (http_code == 401) {
 	  rodsLog( LOG_ERROR,
-		   "msiPutEpicPID: Authentication needed");
+		   "msiUpdateEpicPID: Authentication needed");
 	}
 	/* 403 Forbidden */
 	else if (http_code == 403) {
 	  rodsLog(LOG_ERROR,
-		   "msiPutEpicPID: Permission denied");
+		   "msiUpdateEpicPID: Permission denied");
 	}
 	/* 404 Not Found */
 	else if (http_code == 404) {
 	  rodsLog(LOG_ERROR,
-		   "msiPutEpicPID: Handle not found");
+		   "msiUpdateEpicPID: Handle not found");
 	}
 	/* 409 Conflict */
 	else if (http_code == 409) {
 	  rodsLog(LOG_ERROR,
-		   "msiPutEpicPID: Handle or value already exists");
+		   "msiUpdateEpicPID: Handle or value already exists");
 	}
         /* 500 Internal Server Error */
         else if (http_code == 500) {
 	  rodsLog(LOG_ERROR,
-		   "msiPutEpicPID: Server internal error");
+		   "msiUpdateEpicPID: Server internal error");
         }
 	else {
 	  rodsLog(LOG_ERROR,
-		  "msiPutEpicPID: HTTP error code: %lu", http_code);
+		  "msiUpdateEpicPID: HTTP error code: %lu", http_code);
   	}
       }
 
@@ -227,18 +228,20 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
-        ruleExecInfo_t*>("msiPutEpicPID",
+        msParam_t*,
+        ruleExecInfo_t*>("msiUpdateEpicPID",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiPutEpicPID));
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiUpdateEpicPID));
 
     return msvc;
   }

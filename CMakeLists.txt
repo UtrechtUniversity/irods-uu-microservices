@@ -49,16 +49,19 @@ include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiPutEpicPID        SHARED src/msiPutEpicPID.cc)
+add_library(msiCreateEpicPID     SHARED src/msiCreateEpicPID.cc)
+add_library(msiUpdateEpicPID     SHARED src/msiUpdateEpicPID.cc)
 add_library(msiGetEpicPID        SHARED src/msiGetEpicPID.cc)
 add_library(msiDeleteEpicPID     SHARED src/msiDeleteEpicPID.cc)
 
-target_link_libraries(msiPutEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiCreateEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiUpdateEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiGetEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiDeleteEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 
 install(TARGETS
-        msiPutEpicPID
+        msiCreateEpicPID
+        msiUpdateEpicPID
         msiGetEpicPID
         msiDeleteEpicPID
         DESTINATION
