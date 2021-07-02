@@ -37,66 +37,75 @@ static std::string payload;
 static size_t length;
 
 bool checkCurlResponse(long http_code) {
-    switch (http_code) {
-    case 200:
-    case 201:	/* 201 Created */
-	return true;
+  switch (http_code) {
+  case 200:
+  case 201:        /* 201 Created */
+    return true;
 
-    case 400:	/* 400 Bad Request */
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Invalid handle");
-	break;
+  case 400:        /* 400 Bad Request */
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: Invalid handle");
+    break;
 
-    case 401:	/* 401 Unauthorized */
-	rodsLog( LOG_ERROR, "msiUpdateEpicPID: Authentication needed");
-	break;
+  case 401:        /* 401 Unauthorized */
+    rodsLog( LOG_ERROR, "msiUpdateEpicPID: Authentication needed");
+    break;
 
-    case 403:	/* 403 Forbidden */
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Permission denied");
-	break;
+  case 403:        /* 403 Forbidden */
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: Permission denied");
+    break;
 
-    case 404:	/* 404 Not Found */
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Handle not found");
-	break;
+  case 404:        /* 404 Not Found */
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: Handle not found");
+    break;
 
-    case 409:	/* 409 Conflict */
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Handle or value already exists");
-	break;
+  case 409:        /* 409 Conflict */
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: Handle or value already exists");
+    break;
 
-    case 500:	/* 500 Internal Server Error */
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Server internal error");
-	break;
+  case 500:        /* 500 Internal Server Error */
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: Server internal error");
+    break;
 
-    default:
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: HTTP error code: %lu", http_code);
-	break;
-    }
+  default:
+    rodsLog(LOG_ERROR, "msiUpdateEpicPID: HTTP error code: %lu", http_code);
+    break;
+  }
 
-    return false;
+  return false;
 }
 
-json_t *updateMetadata(json_t *array, std::string key, std::string value) {
-    /* convert input to json */
-    json_t *item, *json;
-    json_int_t index, last;
+json_t *updateMetadata(json_t *array, std::string &key, std::string *value) {
+  json_t *item, *json;
+  json_int_t index, last;
 
-    last = 0;
-    for (size_t i = 0; i < json_array_size(array); i++) {
-	item = json_array_get(array, i);
-	index = json_integer_value(json_object_get(item, "index"));
-	if (index == last + 1) {
-	    last++;
-	}
-	if (index != 1 && index != 100) {
-	    const char *type = json_string_value(json_object_get(item, "type"));
-	    if (strcmp(type, key.c_str()) == 0) {
-		json = json_object_get(item, "data");
-		json_object_set_new(json, "value", json_string(value.c_str()));
-
-		return array;
-	    }
-	}
+  last = 0;
+  for (size_t i = 0; i < json_array_size(array); i++) {
+    item = json_array_get(array, i);
+    index = json_integer_value(json_object_get(item, "index"));
+    if (index == last + 1) {
+      last = index;	/* update insertion point */
     }
 
+    if (index != 1 && index != 100) {
+      if (strcmp(json_string_value(json_object_get(item, "type")), key.c_str()) == 0) {
+        if (value != NULL) {
+	  /* update metadata */
+          json = json_object_get(item, "data");
+          json_object_set_new(json, "value", json_string(value->c_str()));
+        } else {
+	  /* delete metadata */
+          json_array_remove(array, i);
+        }
+
+        return array;
+      }
+    }
+  }
+
+  if (value != NULL) {
+    /*
+     * add new metadata
+     */
     item = json_object();
     json_array_insert_new(array, (size_t) last, item);
     json_object_set_new(item, "index", json_integer(last + 1));
@@ -104,9 +113,10 @@ json_t *updateMetadata(json_t *array, std::string key, std::string value) {
     json = json_object();
     json_object_set_new(item, "data", json);
     json_object_set_new(json, "format", json_string("string"));
-    json_object_set_new(json, "value", json_string(value.c_str()));
+    json_object_set_new(json, "value", json_string(value->c_str()));
+  }
 
-    return array;
+  return array;
 }
 
 extern "C" {
@@ -114,38 +124,38 @@ extern "C" {
    * This callback gathers everything in the payload. */
   static size_t receive(void *contents, size_t size, size_t nmemb, void *userp)
   {
-      payload.append((const char *) contents, size * nmemb);
-      return size * nmemb;
+    payload.append((const char *) contents, size * nmemb);
+    return size * nmemb;
   }
 
   /* Curl requires a static callback function to read the input of a PUT request from.
    * This callback simply copies the payload. */
   static size_t readCallback(void *buffer, size_t size, size_t nmemb, void *userp)
   {
-      std::string *payload = (std::string *) userp;
-      size_t len = size * nmemb;
-      if (len > length) {
-          len = length;
-      }
-      memcpy(buffer, payload->c_str() + payload->length() - length, len);
-      length -= len;
+    std::string *payload = (std::string *) userp;
+    size_t len = size * nmemb;
+    if (len > length) {
+      len = length;
+    }
+    memcpy(buffer, payload->c_str() + payload->length() - length, len);
+    length -= len;
 
-      return len;
+    return len;
   }
 
   /* Curl requires a static callback function to write the output of a request to.
    * This callback simply discards everything. */
   static size_t discard(void *contents, size_t size, size_t nmemb, void *userp)
   {
-      return size * nmemb;
+    return size * nmemb;
   }
 
 
   int msiUpdateEpicPID(msParam_t* handleIn,
-		       msParam_t* typeIn,
-		       msParam_t* valueIn,
-		       msParam_t* httpCodeOut,
-		       ruleExecInfo_t *rei)
+                       msParam_t* typeIn,
+                       msParam_t* valueIn,
+                       msParam_t* httpCodeOut,
+                       ruleExecInfo_t *rei)
   {
     CURL *curl;
     CURLcode res;
@@ -167,14 +177,21 @@ extern "C" {
     if (strcmp(typeIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(valueIn->type, STR_MS_T)) {
+
+    /* valueIn can be unset, which means delete. */
+    std::string value, *valueRef;
+    if (valueIn->type == NULL) {
+      valueRef = NULL;
+    } else if (strcmp(typeIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
+    } else {
+      value = parseMspForStr(valueIn);
+      valueRef = &value;
     }
 
     /* Parse input paramaters. */
     std::string handle    = parseMspForStr(handleIn);
     std::string type      = parseMspForStr(typeIn);
-    std::string value     = parseMspForStr(valueIn);
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {
@@ -218,35 +235,35 @@ extern "C" {
 
       /* Check for errors. */
       if(res != CURLE_OK) {
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: curl error: %s", curl_easy_strerror(res));
+        rodsLog(LOG_ERROR, "msiUpdateEpicPID: curl error: %s", curl_easy_strerror(res));
 
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
-	return SYS_INTERNAL_NULL_INPUT_ERR;
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
-	long http_code = 0;
-	curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-	if (!checkCurlResponse(http_code)) {
+        long http_code = 0;
+        curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+        if (!checkCurlResponse(http_code)) {
           fillStrInMsParam(httpCodeOut, std::to_string(http_code).c_str());
 
-	  curl_easy_cleanup(curl);
-	  curl_global_cleanup();
-	  return 0;
-	}
+          curl_easy_cleanup(curl);
+          curl_global_cleanup();
+          return 0;
+        }
       }
 
       json_error_t error;
       json_t *result = json_loads(payload.c_str(), 0, &error);
       if (result == NULL) {
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: Invalid JSON");
+        rodsLog(LOG_ERROR, "msiUpdateEpicPID: Invalid JSON");
 
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
-	return 0;
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        return 0;
       }
 
       /* Create payload. */
-      char *str = json_dumps(updateMetadata(json_object_get(result, "values"), type, value), 0);
+      char *str = json_dumps(updateMetadata(json_object_get(result, "values"), type, valueRef), 0);
       payload = std::string("{\"values\":") + str + "}";
       free(str);
       json_decref(result);
@@ -265,14 +282,16 @@ extern "C" {
 
       /* Check for errors. */
       if(res != CURLE_OK) {
-	rodsLog(LOG_ERROR, "msiUpdateEpicPID: curl error: %s", curl_easy_strerror(res));
-	return SYS_INTERNAL_NULL_INPUT_ERR;
+        rodsLog(LOG_ERROR, "msiUpdateEpicPID: curl error: %s", curl_easy_strerror(res));
+
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
-	long http_code = 0;
-	curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-	fillStrInMsParam(httpCodeOut, std::to_string(http_code).c_str());
-	fillStrInMsParam(valueIn, payload.c_str());
-	checkCurlResponse(http_code);
+        long http_code = 0;
+        curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+        fillStrInMsParam(httpCodeOut, std::to_string(http_code).c_str());
+        checkCurlResponse(http_code);
       }
 
       /* Cleanup. */
