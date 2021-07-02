@@ -9,7 +9,7 @@ Miscellaneous iRODS microservices originally developed by Utrecht University.
 
 ## Installation
 iRODS microservices can be installed using the packages provided on the
-[releases page](https://github.com/UtrechtUniversity/irods-uu-microservices/releases).
+[releases page](https://git.wur.nl/rdm-infrastructure/irods-microservices/-/releases)
 
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 

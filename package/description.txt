@@ -1,1 +1,1 @@
- Miscellaneous iRODS microservices developed or modified by Utrecht University.
+ Miscellaneous iRODS microservices originally developed at Utrecht University.
