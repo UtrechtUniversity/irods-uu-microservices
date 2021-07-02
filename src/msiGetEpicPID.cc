@@ -108,6 +108,9 @@ extern "C" {
       /* Check for errors. */
       if(res != CURLE_OK) {
 	rodsLog(LOG_ERROR, "msiGetEpicPID: curl error: %s", curl_easy_strerror(res));
+
+	curl_easy_cleanup(curl);
+	curl_global_cleanup();
 	return SYS_INTERNAL_NULL_INPUT_ERR;
       } else {
 	long http_code = 0;

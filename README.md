@@ -1,12 +1,14 @@
-# iRODS UU Microservices
-Miscellaneous iRODS microservices developed or modified by Utrecht University.
+# iRODS Microservices
+Miscellaneous iRODS microservices originally developed by Utrecht University.
 
 ## Included microservices
-Originally developed at Utrecht University:
-  * msiPutEpicPID: API call to register an Epic PID
+  * msiCreateEpicPID: API call to register an Epic PID
+  * msiDeleteEpicPID: API call to delete an Epic PID
+  * msiGetEpicPID: API call to get an Epic PID
+  * msiUpdateEpicPID: API call to update metadata for an Epic PID
 
 ## Installation
-iRODS UU microservices can be installed using the packages provided on the
+iRODS microservices can be installed using the packages provided on the
 [releases page](https://github.com/UtrechtUniversity/irods-uu-microservices/releases).
 
 You can also build the microservices yourself, see [Building from source](#building-from-source).
@@ -42,14 +44,14 @@ cmake .
 make
 ```
 
-Now you can either build an RPM or install the project without a package manager.
+Now you can either build a DEB or install the project without a package manager.
 
 **To create a package:**
 ```bash
 make package
 ```
 
-That's it, you should now have an RPM in your build directory which you can install using yum.
+That's it, you should now have a DEB in your build directory which you can install using apt.
 
 **To install without creating a package**
 ```bash

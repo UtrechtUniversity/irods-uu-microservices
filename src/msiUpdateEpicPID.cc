@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief     iRODS microservice to register a PID with EPIC.
+ * \brief     iRODS microservice to update metadata for a PID at EPIC.
  * \author    Felix Croes
  * \author    Lazlo Westerhof
  * \copyright Copyright (c) 2018, Utrecht University
