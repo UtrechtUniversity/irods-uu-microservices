@@ -82,8 +82,9 @@ extern "C" {
   }
 
 
-  int msiCreateEpicPID(msParam_t* idInOut,
+  int msiCreateEpicPID(msParam_t* idIn,
 		       msParam_t* valueIn,
+		       msParam_t* handleOut,
 		       msParam_t* httpCodeOut,
 		       ruleExecInfo_t *rei)
   {
@@ -101,7 +102,7 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(idInOut->type, STR_MS_T)) {
+    if (strcmp(idIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
     if (strcmp(valueIn->type, STR_MS_T)) {
@@ -109,7 +110,7 @@ extern "C" {
     }
 
     /* Parse input paramaters. */
-    std::string id        = parseMspForStr(idInOut);
+    std::string id        = parseMspForStr(idIn);
     std::string value     = parseMspForStr(valueIn);
 
     /* Bail if there is no EPIC server configured. */
@@ -179,7 +180,7 @@ extern "C" {
 	/* 201 Created */
 	if (http_code == 200 || http_code == 201) {
 	  /* Operation successful.*/
-	  fillStrInMsParam(idInOut, pid.c_str());
+	  fillStrInMsParam(handleOut, pid.c_str());
 	}
 	/* 400 Bad Request */
 	else if (http_code == 400) {
@@ -227,14 +228,16 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
+        msParam_t*,
         ruleExecInfo_t*>("msiCreateEpicPID",
                          std::function<int(
+                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
