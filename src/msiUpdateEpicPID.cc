@@ -86,13 +86,13 @@ json_t *updateMetadata(json_t *array, std::string &key, std::string *value) {
       last = index;	/* update insertion point */
     }
 
-    if (index != 1 && index != 100) {
+    if (index != 100) {
       if (strcmp(json_string_value(json_object_get(item, "type")), key.c_str()) == 0) {
         if (value != NULL) {
 	  /* update metadata */
           json = json_object_get(item, "data");
           json_object_set_new(json, "value", json_string(value->c_str()));
-        } else {
+        } else if (index != 1) {
 	  /* delete metadata */
           json_array_remove(array, i);
         }
@@ -102,7 +102,7 @@ json_t *updateMetadata(json_t *array, std::string &key, std::string *value) {
     }
   }
 
-  if (value != NULL) {
+  if (value != NULL && strcmp(key.c_str(), "HS_ADMIN") != 0) {
     /*
      * add new metadata
      */
