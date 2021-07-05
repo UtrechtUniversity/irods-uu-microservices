@@ -1,6 +1,6 @@
 # Microservice API
 
-- `msiCreateEpicPID(*uuid, *url, *handle, *http_code)`
+- __`msiCreateEpicPID(*uuid, *url, *handle, *http_code)`__
 
   `*uuid`: UUID to base the PID on
 
@@ -10,7 +10,7 @@
 
   `*http_code`: output, the HTTP code for the request, normally 201
 
-- `msiGetEpicPID(*handle, *url, *http_code)`
+- __`msiGetEpicPID(*handle, *url, *http_code)`__
 
   `*handle`: the PID handle
 
@@ -18,13 +18,13 @@
 
   `*http_code`: output, the HTTP code for the request, normally 200
 
-- `msiDeleteEpicPID(*handle, *http_code)`
+- __`msiDeleteEpicPID(*handle, *http_code)`__
 
   `*handle`: the PID handle to delete
 
   `*http_code`: output, the HTTP code for the request, normally 200
 
-- `msiUpdateEpicPID(*handle, *key, *value, *http_code)`
+- __`msiUpdateEpicPID(*handle, *key, *value, *http_code)`__
 
   `*handle`: the PID handle
 
