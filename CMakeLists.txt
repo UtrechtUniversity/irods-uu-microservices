@@ -53,17 +53,22 @@ add_library(msiCreateEpicPID     SHARED src/msiCreateEpicPID.cc)
 add_library(msiUpdateEpicPID     SHARED src/msiUpdateEpicPID.cc)
 add_library(msiGetEpicPID        SHARED src/msiGetEpicPID.cc)
 add_library(msiDeleteEpicPID     SHARED src/msiDeleteEpicPID.cc)
+add_library(msiHelloMyWorld      SHARED src/msiHelloMyWorld.cc)
+add_library(msiGetEpicPIDMetadata     	 SHARED src/msiGetEpicPIDMetadata.cc)
 
 target_link_libraries(msiCreateEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiUpdateEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiGetEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiDeleteEpicPID     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiGetEpicPIDMetadata     LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 
 install(TARGETS
         msiCreateEpicPID
         msiUpdateEpicPID
         msiGetEpicPID
         msiDeleteEpicPID
+	msiHelloMyWorld
+	msiGetEpicPIDMetadata
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
