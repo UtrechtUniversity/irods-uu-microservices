@@ -151,36 +151,36 @@ extern "C" {
 	/* 400 Bad Request */
 	else if (http_code == 400) {
 	  rodsLog(LOG_ERROR,
-		  "msiGetEpicPID: Invalid handle");
+		  "msiGetEpicPIDMetadata: Invalid handle");
 	}
 	/* 401 Unauthorized */
 	else if (http_code == 401) {
 	  rodsLog( LOG_ERROR,
-		   "msiGetEpicPID: Authentication needed");
+		   "msiGetEpicPIDMetadata: Authentication needed");
 	}
 	/* 403 Forbidden */
 	else if (http_code == 403) {
 	  rodsLog(LOG_ERROR,
-		   "msiGetEpicPID: Permission denied");
+		   "msiGetEpicPIDMetadata: Permission denied");
 	}
 	/* 404 Not Found */
 	else if (http_code == 404) {
 	  rodsLog(LOG_ERROR,
-		   "msiGetEpicPID: Handle not found");
+		   "msiGetEpicPIDMetadata: Handle not found");
 	}
 	/* 409 Conflict */
 	else if (http_code == 409) {
 	  rodsLog(LOG_ERROR,
-		   "msiGetEpicPID: Handle or value already exists");
+		   "msiGetEpicPIDMetadata: Handle or value already exists");
 	}
         /* 500 Internal Server Error */
         else if (http_code == 500) {
 	  rodsLog(LOG_ERROR,
-		   "msiGetEpicPID: Server internal error");
+		   "msiGetEpicPIDMetadata: Server internal error");
         }
 	else {
 	  rodsLog(LOG_ERROR,
-		  "msiGetEpicPID: HTTP error code: %lu", http_code);
+		  "msiGetEpicPIDMetadata: HTTP error code: %lu", http_code);
   	}
       }
 
