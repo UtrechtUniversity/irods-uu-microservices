@@ -1,12 +1,13 @@
 /**
  * \file
- * \brief     ArchiveExtract
+ * \brief     ArchiveCreate
  * \author    Felix Croes
  * \copyright Copyright (c) 2021, Wageningen University & Research
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "irods_includes.hh"
+#include "Archive.hh"
 
 #include <string>
 #include <fstream>
@@ -16,9 +17,9 @@
 
 extern "C" {
 
-  int msiArchiveExtract(msParam_t* nameIn,
-                        msParam_t* printOut,
-                        ruleExecInfo_t *rei)
+  int msiArchiveList(msParam_t* nameIn,
+                     msParam_t* printOut,
+                     ruleExecInfo_t *rei)
   {
 
     /* Check if user is privileged. */
@@ -51,11 +52,11 @@ extern "C" {
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
-        ruleExecInfo_t*>("msiArchiveExtract",
+        ruleExecInfo_t*>("msiArchiveList",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiArchiveExtract));
+                             ruleExecInfo_t*)>(msiArchiveList));
 
     return msvc;
   }
