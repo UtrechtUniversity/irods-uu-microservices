@@ -1,6 +1,6 @@
 /**
  * \file
- * \brief     ArchiveCreate
+ * \brief     ArchiveIndex
  * \author    Felix Croes
  * \copyright Copyright (c) 2021, Wageningen University & Research
  * If not, see <http://www.gnu.org/licenses/>.
@@ -17,9 +17,9 @@
 
 extern "C" {
 
-  int msiArchiveList(msParam_t* nameIn,
-                     msParam_t* printOut,
-                     ruleExecInfo_t *rei)
+  int msiArchiveIndex(msParam_t* nameIn,
+                      msParam_t* printOut,
+                      ruleExecInfo_t *rei)
   {
 
     /* Check if user is privileged. */
@@ -52,11 +52,11 @@ extern "C" {
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
-        ruleExecInfo_t*>("msiArchiveList",
+        ruleExecInfo_t*>("msiArchiveIndex",
                          std::function<int(
                              msParam_t*,
                              msParam_t*,
-                             ruleExecInfo_t*)>(msiArchiveList));
+                             ruleExecInfo_t*)>(msiArchiveIndex));
 
     return msvc;
   }

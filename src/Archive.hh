@@ -18,13 +18,13 @@ class Archive {
 
 public:
     Archive(struct archive *archive, struct Data *data, bool creating,
-	    json_t *list, std::string &collection, std::string &path) :
+	    json_t *list, std::string &path, std::string &collection) :
 	archive(archive),
 	data(data),
 	creating(creating),
 	list(list),
-	origin(collection),
-	path(path)
+	path(path),
+	origin(collection)
     {
 	index = 0;
     }
@@ -54,7 +54,7 @@ public:
 	    return NULL;
 	}
 
-	return new Archive(a, data, true, json_array(), collection, path);
+	return new Archive(a, data, true, json_array(), path, collection);
     }
 
     /*
@@ -106,7 +106,7 @@ public:
 	json_incref(list);
 	json_decref(json);
 
-	return new Archive(a, data, false, list, origin, path);
+	return new Archive(a, data, false, list, path, origin);
     }
 
     ~Archive() {
@@ -252,7 +252,6 @@ private:
     struct archive_entry *entry;// archive entry
     Data *data;
     bool creating;		// new archive?
-    bool extracted;		// extracted an item?
     json_t *list;		// list of items
     size_t index;		// item index
     std::string path;		// path of archive

@@ -60,7 +60,7 @@ add_library(msiHelloMyWorld       SHARED src/msiHelloMyWorld.cc)
 add_library(msiGetEpicPIDMetadata SHARED src/msiGetEpicPIDMetadata.cc)
 add_library(msiArchiveCreate      SHARED src/msiArchiveCreate.cc)
 add_library(msiArchiveExtract     SHARED src/msiArchiveExtract.cc)
-add_library(msiArchiveList        SHARED src/msiArchiveList.cc)
+add_library(msiArchiveIndex       SHARED src/msiArchiveIndex.cc)
 
 target_link_libraries(msiCreateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiUpdateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
@@ -69,7 +69,7 @@ target_link_libraries(msiDeleteEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANS
 target_link_libraries(msiGetEpicPIDMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiArchiveCreate      LINK_PUBLIC ${LibArchive_LIBRARIES})
 target_link_libraries(msiArchiveExtract     LINK_PUBLIC ${LibArchive_LIBRARIES})
-target_link_libraries(msiArchiveList        LINK_PUBLIC ${LibArchive_LIBRARIES})
+target_link_libraries(msiArchiveIndex       LINK_PUBLIC ${LibArchive_LIBRARIES})
 
 install(TARGETS
         msiCreateEpicPID
@@ -80,7 +80,7 @@ install(TARGETS
         msiGetEpicPIDMetadata
         msiArchiveCreate
         msiArchiveExtract
-        msiArchiveList
+        msiArchiveIndex
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
