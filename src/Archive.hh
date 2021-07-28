@@ -4,6 +4,12 @@
 
 # include <string>
 
+# include "physPath.hpp"
+# include "rsFileOpen.hpp"
+# include "rsFileRead.hpp"
+# include "rsFileWrite.hpp"
+# include "rsFileClose.hpp"
+
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
@@ -11,8 +17,9 @@
 
 class Archive {
     struct Data {
+	rsComm_t *rsComm;
 	const char *name;
-	int fd;
+	int index;
 	char buf[8192];
     };
 
@@ -32,7 +39,8 @@ public:
     /*
      * create archive
      */
-    static Archive *create(std::string path, std::string collection) {
+    static Archive *create(rsComm_t *rsComm, std::string path,
+			   std::string collection) {
 	struct archive *a;
 	Data *data;
 
@@ -46,6 +54,7 @@ public:
 	    archive_write_set_format_ustar(a);
 	}
 	data = new Data;
+	data->rsComm = rsComm;
 	data->name = path.c_str();
 	if (archive_write_open(a, data, &a_creat, &a_write, &a_close) !=
 								ARCHIVE_OK) {
@@ -60,7 +69,7 @@ public:
     /*
      * open existing archive
      */
-    static Archive *open(std::string path) {
+    static Archive *open(rsComm_t *rsComm, std::string path) {
 	struct archive *a;
 	Data *data;
 	struct archive_entry *entry;
@@ -77,6 +86,7 @@ public:
 	archive_read_support_filter_all(a);
 	archive_read_support_format_all(a);
 	data = new Data;
+	data->rsComm = rsComm;
 	data->name = path.c_str();
 	if (archive_read_open(a, data, &a_open, &a_read, &a_close) !=
 								ARCHIVE_OK ||
@@ -206,46 +216,108 @@ private:
 	json_decref(list);
     }
 
+    static int _creat(rsComm_t *rsComm, const char *name) {
+	fileOpenInp_t input;
+
+	memset(&input, '\0', sizeof(fileOpenInp_t));
+	rstrcpy(input.fileName, name, MAX_NAME_LEN);
+	input.mode = getDefFileMode();
+	input.flags = O_CREAT | O_WRONLY;
+	return rsFileOpen(rsComm, &input);
+    }
+
+    static int _open(rsComm_t *rsComm, const char *name) {
+	fileOpenInp_t input;
+
+	memset(&input, '\0', sizeof(fileOpenInp_t));
+	rstrcpy(input.fileName, name, MAX_NAME_LEN);
+	input.mode = getDefFileMode();
+	input.flags = O_RDONLY;
+	return rsFileOpen(rsComm, &input);
+    }
+
+    static ssize_t _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
+	fileReadInp_t input;
+	bytesBuf_t rbuf;
+
+	memset(&input, '\0', sizeof(fileReadInp_t));
+	input.fileInx = index;
+	input.len = (int) len;
+	rbuf.buf = buf;
+	rbuf.len = (int) len;
+	return rsFileRead(rsComm, &input, &rbuf);
+    }
+
+    static ssize_t _write(rsComm_t *rsComm, int index, const void *buf,
+			  size_t len) {
+	fileWriteInp_t input;
+	bytesBuf_t wbuf;
+
+	memset(&input, '\0', sizeof(fileWriteInp_t));
+	input.fileInx = index;
+	input.len = (int) len;
+	wbuf.buf = (void *) buf;
+	wbuf.len = (int) len;
+	return rsFileWrite(rsComm, &input, &wbuf);
+    }
+
+    static int _close(rsComm_t *rsComm, int index) {
+	fileCloseInp_t input;
+
+	memset(&input, '\0', sizeof(fileCloseInp_t));
+	input.fileInx = index;
+	return rsFileClose(rsComm, &input);
+    }
+
     static int a_creat(struct archive *a, void *data) {
 	Data *d;
 
 	d = (Data *) data;
-	d->fd = ::open(d->name, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-	return (d->fd >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
+	d->index = _open(d->rsComm, d->name);
+	return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
     static int a_open(struct archive *a, void *data) {
 	Data *d;
 
 	d = (Data *) data;
-	d->fd = ::open(d->name, O_RDONLY, 0);
-	return (d->fd >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
+	d->index = _open(d->rsComm, d->name);
+	return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
     static la_ssize_t a_read(struct archive *a, void *data, const void **buf) {
 	Data *d;
+	la_ssize_t status;
 
 	d = (Data *) data;
-	*buf = d->buf;
-	return read(d->fd, d->buf, sizeof(d->buf));
+	status = _read(d->rsComm, d->index, d->buf, sizeof(d->buf));
+	if (status < 0) {
+	    return -1;
+	} else {
+	    *buf = d->buf;
+	    return status;
+	}
     }
 
     static la_ssize_t a_write(struct archive *a, void *data, const void *buf,
 			      size_t size) {
 	Data *d;
+	la_ssize_t status;
 
 	d = (Data *) data;
-	return write(d->fd, buf, size);
+	status = _write(d->rsComm, d->index, buf, size);
+	if (status < 0) {
+	    return -1;
+	} else {
+	    return status;
+	}
     }
 
     static int a_close(struct archive *a, void *data) {
 	Data *d;
 
 	d = (Data *) data;
-	if (d->fd >= 0) {
-	    close(d->fd);
-	}
-	return 0;
+	return _close(d->rsComm, d->index);
     }
 
     struct archive *archive;	// libarchive reference
