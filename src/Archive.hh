@@ -4,38 +4,44 @@
 
 # include <string>
 
-# include "physPath.hpp"
-# include "rsFileOpen.hpp"
-# include "rsFileRead.hpp"
-# include "rsFileWrite.hpp"
-# include "rsFileClose.hpp"
+# include "rsDataObjCreate.hpp"
+# include "rsDataObjOpen.hpp"
+# include "rsDataObjOpenAndStat.hpp"
+# include "rsDataObjRead.hpp"
+# include "rsDataObjWrite.hpp"
+# include "rsDataObjClose.hpp"
+# include "rcMisc.h"
 
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
 # include <string.h>
 
+# define BUFSIZE	(1024 * 1024)
+
 class Archive {
     struct Data {
 	rsComm_t *rsComm;
 	const char *name;
 	int index;
-	char buf[8192];
+	char buf[BUFSIZE];
     };
 
-public:
-    Archive(struct archive *archive, struct Data *data, bool creating,
-	    json_t *list, std::string &path, std::string &collection) :
+    Archive(struct archive *archive, Data *data, bool creating, json_t *list,
+	    std::string &path, std::string &collection,
+	    std::string indexString) :
 	archive(archive),
 	data(data),
 	creating(creating),
 	list(list),
 	path(path),
-	origin(collection)
+	origin(collection),
+	indexString(indexString)
     {
 	index = 0;
     }
 
+public:
     /*
      * create archive
      */
@@ -63,7 +69,7 @@ public:
 	    return NULL;
 	}
 
-	return new Archive(a, data, true, json_array(), path, collection);
+	return new Archive(a, data, true, json_array(), path, collection, "");
     }
 
     /*
@@ -78,6 +84,7 @@ public:
 	json_t *json, *list;
 	json_error_t error;
 	std::string origin;
+	Archive *archive;
 
 	a = archive_read_new();
 	if (a == NULL) {
@@ -108,7 +115,6 @@ public:
 	archive_read_data(a, buf, len);
 	buf[len] = '\0';
 	json = json_loads(buf, 0, &error);
-	delete buf;
 
 	// get list of items from json
 	origin = json_string_value(json_object_get(json, "collection"));
@@ -116,7 +122,9 @@ public:
 	json_incref(list);
 	json_decref(json);
 
-	return new Archive(a, data, false, list, path, origin);
+	archive = new Archive(a, data, false, list, path, origin, buf);
+	delete buf;
+	return archive;
     }
 
     ~Archive() {
@@ -140,6 +148,10 @@ public:
 	json_array_append_new(list, json);
     }
 
+    std::string indexItems() {
+	return indexString;
+    }
+
     std::string nextItem() {
 	// get next item (potentially skipping current) from archive
 	index++;
@@ -150,7 +162,7 @@ public:
     }
 
     void extractItem(std::string filename) {
-	char buf[8192];
+	char buf[BUFSIZE];
 	mode_t filetype, mode;
 	int fd;
 	la_ssize_t len;
@@ -158,11 +170,11 @@ public:
 	// extract current object
 	filetype = archive_entry_filetype(entry);
 	mode = archive_entry_perm(entry);
-	fd = ::open(filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY, mode);
+	fd = _creat(data->rsComm, filename.c_str());
 	while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
-	    write(fd, buf, len);
+	    _write(data->rsComm, fd, buf, len);
 	}
-	close(fd);
+	_close(data->rsComm, fd);
     }
 
     json_t *metadata() {
@@ -193,87 +205,101 @@ private:
 
 	for (index = 0; index < json_array_size(list); index++) {
 	    const char *filename;
-	    struct stat st;
 	    int fd;
+	    size_t size;
 
 	    entry = archive_entry_new();
 	    json = json_array_get(list, index);
 	    filename = json_string_value(json_object_get(json, "path"));
 	    archive_entry_set_pathname(entry, filename);
-	    stat(filename, &st);
-	    archive_entry_set_mode(entry, st.st_mode);
-	    archive_entry_set_size(entry, st.st_size);
-	    archive_entry_set_mtime(entry, st.st_mtim.tv_sec,
-				    st.st_mtim.tv_nsec);
+	    archive_entry_set_filetype(entry, AE_IFREG);
+	    archive_entry_set_perm(entry, 0600);
+	    fd = _openStat(data->rsComm, filename, &size);
+	    archive_entry_set_size(entry, size);
 	    archive_write_header(archive, entry);
-	    fd = ::open(filename, O_RDONLY);
-	    while ((len=read(fd, data->buf, sizeof(data->buf))) > 0) {
+	    while ((len=_read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
 		archive_write_data(archive, data->buf, len);
 	    }
-	    close(fd);
+	    _close(data->rsComm, fd);
 	}
 
 	json_decref(list);
     }
 
     static int _creat(rsComm_t *rsComm, const char *name) {
-	fileOpenInp_t input;
+	dataObjInp_t input;
 
-	memset(&input, '\0', sizeof(fileOpenInp_t));
-	rstrcpy(input.fileName, name, MAX_NAME_LEN);
-	input.mode = getDefFileMode();
-	input.flags = O_CREAT | O_WRONLY;
-	return rsFileOpen(rsComm, &input);
+	memset(&input, '\0', sizeof(dataObjInp_t));
+	rstrcpy(input.objPath, name, MAX_NAME_LEN);
+	input.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+	addKeyVal(&input.condInput, "forceFlag", "");
+	return rsDataObjCreate(rsComm, &input);
     }
 
     static int _open(rsComm_t *rsComm, const char *name) {
-	fileOpenInp_t input;
+	dataObjInp_t input;
 
-	memset(&input, '\0', sizeof(fileOpenInp_t));
-	rstrcpy(input.fileName, name, MAX_NAME_LEN);
-	input.mode = getDefFileMode();
-	input.flags = O_RDONLY;
-	return rsFileOpen(rsComm, &input);
+	memset(&input, '\0', sizeof(dataObjInp_t));
+	rstrcpy(input.objPath, name, MAX_NAME_LEN);
+	input.openFlags = O_RDONLY;
+	return rsDataObjOpen(rsComm, &input);
+    }
+
+    static int _openStat(rsComm_t *rsComm, const char *name, size_t *size) {
+	dataObjInp_t input;
+	openStat_t *openStat;
+	int status;
+
+	memset(&input, '\0', sizeof(dataObjInp_t));
+	rstrcpy(input.objPath, name, MAX_NAME_LEN);
+	input.openFlags = O_RDONLY;
+	openStat = NULL;
+	status = rsDataObjOpenAndStat(rsComm, &input, &openStat);
+	if (openStat != NULL) {
+	    *size = openStat->dataSize;
+	    free(openStat);
+	}
+	return status;
     }
 
     static ssize_t _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
-	fileReadInp_t input;
+	openedDataObjInp_t input;
 	bytesBuf_t rbuf;
 
-	memset(&input, '\0', sizeof(fileReadInp_t));
-	input.fileInx = index;
+	memset(&input, '\0', sizeof(openedDataObjInp_t));
+	input.l1descInx = index;
 	input.len = (int) len;
 	rbuf.buf = buf;
 	rbuf.len = (int) len;
-	return rsFileRead(rsComm, &input, &rbuf);
+	return rsDataObjRead(rsComm, &input, &rbuf);
     }
 
     static ssize_t _write(rsComm_t *rsComm, int index, const void *buf,
 			  size_t len) {
-	fileWriteInp_t input;
+	openedDataObjInp_t input;
 	bytesBuf_t wbuf;
 
-	memset(&input, '\0', sizeof(fileWriteInp_t));
-	input.fileInx = index;
+	memset(&input, '\0', sizeof(openedDataObjInp_t));
+	input.l1descInx = index;
 	input.len = (int) len;
 	wbuf.buf = (void *) buf;
 	wbuf.len = (int) len;
-	return rsFileWrite(rsComm, &input, &wbuf);
+	return rsDataObjWrite(rsComm, &input, &wbuf);
     }
 
     static int _close(rsComm_t *rsComm, int index) {
-	fileCloseInp_t input;
+	openedDataObjInp_t input;
 
-	memset(&input, '\0', sizeof(fileCloseInp_t));
-	input.fileInx = index;
-	return rsFileClose(rsComm, &input);
+	memset(&input, '\0', sizeof(openedDataObjInp_t));
+	input.l1descInx = index;
+	return rsDataObjClose(rsComm, &input);
     }
 
     static int a_creat(struct archive *a, void *data) {
 	Data *d;
 
 	d = (Data *) data;
-	d->index = _open(d->rsComm, d->name);
+	d->index = _creat(d->rsComm, d->name);
 	return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
@@ -324,6 +350,7 @@ private:
     struct archive_entry *entry;// archive entry
     Data *data;
     bool creating;		// new archive?
+    std::string indexString;
     json_t *list;		// list of items
     size_t index;		// item index
     std::string path;		// path of archive

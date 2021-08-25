@@ -67,9 +67,9 @@ target_link_libraries(msiUpdateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANS
 target_link_libraries(msiGetEpicPID         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiDeleteEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiGetEpicPIDMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiArchiveCreate      LINK_PUBLIC ${LibArchive_LIBRARIES})
-target_link_libraries(msiArchiveExtract     LINK_PUBLIC ${LibArchive_LIBRARIES})
-target_link_libraries(msiArchiveIndex       LINK_PUBLIC ${LibArchive_LIBRARIES})
+target_link_libraries(msiArchiveCreate      LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiArchiveExtract     LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
+target_link_libraries(msiArchiveIndex       LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
 
 install(TARGETS
         msiCreateEpicPID
