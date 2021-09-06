@@ -17,14 +17,15 @@
 # include <fcntl.h>
 # include <string.h>
 
-# define BUFSIZE	(1024 * 1024)
+# define A_BUFSIZE	(1024 * 1024)
+# define A_BLOCKSIZE	8192
 
 class Archive {
     struct Data {
 	rsComm_t *rsComm;
 	const char *name;
 	int index;
-	char buf[BUFSIZE];
+	char buf[A_BUFSIZE];
     };
 
     Archive(struct archive *archive, Data *data, bool creating, json_t *list,
@@ -39,6 +40,7 @@ class Archive {
 	indexString(indexString)
     {
 	index = 0;
+	dataSize = 0;
     }
 
 public:
@@ -160,6 +162,8 @@ public:
 	    json_object_set(json, "attributes", attributes);
 	}
 	json_array_append_new(list, json);
+
+	dataSize += (size + A_BLOCKSIZE - 1) & ~(A_BLOCKSIZE - 1);
     }
 
     void addColl(std::string name, time_t created, time_t modified,
@@ -193,7 +197,7 @@ public:
     }
 
     void extractItem(std::string filename) {
-	char buf[BUFSIZE];
+	char buf[A_BUFSIZE];
 	mode_t filetype, mode;
 	int fd;
 	la_ssize_t len;
@@ -220,6 +224,7 @@ private:
 
 	json = json_object();
 	json_object_set_new(json, "collection", json_string(origin.c_str()));
+	json_object_set_new(json, "size", json_integer(dataSize));
 	json_object_set(json, "items", list);
 	str = json_dumps(json, JSON_INDENT(2));
 	json_decref(json);
@@ -376,6 +381,7 @@ private:
     bool creating;		// new archive?
     json_t *list;		// list of items
     size_t index;		// item index
+    size_t dataSize;		// total size of archived data objects
     std::string path;		// path of archive
     std::string origin;		// original collection
     std::string indexString;
