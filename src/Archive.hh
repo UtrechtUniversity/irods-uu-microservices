@@ -139,12 +139,43 @@ public:
 	delete data;
     }
 
-    void addItem(std::string path, json_t *metadata) {
+    void addDataObj(std::string name, size_t size, time_t created,
+		    time_t modified, std::string owner, std::string zone,
+		    std::string checksum, json_t *attributes) {
 	json_t *json;
 
 	json = json_object();
-	json_object_set_new(json, "path", json_string(path.c_str()));
-	json_object_set(json, "metadata", metadata);
+	json_object_set_new(json, "name", json_string(name.c_str()));
+	json_object_set_new(json, "type", json_string("dataObj"));
+	json_object_set_new(json, "size", json_integer(size));
+	json_object_set_new(json, "created", json_integer(created));
+	json_object_set_new(json, "modified", json_integer(modified));
+	json_object_set_new(json, "owner",
+			    json_string((owner + "#" + zone).c_str()));
+	if (checksum.length() != 0) {
+	    json_object_set_new(json, "checksum",
+				json_string(checksum.c_str()));
+	}
+	if (attributes != NULL) {
+	    json_object_set(json, "attributes", attributes);
+	}
+	json_array_append_new(list, json);
+    }
+
+    void addColl(std::string name, time_t created, time_t modified,
+		 std::string owner, std::string zone, json_t *attributes) {
+	json_t *json;
+
+	json = json_object();
+	json_object_set_new(json, "name", json_string(name.c_str()));
+	json_object_set_new(json, "type", json_string("coll"));
+	json_object_set_new(json, "created", json_integer(created));
+	json_object_set_new(json, "modified", json_integer(modified));
+	json_object_set_new(json, "owner",
+			    json_string((owner + "#" + zone).c_str()));
+	if (attributes != NULL) {
+	    json_object_set(json, "attributes", attributes);
+	}
 	json_array_append_new(list, json);
     }
 
@@ -207,20 +238,30 @@ private:
 	    const char *filename;
 	    int fd;
 	    size_t size;
+	    time_t mtime;
 
 	    entry = archive_entry_new();
 	    json = json_array_get(list, index);
-	    filename = json_string_value(json_object_get(json, "path"));
+	    filename = json_string_value(json_object_get(json, "name"));
+	    mtime = json_integer_value(json_object_get(json, "modified"));
 	    archive_entry_set_pathname(entry, filename);
-	    archive_entry_set_filetype(entry, AE_IFREG);
-	    archive_entry_set_perm(entry, 0600);
-	    fd = _openStat(data->rsComm, filename, &size);
-	    archive_entry_set_size(entry, size);
-	    archive_write_header(archive, entry);
-	    while ((len=_read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
-		archive_write_data(archive, data->buf, len);
+	    archive_entry_set_mtime(entry, mtime, 0);
+	    if (strcmp(json_string_value(json_object_get(json, "type")), "coll") == 0) {
+		archive_entry_set_filetype(entry, AE_IFDIR);
+		archive_entry_set_perm(entry, 0750);
+		archive_write_header(archive, entry);
+	    } else {
+		archive_entry_set_filetype(entry, AE_IFREG);
+		archive_entry_set_perm(entry, 0600);
+		size = json_integer_value(json_object_get(json, "size"));
+		archive_entry_set_size(entry, size);
+		archive_write_header(archive, entry);
+		fd = _open(data->rsComm, (origin + "/" + filename).c_str());
+		while ((len=_read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
+		    archive_write_data(archive, data->buf, len);
+		}
+		_close(data->rsComm, fd);
 	    }
-	    _close(data->rsComm, fd);
 	}
 
 	json_decref(list);
@@ -243,23 +284,6 @@ private:
 	rstrcpy(input.objPath, name, MAX_NAME_LEN);
 	input.openFlags = O_RDONLY;
 	return rsDataObjOpen(rsComm, &input);
-    }
-
-    static int _openStat(rsComm_t *rsComm, const char *name, size_t *size) {
-	dataObjInp_t input;
-	openStat_t *openStat;
-	int status;
-
-	memset(&input, '\0', sizeof(dataObjInp_t));
-	rstrcpy(input.objPath, name, MAX_NAME_LEN);
-	input.openFlags = O_RDONLY;
-	openStat = NULL;
-	status = rsDataObjOpenAndStat(rsComm, &input, &openStat);
-	if (openStat != NULL) {
-	    *size = openStat->dataSize;
-	    free(openStat);
-	}
-	return status;
     }
 
     static ssize_t _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
@@ -350,9 +374,9 @@ private:
     struct archive_entry *entry;// archive entry
     Data *data;
     bool creating;		// new archive?
-    std::string indexString;
     json_t *list;		// list of items
     size_t index;		// item index
     std::string path;		// path of archive
     std::string origin;		// original collection
+    std::string indexString;
 };

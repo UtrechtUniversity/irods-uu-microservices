@@ -17,31 +17,22 @@
 
 extern "C" {
 
-  int msiArchiveIndex(msParam_t* nameIn,
-                      msParam_t* printOut,
+  int msiArchiveIndex(msParam_t* archiveIn,
+                      msParam_t* indexOut,
                       ruleExecInfo_t *rei)
   {
-
-    /* Check if user is privileged. */
-    if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return SYS_USER_NO_PERMISSION;
-    }
-
     /* Check input parameters. */
-    if (strcmp(nameIn->type, STR_MS_T)) {
+    if (strcmp(archiveIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string name        = parseMspForStr(nameIn);
+    std::string archive = parseMspForStr(archiveIn);
 
-    std::string output      = "Hello "+name+"!";
-
-    if(name.length() == 0){
-       output      = "Hello World!";
-    }
-    std::cout << output;
-    fillStrInMsParam(printOut, output.c_str());
+    Archive *a = Archive::open(rei->rsComm, archive);
+    std::string output = a->indexItems();
+    delete a;
+    fillStrInMsParam(indexOut, output.c_str());
 
     return 0;
   }
