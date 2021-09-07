@@ -7,6 +7,7 @@
  */
 
 #include "irods_includes.hh"
+#include "Archive.hh"
 
 #include <string>
 #include <fstream>
@@ -16,31 +17,28 @@
 
 extern "C" {
 
-  int msiArchiveExtract(msParam_t* nameIn,
-                        msParam_t* printOut,
+  int msiArchiveExtract(msParam_t* archiveIn,
+                        msParam_t* pathIn,
                         ruleExecInfo_t *rei)
   {
-
-    /* Check if user is privileged. */
-    if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return SYS_USER_NO_PERMISSION;
-    }
-
     /* Check input parameters. */
-    if (strcmp(nameIn->type, STR_MS_T)) {
+    if (strcmp(archiveIn->type, STR_MS_T)) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    if (strcmp(pathIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
-    std::string name        = parseMspForStr(nameIn);
+    std::string archive = parseMspForStr(archiveIn);
+    std::string path    = parseMspForStr(pathIn);
+    std::string file;
 
-    std::string output      = "Hello "+name+"!";
-
-    if(name.length() == 0){
-       output      = "Hello World!";
+    Archive *a = Archive::open(rei->rsComm, archive);
+    while ((file=a->nextItem()).length() != 0) {
+	a->extractItem(path + "/" + file);
     }
-    std::cout << output;
-    fillStrInMsParam(printOut, output.c_str());
+    delete a;
 
     return 0;
   }

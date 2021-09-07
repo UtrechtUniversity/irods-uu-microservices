@@ -10,6 +10,7 @@
 # include "rsDataObjRead.hpp"
 # include "rsDataObjWrite.hpp"
 # include "rsDataObjClose.hpp"
+# include "rsCollCreate.hpp"
 # include "rcMisc.h"
 
 # include <sys/types.h>
@@ -197,19 +198,24 @@ public:
     }
 
     void extractItem(std::string filename) {
-	char buf[A_BUFSIZE];
-	mode_t filetype, mode;
-	int fd;
-	la_ssize_t len;
-
 	// extract current object
-	filetype = archive_entry_filetype(entry);
-	mode = archive_entry_perm(entry);
-	fd = _creat(data->rsComm, filename.c_str());
-	while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
-	    _write(data->rsComm, fd, buf, len);
+	if (archive_entry_filetype(entry) == AE_IFDIR) {
+	    collInp_t collCreateInp;
+
+	    memset(&collCreateInp, '\0', sizeof(collInp_t));
+	    rstrcpy(collCreateInp.collName, filename.c_str(), MAX_NAME_LEN);
+	    rsCollCreate(data->rsComm, &collCreateInp);
+	} else {
+	    char buf[A_BUFSIZE];
+	    int fd;
+	    la_ssize_t len;
+
+	    fd = _creat(data->rsComm, filename.c_str());
+	    while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
+		_write(data->rsComm, fd, buf, len);
+	    }
+	    _close(data->rsComm, fd);
 	}
-	_close(data->rsComm, fd);
     }
 
     json_t *metadata() {
