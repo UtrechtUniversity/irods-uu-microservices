@@ -21,6 +21,8 @@ extern "C" {
                         msParam_t* pathIn,
                         ruleExecInfo_t *rei)
   {
+    collInp_t collCreateInp;
+
     /* Check input parameters. */
     if (strcmp(archiveIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
@@ -33,6 +35,10 @@ extern "C" {
     std::string archive = parseMspForStr(archiveIn);
     std::string path    = parseMspForStr(pathIn);
     std::string file;
+
+    memset(&collCreateInp, '\0', sizeof(collInp_t));
+    rstrcpy(collCreateInp.collName, path.c_str(), MAX_NAME_LEN);
+    rsCollCreate(rei->rsComm, &collCreateInp);
 
     Archive *a = Archive::open(rei->rsComm, archive);
     while ((file=a->nextItem()).length() != 0) {
