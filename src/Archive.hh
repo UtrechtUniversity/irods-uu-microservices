@@ -145,26 +145,28 @@ public:
     void addDataObj(std::string name, size_t size, time_t created,
 		    time_t modified, std::string owner, std::string zone,
 		    std::string checksum, json_t *attributes) {
-	json_t *json;
+	if (path.compare(origin + "/" + name) != 0) {
+	    json_t *json;
 
-	json = json_object();
-	json_object_set_new(json, "name", json_string(name.c_str()));
-	json_object_set_new(json, "type", json_string("dataObj"));
-	json_object_set_new(json, "size", json_integer(size));
-	json_object_set_new(json, "created", json_integer(created));
-	json_object_set_new(json, "modified", json_integer(modified));
-	json_object_set_new(json, "owner",
-			    json_string((owner + "#" + zone).c_str()));
-	if (checksum.length() != 0) {
-	    json_object_set_new(json, "checksum",
-				json_string(checksum.c_str()));
-	}
-	if (attributes != NULL) {
-	    json_object_set(json, "attributes", attributes);
-	}
-	json_array_append_new(list, json);
+	    json = json_object();
+	    json_object_set_new(json, "name", json_string(name.c_str()));
+	    json_object_set_new(json, "type", json_string("dataObj"));
+	    json_object_set_new(json, "size", json_integer(size));
+	    json_object_set_new(json, "created", json_integer(created));
+	    json_object_set_new(json, "modified", json_integer(modified));
+	    json_object_set_new(json, "owner",
+				json_string((owner + "#" + zone).c_str()));
+	    if (checksum.length() != 0) {
+		json_object_set_new(json, "checksum",
+				    json_string(checksum.c_str()));
+	    }
+	    if (attributes != NULL) {
+		json_object_set(json, "attributes", attributes);
+	    }
+	    json_array_append_new(list, json);
 
-	dataSize += (size + A_BLOCKSIZE - 1) & ~(A_BLOCKSIZE - 1);
+	    dataSize += (size + A_BLOCKSIZE - 1) & ~(A_BLOCKSIZE - 1);
+	}
     }
 
     void addColl(std::string name, time_t created, time_t modified,
