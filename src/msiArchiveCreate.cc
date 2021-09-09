@@ -81,10 +81,9 @@ static json_t *attrDataObj(rsComm_t *rsComm, long long id)
 	    json_array_append_new(list, json);
 	}
 
-	if (genQueryOut->continueInx > 0) {
-	    genQueryInp.continueInx = genQueryOut->continueInx;
-	} else {
-	    genQueryInp.maxRows = -1;
+	genQueryInp.continueInx = genQueryOut->continueInx;
+	if (genQueryInp.continueInx == 0) {
+	    break;
 	}
 	freeGenQueryOut(&genQueryOut);
     }
@@ -134,10 +133,9 @@ static json_t *attrColl(rsComm_t *rsComm, long long id)
 	    json_array_append_new(list, json);
 	}
 
-	if (genQueryOut->continueInx > 0) {
-	    genQueryInp.continueInx = genQueryOut->continueInx;
-	} else {
-	    genQueryInp.maxRows = -1;
+	genQueryInp.continueInx = genQueryOut->continueInx;
+	if (genQueryInp.continueInx == 0) {
+	    break;
 	}
 	freeGenQueryOut(&genQueryOut);
     }
@@ -194,10 +192,9 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll, long long
 	    a->addDataObj(coll + name, size, ctime, mtime, owner, zone, checksum, attrDataObj(rsComm, id));
 	}
 
-	if (genQueryOut->continueInx > 0) {
-	    genQueryInp.continueInx = genQueryOut->continueInx;
-	} else {
-	    genQueryInp.maxRows = -1;
+	genQueryInp.continueInx = genQueryOut->continueInx;
+	if (genQueryInp.continueInx == 0) {
+	    break;
 	}
 	freeGenQueryOut(&genQueryOut);
     }
@@ -250,10 +247,9 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string coll, std::string 
 	    dirs.push_back(std::make_pair(name, id));
 	}
 
-	if (genQueryOut->continueInx > 0) {
-	    genQueryInp.continueInx = genQueryOut->continueInx;
-	} else {
-	    genQueryInp.maxRows = -1;
+	genQueryInp.continueInx = genQueryOut->continueInx;
+	if (genQueryInp.continueInx == 0) {
+	    break;
 	}
 	freeGenQueryOut(&genQueryOut);
     }
