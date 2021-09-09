@@ -190,13 +190,13 @@ public:
 	return indexString;
     }
 
-    std::string nextItem() {
+    json_t *nextItem() {
 	// get next item (potentially skipping current) from archive
-	index++;
-	if (archive_read_next_header(archive, &entry) != ARCHIVE_OK) {
-	    return "";
+	if (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
+	    return json_array_get(list, index++);
+	} else {
+	    return NULL;
 	}
-	return archive_entry_pathname(entry);
     }
 
     void extractItem(std::string filename) {
@@ -218,10 +218,6 @@ public:
 	    }
 	    _close(data->rsComm, fd);
 	}
-    }
-
-    json_t *metadata() {
-	return json_array_get(list, index - 1);
     }
 
 private:
