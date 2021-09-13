@@ -29,7 +29,7 @@ extern "C" {
     /* Parse input paramaters. */
     std::string archive = parseMspForStr(archiveIn);
 
-    Archive *a = Archive::open(rei->rsComm, archive);
+    Archive *a = Archive::open(rei->rsComm, archive, "");
     std::string output = a->indexItems();
     delete a;
     fillStrInMsParam(indexOut, output.c_str());

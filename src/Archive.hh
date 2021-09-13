@@ -25,12 +25,13 @@ class Archive {
     struct Data {
 	rsComm_t *rsComm;
 	const char *name;
+	const char *resource;
 	int index;
 	char buf[A_BUFSIZE];
     };
 
     Archive(struct archive *archive, Data *data, bool creating, json_t *list,
-	    std::string &path, std::string &collection,
+	    std::string &path, std::string &collection, std::string resc,
 	    std::string indexString) :
 	archive(archive),
 	data(data),
@@ -38,8 +39,10 @@ class Archive {
 	list(list),
 	path(path),
 	origin(collection),
+	resc(resc),
 	indexString(indexString)
     {
+	data->resource = (this->resc.length() != 0) ? this->resc.c_str() : NULL;
 	index = 0;
 	dataSize = 0;
     }
@@ -49,7 +52,7 @@ public:
      * create archive
      */
     static Archive *create(rsComm_t *rsComm, std::string path,
-			   std::string collection) {
+			   std::string collection, std::string resc) {
 	struct archive *a;
 	Data *data;
 
@@ -65,6 +68,7 @@ public:
 	data = new Data;
 	data->rsComm = rsComm;
 	data->name = path.c_str();
+	data->resource = (resc.length() != 0) ? resc.c_str() : NULL;
 	if (archive_write_open(a, data, &a_creat, &a_write, &a_close) !=
 								ARCHIVE_OK) {
 	    delete data;
@@ -72,13 +76,14 @@ public:
 	    return NULL;
 	}
 
-	return new Archive(a, data, true, json_array(), path, collection, "");
+	return new Archive(a, data, true, json_array(), path, collection, resc,
+			   "");
     }
 
     /*
      * open existing archive
      */
-    static Archive *open(rsComm_t *rsComm, std::string path) {
+    static Archive *open(rsComm_t *rsComm, std::string path, std::string resc) {
 	struct archive *a;
 	Data *data;
 	struct archive_entry *entry;
@@ -125,7 +130,7 @@ public:
 	json_incref(list);
 	json_decref(json);
 
-	archive = new Archive(a, data, false, list, path, origin, buf);
+	archive = new Archive(a, data, false, list, path, origin, resc, buf);
 	delete buf;
 	return archive;
     }
@@ -212,7 +217,7 @@ public:
 	    int fd;
 	    la_ssize_t len;
 
-	    fd = _creat(data->rsComm, filename.c_str());
+	    fd = _creat(data->rsComm, filename.c_str(), data->resource);
 	    while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
 		_write(data->rsComm, fd, buf, len);
 	    }
@@ -276,13 +281,17 @@ private:
 	json_decref(list);
     }
 
-    static int _creat(rsComm_t *rsComm, const char *name) {
+    static int _creat(rsComm_t *rsComm, const char *name,
+		      const char *resource) {
 	dataObjInp_t input;
 
 	memset(&input, '\0', sizeof(dataObjInp_t));
 	rstrcpy(input.objPath, name, MAX_NAME_LEN);
 	input.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
-	addKeyVal(&input.condInput, "forceFlag", "");
+	if (resource != NULL) {
+	    addKeyVal(&input.condInput, DEST_RESC_NAME_KW, resource);
+	}
+	addKeyVal(&input.condInput, FORCE_FLAG_KW, "");
 	return rsDataObjCreate(rsComm, &input);
     }
 
@@ -332,7 +341,7 @@ private:
 	Data *d;
 
 	d = (Data *) data;
-	d->index = _creat(d->rsComm, d->name);
+	d->index = _creat(d->rsComm, d->name, d->resource);
 	return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
@@ -388,5 +397,6 @@ private:
     size_t dataSize;		// total size of archived data objects
     std::string path;		// path of archive
     std::string origin;		// original collection
+    std::string resc;		// resource
     std::string indexString;
 };

@@ -267,6 +267,7 @@ extern "C" {
 
   int msiArchiveCreate(msParam_t* archiveIn,
                        msParam_t* collectionIn,
+                       msParam_t* resourceIn,
                        ruleExecInfo_t *rei)
   {
     long long id;
@@ -280,11 +281,15 @@ extern "C" {
     }
 
     /* Parse input paramaters. */
-    std::string archive = parseMspForStr(archiveIn);
+    std::string archive    = parseMspForStr(archiveIn);
     std::string collection = parseMspForStr(collectionIn);
+    std::string resource   = "";
+    if (strcmp(resourceIn->type, STR_MS_T) == 0) {
+      resource = parseMspForStr(resourceIn);
+    }
 
     id = collID(rei->rsComm, collection);
-    Archive *a = Archive::create(rei->rsComm, archive, collection);
+    Archive *a = Archive::create(rei->rsComm, archive, collection, resource);
     dirColl(a, rei->rsComm, collection, collection);
     dirDataObj(a, rei->rsComm, "", id);
     delete a;
@@ -293,13 +298,15 @@ extern "C" {
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
+        msParam_t*,
         ruleExecInfo_t*>("msiArchiveCreate",
                          std::function<int(
+                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              ruleExecInfo_t*)>(msiArchiveCreate));
