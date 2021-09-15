@@ -8,36 +8,31 @@
 
 #include "irods_includes.hh"
 #include "Archive.hh"
+
 #include "rsModDataObjMeta.hpp"
 #include "rsModAVUMetadata.hpp"
 
-#include <string>
-#include <fstream>
-#include <streambuf>
-#include <sstream>
-#include <iomanip>
 
-static void modify(rsComm_t *rsComm, std::string file, json_t *json)
+static void modify(rsComm_t *rsComm, std::string &file, json_t *json)
 {
     modDataObjMeta_t modDataObj;
     dataObjInfo_t dataObjInfo;
     keyValPair_t regParam;
     char tmpStr[MAX_NAME_LEN];
-    json_int_t modified;
 
     memset(&modDataObj, '\0', sizeof(modDataObjMeta_t));
     memset(&dataObjInfo, '\0', sizeof(dataObjInfo_t));
     memset(&regParam, '\0', sizeof(keyValPair_t));
     rstrcpy(dataObjInfo.objPath, file.c_str(), MAX_NAME_LEN);
     modDataObj.dataObjInfo = &dataObjInfo;
-    modified = json_integer_value(json_object_get(json, "modified"));
-    snprintf(tmpStr, MAX_NAME_LEN, "%lld", modified);
+    snprintf(tmpStr, MAX_NAME_LEN, "%lld",
+	     json_integer_value(json_object_get(json, "modified")));
     addKeyVal(&regParam, DATA_MODIFY_KW, tmpStr);
     modDataObj.regParam = &regParam;
-    rsModDataObjMeta(rsComm, &modDataObj);
+    rsModDataObjMeta(rsComm, &modDataObj);	/* allowed to fail */
 }
 
-static void attributes(rsComm_t *rsComm, std::string file, const char *type,
+static void attributes(rsComm_t *rsComm, std::string &file, const char *type,
 		       json_t *list)
 {
     modAVUMetadataInp_t modAVUInp;
@@ -52,15 +47,16 @@ static void attributes(rsComm_t *rsComm, std::string file, const char *type,
     sz = json_array_size(list);
     for (i = 0; i < sz; i++) {
 	json = json_array_get(list, i);
-	name = json_string_value(json_object_get(json, "name"));
-
-	modAVUInp.arg3 = (char *) json_string_value(json_object_get(json, "name"));
-	modAVUInp.arg4 = (char *) json_string_value(json_object_get(json, "value"));
-	modAVUInp.arg5 = (char *) json_string_value(json_object_get(json, "unit"));
-	modAVUInp.arg0 = (strcmp(modAVUInp.arg3, name) == 0) ?
-			  (char *) "add" : (char *) "set";
+	modAVUInp.arg3 = (char *)
+			 json_string_value(json_object_get(json, "name"));
+	modAVUInp.arg4 = (char *)
+			 json_string_value(json_object_get(json, "value"));
+	modAVUInp.arg5 = (char *)
+			 json_string_value(json_object_get(json, "unit"));
+	modAVUInp.arg0 = (name == NULL || strcmp(modAVUInp.arg3, name) != 0) ?
+			  (char *) "set" : (char *) "add";
 	name = modAVUInp.arg3;
-	rsModAVUMetadata(rsComm, &modAVUInp);
+	rsModAVUMetadata(rsComm, &modAVUInp);	/* allowed to fail */
     }
 }
 
@@ -75,10 +71,10 @@ extern "C" {
     json_t *json;
 
     /* Check input parameters. */
-    if (strcmp(archiveIn->type, STR_MS_T)) {
+    if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(pathIn->type, STR_MS_T)) {
+    if (pathIn->type == NULL || strcmp(pathIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -86,7 +82,7 @@ extern "C" {
     std::string archive  = parseMspForStr(archiveIn);
     std::string path     = parseMspForStr(pathIn);
     std::string resource = "";
-    if (strcmp(pathIn->type, STR_MS_T) == 0) {
+    if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
       resource = parseMspForStr(resourceIn);
     }
 
@@ -95,15 +91,25 @@ extern "C" {
     rsCollCreate(rei->rsComm, &collCreateInp);
 
     Archive *a = Archive::open(rei->rsComm, archive, resource);
+    if (a == NULL) {
+	return SYS_TAR_OPEN_ERR;
+    }
     while ((json=a->nextItem()) != NULL) {
 	std::string file;
+	int status;
+	const char *type;
 	json_t *list;
 
 	file = path + "/" + json_string_value(json_object_get(json, "name"));
-	a->extractItem(file);
-	list = json_object_get(json, "attributes");
+	status = a->extractItem(file);
+	if (status < 0) {
+	    delete a;
+	    return status;
+	}
 
-	if (strcmp(json_string_value(json_object_get(json, "type")), "coll") == 0) {
+	type = json_string_value(json_object_get(json, "type"));
+	list = json_object_get(json, "attributes");
+	if (strcmp(type, "coll") == 0) {
 	    if (list != NULL) {
 		attributes(rei->rsComm, file, "-C", list);
 	    }

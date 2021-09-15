@@ -9,12 +9,6 @@
 #include "irods_includes.hh"
 #include "Archive.hh"
 
-#include <string>
-#include <fstream>
-#include <streambuf>
-#include <sstream>
-#include <iomanip>
-
 extern "C" {
 
   int msiArchiveIndex(msParam_t* archiveIn,
@@ -22,7 +16,7 @@ extern "C" {
                       ruleExecInfo_t *rei)
   {
     /* Check input parameters. */
-    if (strcmp(archiveIn->type, STR_MS_T)) {
+    if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -30,9 +24,11 @@ extern "C" {
     std::string archive = parseMspForStr(archiveIn);
 
     Archive *a = Archive::open(rei->rsComm, archive, "");
-    std::string output = a->indexItems();
+    if (a == NULL) {
+	return SYS_TAR_OPEN_ERR;
+    }
+    fillStrInMsParam(indexOut, a->indexItems().c_str());
     delete a;
-    fillStrInMsParam(indexOut, output.c_str());
 
     return 0;
   }

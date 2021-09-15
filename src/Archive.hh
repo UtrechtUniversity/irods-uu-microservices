@@ -2,11 +2,8 @@
 # include <archive_entry.h>
 # include <jansson.h>
 
-# include <string>
-
 # include "rsDataObjCreate.hpp"
 # include "rsDataObjOpen.hpp"
-# include "rsDataObjOpenAndStat.hpp"
 # include "rsDataObjRead.hpp"
 # include "rsDataObjWrite.hpp"
 # include "rsDataObjClose.hpp"
@@ -31,7 +28,7 @@ class Archive {
     };
 
     Archive(struct archive *archive, Data *data, bool creating, json_t *list,
-	    std::string &path, std::string &collection, std::string resc,
+	    std::string &path, std::string &collection, std::string &resc,
 	    std::string indexString) :
 	archive(archive),
 	data(data),
@@ -120,9 +117,14 @@ public:
 
 	len = archive_entry_size(entry);
 	buf = new char[len + 1];
-	archive_read_data(a, buf, len);
 	buf[len] = '\0';
-	json = json_loads(buf, 0, &error);
+	if (archive_read_data(a, buf, len) != len ||
+	    (json=json_loads(buf, 0, &error)) == NULL) {
+	    delete buf;
+	    delete data;
+	    archive_read_free(a);
+	    return NULL;
+	}
 
 	// get list of items from json
 	origin = json_string_value(json_object_get(json, "collection"));
@@ -136,14 +138,15 @@ public:
     }
 
     ~Archive() {
-	if (creating) {
-	    // if writing, create INDEX.json and actually add items
-	    build();
-	    archive_write_free(archive);
-	} else {
-	    archive_read_free(archive);
+	if (archive != NULL) {
+	    if (creating) {
+		archive_write_free(archive);
+	    } else {
+		archive_read_free(archive);
+	    }
 	}
 
+	json_decref(list);
 	delete data;
     }
 
@@ -204,83 +207,121 @@ public:
 	}
     }
 
-    void extractItem(std::string filename) {
+    int extractItem(std::string filename) {
 	// extract current object
 	if (archive_entry_filetype(entry) == AE_IFDIR) {
 	    collInp_t collCreateInp;
 
 	    memset(&collCreateInp, '\0', sizeof(collInp_t));
 	    rstrcpy(collCreateInp.collName, filename.c_str(), MAX_NAME_LEN);
-	    rsCollCreate(data->rsComm, &collCreateInp);
+	    return rsCollCreate(data->rsComm, &collCreateInp);
 	} else {
 	    char buf[A_BUFSIZE];
-	    int fd;
+	    int fd, status;
 	    la_ssize_t len;
 
 	    fd = _creat(data->rsComm, filename.c_str(), data->resource);
-	    while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
-		_write(data->rsComm, fd, buf, len);
+	    if (fd < 0) {
+		return fd;
 	    }
-	    _close(data->rsComm, fd);
+	    while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
+		status = _write(data->rsComm, fd, buf, len);
+		if (status < 0) {
+		    _close(data->rsComm, fd);
+		    return status;
+		}
+	    }
+	    if (len < 0) {
+		_close(data->rsComm, fd);
+		return SYS_TAR_EXTRACT_ALL_ERR;
+	    }
+	    return _close(data->rsComm, fd);
 	}
+
+	return 0;
+    }
+
+    int construct() {
+	if (creating) {
+	    json_t *json;
+	    char *str;
+	    size_t len;
+
+	    json = json_object();
+	    json_object_set_new(json, "collection",
+				json_string(origin.c_str()));
+	    json_object_set_new(json, "size", json_integer(dataSize));
+	    json_object_set(json, "items", list);
+	    str = json_dumps(json, JSON_INDENT(2));
+	    json_decref(json);
+
+	    len = strlen(str);
+	    entry = archive_entry_new();
+	    archive_entry_set_pathname(entry, "INDEX.json");
+	    archive_entry_set_filetype(entry, AE_IFREG);
+	    archive_entry_set_perm(entry, 0444);
+	    archive_entry_set_size(entry, len);
+	    if (archive_write_header(archive, entry) < 0 ||
+		archive_write_data(archive, str, len) < 0) {
+		free(str);
+		return SYS_TAR_APPEND_ERR;
+	    }
+	    free(str);
+
+	    for (index = 0; index < json_array_size(list); index++) {
+		const char *filename;
+		int fd;
+		size_t size;
+		time_t mtime;
+
+		entry = archive_entry_new();
+		json = json_array_get(list, index);
+		filename = json_string_value(json_object_get(json, "name"));
+		mtime = json_integer_value(json_object_get(json, "modified"));
+		archive_entry_set_pathname(entry, filename);
+		archive_entry_set_mtime(entry, mtime, 0);
+		if (strcmp(json_string_value(json_object_get(json, "type")),
+			   "coll") == 0) {
+		    archive_entry_set_filetype(entry, AE_IFDIR);
+		    archive_entry_set_perm(entry, 0750);
+		    if (archive_write_header(archive, entry) < 0) {
+			return SYS_TAR_APPEND_ERR;
+		    }
+		} else {
+		    archive_entry_set_filetype(entry, AE_IFREG);
+		    archive_entry_set_perm(entry, 0600);
+		    size = json_integer_value(json_object_get(json, "size"));
+		    archive_entry_set_size(entry, size);
+		    if (archive_write_header(archive, entry) < 0) {
+			return SYS_TAR_APPEND_ERR;
+		    }
+		    fd = _open(data->rsComm, (origin + "/" + filename).c_str());
+		    if (fd < 0) {
+			return fd;
+		    }
+		    while ((len=_read(data->rsComm, fd, data->buf,
+				      sizeof(data->buf))) > 0) {
+			if (archive_write_data(archive, data->buf, len) < 0) {
+			    _close(data->rsComm, fd);
+			    return SYS_TAR_APPEND_ERR;
+			}
+		    }
+		    if (len < 0) {
+			_close(data->rsComm, fd);
+			return SYS_TAR_APPEND_ERR;
+		    }
+		    _close(data->rsComm, fd);
+		}
+	    }
+
+	    archive_write_free(archive);
+	    archive = NULL;
+	}
+
+	return 0;
     }
 
 private:
-    void build() {
-	json_t *json;
-	char *str;
-	size_t len;
-
-	json = json_object();
-	json_object_set_new(json, "collection", json_string(origin.c_str()));
-	json_object_set_new(json, "size", json_integer(dataSize));
-	json_object_set(json, "items", list);
-	str = json_dumps(json, JSON_INDENT(2));
-	json_decref(json);
-
-	len = strlen(str);
-	entry = archive_entry_new();
-	archive_entry_set_pathname(entry, "INDEX.json");
-	archive_entry_set_filetype(entry, AE_IFREG);
-	archive_entry_set_perm(entry, 0444);
-	archive_entry_set_size(entry, len);
-	archive_write_header(archive, entry);
-	archive_write_data(archive, str, len);
-	free(str);
-
-	for (index = 0; index < json_array_size(list); index++) {
-	    const char *filename;
-	    int fd;
-	    size_t size;
-	    time_t mtime;
-
-	    entry = archive_entry_new();
-	    json = json_array_get(list, index);
-	    filename = json_string_value(json_object_get(json, "name"));
-	    mtime = json_integer_value(json_object_get(json, "modified"));
-	    archive_entry_set_pathname(entry, filename);
-	    archive_entry_set_mtime(entry, mtime, 0);
-	    if (strcmp(json_string_value(json_object_get(json, "type")), "coll") == 0) {
-		archive_entry_set_filetype(entry, AE_IFDIR);
-		archive_entry_set_perm(entry, 0750);
-		archive_write_header(archive, entry);
-	    } else {
-		archive_entry_set_filetype(entry, AE_IFREG);
-		archive_entry_set_perm(entry, 0600);
-		size = json_integer_value(json_object_get(json, "size"));
-		archive_entry_set_size(entry, size);
-		archive_write_header(archive, entry);
-		fd = _open(data->rsComm, (origin + "/" + filename).c_str());
-		while ((len=_read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
-		    archive_write_data(archive, data->buf, len);
-		}
-		_close(data->rsComm, fd);
-	    }
-	}
-
-	json_decref(list);
-    }
-
     static int _creat(rsComm_t *rsComm, const char *name,
 		      const char *resource) {
 	dataObjInp_t input;
@@ -304,7 +345,7 @@ private:
 	return rsDataObjOpen(rsComm, &input);
     }
 
-    static ssize_t _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
+    static int _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
 	openedDataObjInp_t input;
 	bytesBuf_t rbuf;
 
@@ -316,8 +357,8 @@ private:
 	return rsDataObjRead(rsComm, &input, &rbuf);
     }
 
-    static ssize_t _write(rsComm_t *rsComm, int index, const void *buf,
-			  size_t len) {
+    static int _write(rsComm_t *rsComm, int index, const void *buf, size_t len)
+    {
 	openedDataObjInp_t input;
 	bytesBuf_t wbuf;
 
