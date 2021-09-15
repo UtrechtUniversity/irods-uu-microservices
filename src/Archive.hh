@@ -16,7 +16,7 @@
 # include <string.h>
 
 # define A_BUFSIZE	(1024 * 1024)
-# define A_BLOCKSIZE	8192
+# define A_BLOCKSIZE	((size_t) 8192)
 
 class Archive {
     struct Data {
@@ -115,10 +115,10 @@ public:
 	    return NULL;
 	}
 
-	len = archive_entry_size(entry);
+	len = (size_t) archive_entry_size(entry);
 	buf = new char[len + 1];
 	buf[len] = '\0';
-	if (archive_read_data(a, buf, len) != len ||
+	if (archive_read_data(a, buf, len) != (la_ssize_t) len ||
 	    (json=json_loads(buf, 0, &error)) == NULL) {
 	    delete buf;
 	    delete data;
@@ -159,7 +159,7 @@ public:
 	    json = json_object();
 	    json_object_set_new(json, "name", json_string(name.c_str()));
 	    json_object_set_new(json, "type", json_string("dataObj"));
-	    json_object_set_new(json, "size", json_integer(size));
+	    json_object_set_new(json, "size", json_integer((json_int_t) size));
 	    json_object_set_new(json, "created", json_integer(created));
 	    json_object_set_new(json, "modified", json_integer(modified));
 	    json_object_set_new(json, "owner",
@@ -225,7 +225,7 @@ public:
 		return fd;
 	    }
 	    while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
-		status = _write(data->rsComm, fd, buf, len);
+		status = _write(data->rsComm, fd, buf, (size_t) len);
 		if (status < 0) {
 		    _close(data->rsComm, fd);
 		    return status;
@@ -245,24 +245,25 @@ public:
 	if (creating) {
 	    json_t *json;
 	    char *str;
-	    size_t len;
+	    la_ssize_t len;
 
 	    json = json_object();
 	    json_object_set_new(json, "collection",
 				json_string(origin.c_str()));
-	    json_object_set_new(json, "size", json_integer(dataSize));
+	    json_object_set_new(json, "size",
+				json_integer((json_int_t) dataSize));
 	    json_object_set(json, "items", list);
 	    str = json_dumps(json, JSON_INDENT(2));
 	    json_decref(json);
 
-	    len = strlen(str);
+	    len = (la_ssize_t) strlen(str);
 	    entry = archive_entry_new();
 	    archive_entry_set_pathname(entry, "INDEX.json");
 	    archive_entry_set_filetype(entry, AE_IFREG);
 	    archive_entry_set_perm(entry, 0444);
 	    archive_entry_set_size(entry, len);
 	    if (archive_write_header(archive, entry) < 0 ||
-		archive_write_data(archive, str, len) < 0) {
+		archive_write_data(archive, str, (size_t) len) < 0) {
 		free(str);
 		return SYS_TAR_APPEND_ERR;
 	    }
@@ -290,8 +291,9 @@ public:
 		} else {
 		    archive_entry_set_filetype(entry, AE_IFREG);
 		    archive_entry_set_perm(entry, 0600);
-		    size = json_integer_value(json_object_get(json, "size"));
-		    archive_entry_set_size(entry, size);
+		    size = (size_t) json_integer_value(json_object_get(json,
+								       "size"));
+		    archive_entry_set_size(entry, (la_int64_t) size);
 		    if (archive_write_header(archive, entry) < 0) {
 			return SYS_TAR_APPEND_ERR;
 		    }
@@ -301,7 +303,8 @@ public:
 		    }
 		    while ((len=_read(data->rsComm, fd, data->buf,
 				      sizeof(data->buf))) > 0) {
-			if (archive_write_data(archive, data->buf, len) < 0) {
+			if (archive_write_data(archive, data->buf,
+					       (size_t) len) < 0) {
 			    _close(data->rsComm, fd);
 			    return SYS_TAR_APPEND_ERR;
 			}
