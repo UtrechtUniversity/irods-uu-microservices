@@ -399,8 +399,8 @@ private:
 	la_ssize_t status;
 
 	d = (Data *) data;
-	status = _read(d->rsComm, d->index, d->buf, sizeof(d->buf));
-	if (status < 0) {
+	if (d->index < 0 ||
+	    (status=_read(d->rsComm, d->index, d->buf, sizeof(d->buf))) < 0) {
 	    return -1;
 	} else {
 	    *buf = d->buf;
@@ -414,8 +414,8 @@ private:
 	la_ssize_t status;
 
 	d = (Data *) data;
-	status = _write(d->rsComm, d->index, buf, size);
-	if (status < 0) {
+	if (d->index < 0 ||
+	    (status=_write(d->rsComm, d->index, buf, size)) < 0) {
 	    return -1;
 	} else {
 	    return status;
@@ -426,7 +426,7 @@ private:
 	Data *d;
 
 	d = (Data *) data;
-	return _close(d->rsComm, d->index);
+	return (d->index < 0 || _close(d->rsComm, d->index) < 0) ? -1 : 0;
     }
 
     struct archive *archive;	// libarchive reference
