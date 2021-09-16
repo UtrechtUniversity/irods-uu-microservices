@@ -65,10 +65,12 @@ extern "C" {
   int msiArchiveExtract(msParam_t* archiveIn,
                         msParam_t* pathIn,
                         msParam_t* resourceIn,
+                        msParam_t* statusOut,
                         ruleExecInfo_t *rei)
   {
     collInp_t collCreateInp;
     json_t *json;
+    int status;
 
     /* Check input parameters. */
     if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
@@ -84,6 +86,9 @@ extern "C" {
     std::string resource = "";
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
       resource = parseMspForStr(resourceIn);
+      if (resource.compare("null") == 0) {
+	resource = "";
+      }
     }
 
     memset(&collCreateInp, '\0', sizeof(collInp_t));
@@ -92,48 +97,53 @@ extern "C" {
 
     Archive *a = Archive::open(rei->rsComm, archive, resource);
     if (a == NULL) {
-	return SYS_TAR_OPEN_ERR;
-    }
-    while ((json=a->nextItem()) != NULL) {
-	std::string file;
-	int status;
-	const char *type;
-	json_t *list;
+	status = SYS_TAR_OPEN_ERR;
+    } else {
+	status = 0;
+	while ((json=a->nextItem()) != NULL) {
+	    std::string file;
+	    const char *type;
+	    json_t *list;
 
-	file = path + "/" + json_string_value(json_object_get(json, "name"));
-	status = a->extractItem(file);
-	if (status < 0) {
-	    delete a;
-	    return status;
-	}
-
-	type = json_string_value(json_object_get(json, "type"));
-	list = json_object_get(json, "attributes");
-	if (strcmp(type, "coll") == 0) {
-	    if (list != NULL) {
-		attributes(rei->rsComm, file, "-C", list);
+	    file = path + "/" +
+		   json_string_value(json_object_get(json, "name"));
+	    status = a->extractItem(file);
+	    if (status < 0) {
+		delete a;
+		break;
 	    }
-	} else {
-	    modify(rei->rsComm, file, json);
-	    if (list != NULL) {
-		attributes(rei->rsComm, file, "-d", list);
+
+	    type = json_string_value(json_object_get(json, "type"));
+	    list = json_object_get(json, "attributes");
+	    if (strcmp(type, "coll") == 0) {
+		if (list != NULL) {
+		    attributes(rei->rsComm, file, "-C", list);
+		}
+	    } else {
+		modify(rei->rsComm, file, json);
+		if (list != NULL) {
+		    attributes(rei->rsComm, file, "-d", list);
+		}
 	    }
 	}
+	delete a;
     }
-    delete a;
 
-    return 0;
+    fillIntInMsParam(statusOut, status);
+    return status;
   }
 
   irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(3);
+    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
         msParam_t*,
         msParam_t*,
         msParam_t*,
+        msParam_t*,
         ruleExecInfo_t*>("msiArchiveExtract",
                          std::function<int(
+                             msParam_t*,
                              msParam_t*,
                              msParam_t*,
                              msParam_t*,
