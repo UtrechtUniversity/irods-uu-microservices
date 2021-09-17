@@ -23,7 +23,7 @@ extern "C" {
     /* Parse input paramaters. */
     std::string archive = parseMspForStr(archiveIn);
 
-    Archive *a = Archive::open(rei->rsComm, archive, "");
+    Archive *a = Archive::open(rei->rsComm, archive, NULL);
     if (a == NULL) {
 	return SYS_TAR_OPEN_ERR;
     }

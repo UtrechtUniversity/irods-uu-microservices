@@ -282,12 +282,9 @@ extern "C" {
     /* Parse input paramaters. */
     std::string archive    = parseMspForStr(archiveIn);
     std::string collection = parseMspForStr(collectionIn);
-    std::string resource   = "";
+    const char *resource   = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
       resource = parseMspForStr(resourceIn);
-      if (resource.compare("null") == 0) {
-	resource = "";
-      }
     }
 
     id = collID(rei->rsComm, collection);

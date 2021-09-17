@@ -29,7 +29,7 @@ class Archive {
 
     Archive(struct archive *archive, Data *data, bool creating, json_t *list,
 	    size_t dataSize, std::string &path, std::string &collection,
-	    std::string &resc, std::string indexString) :
+	    const char *resc, std::string indexString) :
 	archive(archive),
 	data(data),
 	creating(creating),
@@ -37,10 +37,9 @@ class Archive {
 	dataSize(dataSize),
 	path(path),
 	origin(collection),
-	resc(resc),
 	indexString(indexString)
     {
-	data->resource = (this->resc.length() != 0) ? this->resc.c_str() : NULL;
+	data->resource = resc;
 	index = 0;
     }
 
@@ -49,7 +48,7 @@ public:
      * create archive
      */
     static Archive *create(rsComm_t *rsComm, std::string path,
-			   std::string collection, std::string resc) {
+			   std::string collection, const char *resc) {
 	struct archive *a;
 	Data *data;
 
@@ -65,7 +64,7 @@ public:
 	data = new Data;
 	data->rsComm = rsComm;
 	data->name = path.c_str();
-	data->resource = (resc.length() != 0) ? resc.c_str() : NULL;
+	data->resource = resc;
 	if (archive_write_open(a, data, &a_creat, &a_write, &a_close) !=
 								ARCHIVE_OK) {
 	    delete data;
@@ -80,7 +79,7 @@ public:
     /*
      * open existing archive
      */
-    static Archive *open(rsComm_t *rsComm, std::string path, std::string resc) {
+    static Archive *open(rsComm_t *rsComm, std::string path, const char *resc) {
 	struct archive *a;
 	Data *data;
 	struct archive_entry *entry;
@@ -447,6 +446,5 @@ private:
     size_t dataSize;		// total size of archived data objects
     std::string path;		// path of archive
     std::string origin;		// original collection
-    std::string resc;		// resource
     std::string indexString;
 };
