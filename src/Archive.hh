@@ -28,12 +28,13 @@ class Archive {
     };
 
     Archive(struct archive *archive, Data *data, bool creating, json_t *list,
-	    std::string &path, std::string &collection, std::string &resc,
-	    std::string indexString) :
+	    size_t dataSize, std::string &path, std::string &collection,
+	    std::string &resc, std::string indexString) :
 	archive(archive),
 	data(data),
 	creating(creating),
 	list(list),
+	dataSize(dataSize),
 	path(path),
 	origin(collection),
 	resc(resc),
@@ -41,7 +42,6 @@ class Archive {
     {
 	data->resource = (this->resc.length() != 0) ? this->resc.c_str() : NULL;
 	index = 0;
-	dataSize = 0;
     }
 
 public:
@@ -73,8 +73,8 @@ public:
 	    return NULL;
 	}
 
-	return new Archive(a, data, true, json_array(), path, collection, resc,
-			   "");
+	return new Archive(a, data, true, json_array(), 0, path, collection,
+			   resc, "");
     }
 
     /*
@@ -84,7 +84,7 @@ public:
 	struct archive *a;
 	Data *data;
 	struct archive_entry *entry;
-	size_t len;
+	size_t size;
 	char *buf;
 	json_t *json, *list;
 	json_error_t error;
@@ -115,10 +115,10 @@ public:
 	    return NULL;
 	}
 
-	len = (size_t) archive_entry_size(entry);
-	buf = new char[len + 1];
-	buf[len] = '\0';
-	if (archive_read_data(a, buf, len) != (la_ssize_t) len ||
+	size = (size_t) archive_entry_size(entry);
+	buf = new char[size + 1];
+	buf[size] = '\0';
+	if (archive_read_data(a, buf, size) != (la_ssize_t) size ||
 	    (json=json_loads(buf, 0, &error)) == NULL) {
 	    delete buf;
 	    delete data;
@@ -128,11 +128,13 @@ public:
 
 	// get list of items from json
 	origin = json_string_value(json_object_get(json, "collection"));
+	size = (size_t) json_integer_value(json_object_get(json, "size"));
 	list = json_object_get(json, "items");
 	json_incref(list);
 	json_decref(json);
 
-	archive = new Archive(a, data, false, list, path, origin, resc, buf);
+	archive = new Archive(a, data, false, list, size, path, origin, resc,
+			      buf);
 	delete buf;
 	return archive;
     }
@@ -196,6 +198,10 @@ public:
 
     std::string indexItems() {
 	return indexString;
+    }
+
+    size_t size() {
+	return dataSize;
     }
 
     json_t *nextItem() {
