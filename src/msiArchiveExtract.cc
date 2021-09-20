@@ -115,6 +115,7 @@ int msiArchiveExtract(msParam_t* archiveIn,
     collInp_t collCreateInp;
     json_t *json;
     int status;
+    long long space;
 
     /* Check input parameters. */
     if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
@@ -141,17 +142,16 @@ int msiArchiveExtract(msParam_t* archiveIn,
         status = SYS_TAR_OPEN_ERR;
     } else {
         status = 0;
+        space = 0;
         if (resource != NULL) {
-            long long space;
-
             /*
              * see if there is enough free space
              */
             space = freeSpace(rei->rsComm, resource);
             if (space < 0) {
                 status = (int) space;
-            } else if (space != 0 && a->size() > (size_t) (space - space / 10))
-            {
+            } else if (space != 0 && extract == NULL &&
+                       a->size() > (size_t) (space - space / 10)) {
                 /*
                  * the choice of status code is rather a shot in the dark
                  */
@@ -181,7 +181,26 @@ int msiArchiveExtract(msParam_t* archiveIn,
 
             file = json_string_value(json_object_get(json, "name"));
             if (extract == NULL || file.compare(extract) == 0) {
+                if (extract != NULL) {
+                    if (space != 0 &&
+                       json_integer_value(json_object_get(json, "size")) >
+                                                        space - space / 10) {
+                        /*
+                         * single-file space check failed
+                         */
+                        delete a;
+                        status = SYS_RESC_QUOTA_EXCEEDED;
+                        fillIntInMsParam(statusOut, status);
+                        return status;
+                    }
+
+                    std::string::size_type found = file.rfind("/");
+                    if (found != std::string::npos) {
+                        file = file.substr(found + 1);
+                    }
+                }
                 file = path + "/" + file;
+
                 status = a->extractItem(file);
                 if (status < 0) {
                     delete a;
@@ -203,6 +222,10 @@ int msiArchiveExtract(msParam_t* archiveIn,
                     if (list != NULL) {
                         attributes(rei->rsComm, file, "-d", list);
                     }
+                }
+
+                if (extract != NULL) {
+                    break;
                 }
             }
         }
