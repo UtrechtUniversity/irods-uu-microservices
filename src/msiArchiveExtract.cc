@@ -31,13 +31,13 @@ static long long freeSpace(rsComm_t *rsComm, const char *resource)
     clearGenQueryInp(&genQueryInp);
 
     if (space == 0) {
-	if (genQueryOut->rowCnt != 1) {
-	    space = SYS_RESC_DOES_NOT_EXIST;
-	} else {
-	    space = strtoll(getSqlResultByInx(genQueryOut,
-					      COL_R_FREE_SPACE)->value,
-			    NULL, 10);
-	}
+        if (genQueryOut->rowCnt != 1) {
+            space = SYS_RESC_DOES_NOT_EXIST;
+        } else {
+            space = strtoll(getSqlResultByInx(genQueryOut,
+                                              COL_R_FREE_SPACE)->value,
+                            NULL, 10);
+        }
     }
     freeGenQueryOut(&genQueryOut);
 
@@ -57,14 +57,14 @@ static void modify(rsComm_t *rsComm, std::string &file, json_t *json)
     rstrcpy(dataObjInfo.objPath, file.c_str(), MAX_NAME_LEN);
     modDataObj.dataObjInfo = &dataObjInfo;
     snprintf(tmpStr, MAX_NAME_LEN, "%lld",
-	     json_integer_value(json_object_get(json, "modified")));
+             json_integer_value(json_object_get(json, "modified")));
     addKeyVal(&regParam, DATA_MODIFY_KW, tmpStr);
     modDataObj.regParam = &regParam;
-    rsModDataObjMeta(rsComm, &modDataObj);	/* allowed to fail */
+    rsModDataObjMeta(rsComm, &modDataObj);      /* allowed to fail */
 }
 
 static void attributes(rsComm_t *rsComm, std::string &file, const char *type,
-		       json_t *list)
+                       json_t *list)
 {
     modAVUMetadataInp_t modAVUInp;
     size_t sz, i;
@@ -77,38 +77,38 @@ static void attributes(rsComm_t *rsComm, std::string &file, const char *type,
     name = NULL;
     sz = json_array_size(list);
     for (i = 0; i < sz; i++) {
-	json = json_array_get(list, i);
-	modAVUInp.arg3 = (char *)
-			 json_string_value(json_object_get(json, "name"));
-	modAVUInp.arg4 = (char *)
-			 json_string_value(json_object_get(json, "value"));
-	modAVUInp.arg5 = (char *)
-			 json_string_value(json_object_get(json, "unit"));
-	modAVUInp.arg0 = (name == NULL || strcmp(modAVUInp.arg3, name) != 0) ?
-			  (char *) "set" : (char *) "add";
-	name = modAVUInp.arg3;
-	rsModAVUMetadata(rsComm, &modAVUInp);	/* allowed to fail */
+        json = json_array_get(list, i);
+        modAVUInp.arg3 = (char *)
+                         json_string_value(json_object_get(json, "name"));
+        modAVUInp.arg4 = (char *)
+                         json_string_value(json_object_get(json, "value"));
+        modAVUInp.arg5 = (char *)
+                         json_string_value(json_object_get(json, "unit"));
+        modAVUInp.arg0 = (name == NULL || strcmp(modAVUInp.arg3, name) != 0) ?
+                          (char *) "set" : (char *) "add";
+        name = modAVUInp.arg3;
+        rsModAVUMetadata(rsComm, &modAVUInp);   /* allowed to fail */
     }
 }
 
 extern "C" {
 
-  int msiArchiveExtract(msParam_t* archiveIn,
-                        msParam_t* pathIn,
-                        msParam_t* resourceIn,
-                        msParam_t* statusOut,
-                        ruleExecInfo_t *rei)
-  {
+int msiArchiveExtract(msParam_t* archiveIn,
+                      msParam_t* pathIn,
+                      msParam_t* resourceIn,
+                      msParam_t* statusOut,
+                      ruleExecInfo_t *rei)
+{
     collInp_t collCreateInp;
     json_t *json;
     int status;
 
     /* Check input parameters. */
     if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
     if (pathIn->type == NULL || strcmp(pathIn->type, STR_MS_T)) {
-      return SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
@@ -116,69 +116,69 @@ extern "C" {
     std::string path     = parseMspForStr(pathIn);
     const char *resource = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
-      resource = parseMspForStr(resourceIn);
+        resource = parseMspForStr(resourceIn);
     }
 
     Archive *a = Archive::open(rei->rsComm, archive, resource);
     if (a == NULL) {
-	status = SYS_TAR_OPEN_ERR;
+        status = SYS_TAR_OPEN_ERR;
     } else {
-	status = 0;
-	if (resource != NULL) {
-	    long long space;
+        status = 0;
+        if (resource != NULL) {
+            long long space;
 
-	    space = freeSpace(rei->rsComm, resource);
-	    if (space < 0) {
-		status = (int) space;
-	    } else if (space != 0 && a->size() > (size_t) (space - space / 10))
-	    {
-		status = SYS_RESC_QUOTA_EXCEEDED;
-	    }
-	    if (status < 0) {
-		delete a;
-		fillIntInMsParam(statusOut, status);
-		return status;
-	    }
-	}
+            space = freeSpace(rei->rsComm, resource);
+            if (space < 0) {
+                status = (int) space;
+            } else if (space != 0 && a->size() > (size_t) (space - space / 10))
+            {
+                status = SYS_RESC_QUOTA_EXCEEDED;
+            }
+            if (status < 0) {
+                delete a;
+                fillIntInMsParam(statusOut, status);
+                return status;
+            }
+        }
 
-	memset(&collCreateInp, '\0', sizeof(collInp_t));
-	rstrcpy(collCreateInp.collName, path.c_str(), MAX_NAME_LEN);
-	rsCollCreate(rei->rsComm, &collCreateInp);
+        memset(&collCreateInp, '\0', sizeof(collInp_t));
+        rstrcpy(collCreateInp.collName, path.c_str(), MAX_NAME_LEN);
+        rsCollCreate(rei->rsComm, &collCreateInp);
 
-	while ((json=a->nextItem()) != NULL) {
-	    std::string file;
-	    const char *type;
-	    json_t *list;
+        while ((json=a->nextItem()) != NULL) {
+            std::string file;
+            const char *type;
+            json_t *list;
 
-	    file = path + "/" +
-		   json_string_value(json_object_get(json, "name"));
-	    status = a->extractItem(file);
-	    if (status < 0) {
-		delete a;
-		break;
-	    }
+            file = path + "/" +
+                   json_string_value(json_object_get(json, "name"));
+            status = a->extractItem(file);
+            if (status < 0) {
+                delete a;
+                break;
+            }
 
-	    type = json_string_value(json_object_get(json, "type"));
-	    list = json_object_get(json, "attributes");
-	    if (strcmp(type, "coll") == 0) {
-		if (list != NULL) {
-		    attributes(rei->rsComm, file, "-C", list);
-		}
-	    } else {
-		modify(rei->rsComm, file, json);
-		if (list != NULL) {
-		    attributes(rei->rsComm, file, "-d", list);
-		}
-	    }
-	}
-	delete a;
+            type = json_string_value(json_object_get(json, "type"));
+            list = json_object_get(json, "attributes");
+            if (strcmp(type, "coll") == 0) {
+                if (list != NULL) {
+                    attributes(rei->rsComm, file, "-C", list);
+                }
+            } else {
+                modify(rei->rsComm, file, json);
+                if (list != NULL) {
+                    attributes(rei->rsComm, file, "-d", list);
+                }
+            }
+        }
+        delete a;
     }
 
     fillIntInMsParam(statusOut, status);
     return status;
-  }
+}
 
-  irods::ms_table_entry* plugin_factory() {
+irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
@@ -195,5 +195,6 @@ extern "C" {
                              ruleExecInfo_t*)>(msiArchiveExtract));
 
     return msvc;
-  }
+}
+
 }
