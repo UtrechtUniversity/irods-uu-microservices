@@ -188,10 +188,8 @@ int msiArchiveExtract(msParam_t* archiveIn,
                         /*
                          * single-file space check failed
                          */
-                        delete a;
                         status = SYS_RESC_QUOTA_EXCEEDED;
-                        fillIntInMsParam(statusOut, status);
-                        return status;
+                        break;
                     }
 
                     std::string::size_type found = file.rfind("/");
@@ -203,7 +201,6 @@ int msiArchiveExtract(msParam_t* archiveIn,
 
                 status = a->extractItem(file);
                 if (status < 0) {
-                    delete a;
                     break;
                 }
 
