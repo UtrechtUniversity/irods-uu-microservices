@@ -11,6 +11,9 @@
 
 #include "rsGenQuery.hpp"
 
+/*
+ * obtain ID of a collection, or a negative error status
+ */
 static long long collID(rsComm_t *rsComm, std::string &coll)
 {
     char collQCond[MAX_NAME_LEN];
@@ -40,6 +43,9 @@ static long long collID(rsComm_t *rsComm, std::string &coll)
     return collId;
 }
 
+/*
+ * obtain attribute metadata for a DataObj
+ */
 static json_t *attrDataObj(rsComm_t *rsComm, long long id)
 {
     char collQCond[MAX_NAME_LEN];
@@ -90,6 +96,9 @@ static json_t *attrDataObj(rsComm_t *rsComm, long long id)
     return list;
 }
 
+/*
+ * obtain attribute metadata for a collection
+ */
 static json_t *attrColl(rsComm_t *rsComm, long long id)
 {
     char collQCond[MAX_NAME_LEN];
@@ -140,6 +149,9 @@ static json_t *attrColl(rsComm_t *rsComm, long long id)
     return list;
 }
 
+/*
+ * pass on metadata from DataObjs in a given location to the archive
+ */
 static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
                        long long collId)
 {
@@ -198,6 +210,9 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
     freeGenQueryOut(&genQueryOut);
 }
 
+/*
+ * recursively pass on metadata for collections to the archive
+ */
 static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
                     std::string &path)
 {
@@ -240,6 +255,9 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
                        &zones->value[zones->len * i],
                        attrColl(rsComm, id));
 
+            /*
+             * maintain a list of collections to recursively query
+             */
             dirs.push_back(std::make_pair(name, id));
         }
 
@@ -253,6 +271,10 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
     clearGenQueryInp(&genQueryInp);
     freeGenQueryOut(&genQueryOut);
 
+    /*
+     * Also add what's inside those collections. This is done separately so
+     * that the maximum number of open queries is not exceeded.
+     */
     for (auto dir = dirs.begin(); dir != dirs.end(); dir++) {
         dirColl(a, rsComm, coll, dir->first);
         dirDataObj(a, rsComm, dir->first.substr(coll.length() + 1) + "/",
@@ -262,21 +284,21 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
 
 extern "C" {
 
-int msiArchiveCreate(msParam_t* archiveIn,
-		     msParam_t* collectionIn,
-		     msParam_t* resourceIn,
-		     msParam_t* statusOut,
-		     ruleExecInfo_t *rei)
+int msiArchiveCreate(msParam_t *archiveIn,
+                     msParam_t *collectionIn,
+                     msParam_t *resourceIn,
+                     msParam_t *statusOut,
+                     ruleExecInfo_t *rei)
 {
     long long id;
     int status;
 
     /* Check input parameters. */
     if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
-	return SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
     if (collectionIn->type == NULL || strcmp(collectionIn->type, STR_MS_T)) {
-	return SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     /* Parse input paramaters. */
@@ -284,44 +306,57 @@ int msiArchiveCreate(msParam_t* archiveIn,
     std::string collection = parseMspForStr(collectionIn);
     const char *resource   = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
-	resource = parseMspForStr(resourceIn);
+        resource = parseMspForStr(resourceIn);
     }
 
     id = collID(rei->rsComm, collection);
     if (id < 0) {
-	status = (int) id;
+        /*
+         * no such collection
+         */
+        status = (int) id;
     } else {
-	Archive *a = Archive::create(rei->rsComm, archive, collection,
-				     resource);
-	if (a == NULL) {
-	    status = SYS_TAR_OPEN_ERR;
-	} else {
-	    dirColl(a, rei->rsComm, collection, collection);
-	    dirDataObj(a, rei->rsComm, "", id);
-	    status = a->construct();
-	    delete a;
-	}
+        /*
+         * create archive
+         */
+        Archive *a = Archive::create(rei->rsComm, archive, collection,
+                                     resource);
+        if (a == NULL) {
+            status = SYS_TAR_OPEN_ERR;
+        } else {
+            /*
+             * add collections and DataObjs to archive
+             */
+            dirColl(a, rei->rsComm, collection, collection);
+            dirDataObj(a, rei->rsComm, "", id);
+
+            /*
+             * actually construct the archive
+             */
+            status = a->construct();
+            delete a;
+        }
     }
 
     fillIntInMsParam(statusOut, status);
     return status;
 }
 
-irods::ms_table_entry* plugin_factory() {
+irods::ms_table_entry *plugin_factory() {
     irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
 
     msvc->add_operation<
-	msParam_t*,
-	msParam_t*,
-	msParam_t*,
-	msParam_t*,
-	ruleExecInfo_t*>("msiArchiveCreate",
-			 std::function<int(
-			     msParam_t*,
-			     msParam_t*,
-			     msParam_t*,
-			     msParam_t*,
-			     ruleExecInfo_t*)>(msiArchiveCreate));
+        msParam_t*,
+        msParam_t*,
+        msParam_t*,
+        msParam_t*,
+        ruleExecInfo_t*>("msiArchiveCreate",
+                         std::function<int(
+                             msParam_t*,
+                             msParam_t*,
+                             msParam_t*,
+                             msParam_t*,
+                             ruleExecInfo_t*)>(msiArchiveCreate));
 
     return msvc;
 }
