@@ -9,9 +9,40 @@
 #include "irods_includes.hh"
 #include "Archive.hh"
 
+#include "rsGenQuery.hpp"
 #include "rsModDataObjMeta.hpp"
 #include "rsModAVUMetadata.hpp"
 
+
+static long long freeSpace(rsComm_t *rsComm, const char *resource)
+{
+    char rescQCond[MAX_NAME_LEN];
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut;
+    long long space;
+
+    memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
+    snprintf(rescQCond, MAX_NAME_LEN, "='%s'", resource);
+    addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, rescQCond);
+    addInxIval(&genQueryInp.selectInp, COL_R_FREE_SPACE, 1);
+    genQueryInp.maxRows = 1;
+    genQueryOut = NULL;
+    space = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+    clearGenQueryInp(&genQueryInp);
+
+    if (space == 0) {
+	if (genQueryOut->rowCnt != 1) {
+	    space = SYS_RESC_DOES_NOT_EXIST;
+	} else {
+	    space = strtoll(getSqlResultByInx(genQueryOut,
+					      COL_R_FREE_SPACE)->value,
+			    NULL, 10);
+	}
+    }
+    freeGenQueryOut(&genQueryOut);
+
+    return space;
+}
 
 static void modify(rsComm_t *rsComm, std::string &file, json_t *json)
 {
@@ -88,15 +119,32 @@ extern "C" {
       resource = parseMspForStr(resourceIn);
     }
 
-    memset(&collCreateInp, '\0', sizeof(collInp_t));
-    rstrcpy(collCreateInp.collName, path.c_str(), MAX_NAME_LEN);
-    rsCollCreate(rei->rsComm, &collCreateInp);
-
     Archive *a = Archive::open(rei->rsComm, archive, resource);
     if (a == NULL) {
 	status = SYS_TAR_OPEN_ERR;
     } else {
 	status = 0;
+	if (resource != NULL) {
+	    long long space;
+
+	    space = freeSpace(rei->rsComm, resource);
+	    if (space < 0) {
+		status = (int) space;
+	    } else if (space != 0 && a->size() > (size_t) (space - space / 10))
+	    {
+		status = SYS_RESC_QUOTA_EXCEEDED;
+	    }
+	    if (status < 0) {
+		delete a;
+		fillIntInMsParam(statusOut, status);
+		return status;
+	    }
+	}
+
+	memset(&collCreateInp, '\0', sizeof(collInp_t));
+	rstrcpy(collCreateInp.collName, path.c_str(), MAX_NAME_LEN);
+	rsCollCreate(rei->rsComm, &collCreateInp);
+
 	while ((json=a->nextItem()) != NULL) {
 	    std::string file;
 	    const char *type;
