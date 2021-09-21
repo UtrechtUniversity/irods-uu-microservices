@@ -22,11 +22,38 @@
  * libarchive for iRODS
  */
 class Archive {
-    struct Data {
+    class Data {
+    public:
+        Data(rsComm_t *rsComm, const char *name) :
+             rsComm(rsComm),
+             name(name) {
+            resource = NULL;
+            index = 0;
+
+            /*
+             * initialize _creat() input
+             */
+            memset(&create, '\0', sizeof(dataObjInp_t));
+            create.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+            if (resource != NULL) {
+                addKeyVal(&create.condInput, DEST_RESC_NAME_KW, resource);
+            }
+            addKeyVal(&create.condInput, FORCE_FLAG_KW, "");
+            addKeyVal(&create.condInput, TRANSLATED_PATH_KW, "");
+
+            /*
+             * initialize _open() input
+             */
+            memset(&open, '\0', sizeof(dataObjInp_t));
+            open.openFlags = O_RDONLY;
+        }
+
         rsComm_t *rsComm;       /* iRODS context */
         const char *name;       /* name of file to open */
         const char *resource;   /* resource to create the file on */
         int index;              /* file index */
+        dataObjInp_t create;    /* cached create input */
+        dataObjInp_t open;      /* cached open input */
         char buf[A_BUFSIZE];    /* buffer for reading */
     };
 
@@ -71,9 +98,7 @@ public:
             archive_write_add_filter_gzip(a);
             archive_write_set_format_ustar(a);
         }
-        data = new Data;
-        data->rsComm = rsComm;
-        data->name = path.c_str();
+        data = new Data(rsComm, path.c_str());
         data->resource = resc;
         if (archive_write_open(a, data, &a_creat, &a_write, &a_close) !=
                                                                 ARCHIVE_OK) {
@@ -112,9 +137,7 @@ public:
         }
         archive_read_support_filter_all(a);
         archive_read_support_format_all(a);
-        data = new Data;
-        data->rsComm = rsComm;
-        data->name = path.c_str();
+        data = new Data(rsComm, path.c_str());
         if (archive_read_open(a, data, &a_open, &a_read, &a_close) !=
                                                                 ARCHIVE_OK ||
             archive_read_next_header(a, &entry) != ARCHIVE_OK) {
@@ -303,7 +326,7 @@ public:
                     if (archive_write_header(archive, entry) < 0) {
                         return SYS_TAR_APPEND_ERR;
                     }
-                    fd = _open(data->rsComm, (origin + "/" + filename).c_str());
+                    fd = _open(data, (origin + "/" + filename).c_str());
                     if (fd < 0) {
                         return fd;
                     }
@@ -377,7 +400,7 @@ public:
             /*
              * DataObj
              */
-            fd = _creat(data->rsComm, filename.c_str(), data->resource);
+            fd = _creat(data, filename.c_str());
             if (fd < 0) {
                 return fd;
             }
@@ -402,30 +425,18 @@ private:
     /*
      * create an iRODS DataObj
      */
-    static int _creat(rsComm_t *rsComm, const char *name, const char *resource)
-    {
-        dataObjInp_t input;
-
-        memset(&input, '\0', sizeof(dataObjInp_t));
-        rstrcpy(input.objPath, name, MAX_NAME_LEN);
-        input.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
-        if (resource != NULL) {
-            addKeyVal(&input.condInput, DEST_RESC_NAME_KW, resource);
-        }
-        addKeyVal(&input.condInput, FORCE_FLAG_KW, "");
-        return rsDataObjCreate(rsComm, &input);
+    static int _creat(Data *data, const char *name) {
+        rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
+        return rsDataObjCreate(data->rsComm, &data->create);
     }
 
     /*
      * open an iRODS DataObj
      */
-    static int _open(rsComm_t *rsComm, const char *name) {
-        dataObjInp_t input;
-
-        memset(&input, '\0', sizeof(dataObjInp_t));
-        rstrcpy(input.objPath, name, MAX_NAME_LEN);
-        input.openFlags = O_RDONLY;
-        return rsDataObjOpen(rsComm, &input);
+    static int _open(Data *data, const char *name) {
+        rstrcpy(data->open.objPath, name, MAX_NAME_LEN);
+        rmKeyVal(&data->open.condInput, TRANSLATED_PATH_KW);
+        return rsDataObjOpen(data->rsComm, &data->open);
     }
 
     /*
@@ -477,7 +488,7 @@ private:
         Data *d;
 
         d = (Data *) data;
-        d->index = _creat(d->rsComm, d->name, d->resource);
+        d->index = _creat(d, d->name);
         return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
@@ -488,7 +499,7 @@ private:
         Data *d;
 
         d = (Data *) data;
-        d->index = _open(d->rsComm, d->name);
+        d->index = _open(d, d->name);
         return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
 
