@@ -194,7 +194,18 @@ int msiArchiveExtract(msParam_t* archiveIn,
 
                     std::string::size_type found = file.rfind("/");
                     if (found != std::string::npos) {
-                        file = file.substr(found + 1);
+                        collInp_t collCreateInp;
+
+                        /*
+                         * extract in collection
+                         */
+                        memset(&collCreateInp, '\0', sizeof(collInp_t));
+                        rstrcpy(collCreateInp.collName,
+                                (path + "/" + file.substr(0, found)).c_str(),
+                                MAX_NAME_LEN);
+                        addKeyVal(&collCreateInp.condInput, RECURSIVE_OPR__KW,
+                                  "");
+                        rsCollCreate(rei->rsComm, &collCreateInp);
                     }
                 }
                 file = path + "/" + file;

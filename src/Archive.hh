@@ -367,7 +367,6 @@ public:
              */
             memset(&collCreateInp, '\0', sizeof(collInp_t));
             rstrcpy(collCreateInp.collName, filename.c_str(), MAX_NAME_LEN);
-            addKeyVal(&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
             return rsCollCreate(data->rsComm, &collCreateInp);
         } else {
             char buf[A_BUFSIZE];
