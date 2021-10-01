@@ -186,7 +186,7 @@ public:
      */
     void addDataObj(std::string name, size_t size, time_t created,
                     time_t modified, std::string owner, std::string zone,
-                    std::string checksum, json_t *attributes, json_t *acls) {
+                    std::string checksum, json_t *attributes, json_t *acl) {
         if (path.compare(origin + "/" + name) != 0) {
             json_t *json;
 
@@ -205,8 +205,8 @@ public:
             if (attributes != NULL) {
                 json_object_set(json, "attributes", attributes);
             }
-            if (acls != NULL) {
-                json_object_set(json, "ACL", acls);
+            if (acl != NULL) {
+                json_object_set(json, "ACL", acl);
             }
             json_array_append_new(list, json);
 
@@ -220,7 +220,7 @@ public:
      */
     void addColl(std::string name, time_t created, time_t modified,
                  std::string owner, std::string zone, json_t *attributes,
-                 json_t *acls) {
+                 json_t *acl) {
         json_t *json;
 
         json = json_object();
@@ -233,8 +233,8 @@ public:
         if (attributes != NULL) {
             json_object_set(json, "attributes", attributes);
         }
-        if (acls != NULL) {
-            json_object_set(json, "ACL", acls);
+        if (acl != NULL) {
+            json_object_set(json, "ACL", acl);
         }
         json_array_append_new(list, json);
     }
