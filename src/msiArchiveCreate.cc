@@ -48,15 +48,15 @@ static long long collID(rsComm_t *rsComm, std::string &coll)
  */
 static json_t *attrDataObj(rsComm_t *rsComm, long long id)
 {
-    char collQCond[MAX_NAME_LEN];
+    char dataQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     sqlResult_t *names, *values, *units;
     json_t *list, *json;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
-    snprintf(collQCond, MAX_NAME_LEN, "='%lld'", id);
-    addInxVal(&genQueryInp.sqlCondInp, COL_D_DATA_ID, collQCond);
+    snprintf(dataQCond, MAX_NAME_LEN, "='%lld'", id);
+    addInxVal(&genQueryInp.sqlCondInp, COL_D_DATA_ID, dataQCond);
     addInxIval(&genQueryInp.selectInp, COL_META_DATA_ATTR_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_META_DATA_ATTR_VALUE, 1);
     addInxIval(&genQueryInp.selectInp, COL_META_DATA_ATTR_UNITS, 1);
@@ -150,6 +150,110 @@ static json_t *attrColl(rsComm_t *rsComm, long long id)
 }
 
 /*
+ * obtain ACLs for a DataObj
+ */
+static json_t *aclDataObj(rsComm_t *rsComm, long long id)
+{
+    char tmpStr[MAX_NAME_LEN];
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut;
+    sqlResult_t *users, *zones, *access;
+    json_t *list;
+
+    memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
+    snprintf(tmpStr, MAX_NAME_LEN, "='%lld'", id);
+    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_ACCESS_DATA_ID, tmpStr);
+    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE,
+              "='access_type'");
+    addInxIval(&genQueryInp.selectInp, COL_USER_NAME, 1);
+    addInxIval(&genQueryInp.selectInp, COL_USER_ZONE, 1);
+    addInxIval(&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+    genQueryOut = NULL;
+
+    list = NULL;
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
+           genQueryOut->rowCnt != 0) {
+        users = getSqlResultByInx(genQueryOut, COL_USER_NAME);
+        zones = getSqlResultByInx(genQueryOut, COL_USER_ZONE);
+        access = getSqlResultByInx(genQueryOut, COL_DATA_ACCESS_NAME);
+
+        for (int i = 0; i < genQueryOut->rowCnt; i++) {
+            snprintf(tmpStr, MAX_NAME_LEN, "%s#%s:%s",
+                     &users->value[users->len * i],
+                     &zones->value[zones->len * i],
+                     &access->value[access->len * i]);
+            if (list == NULL) {
+                list = json_array();
+            }
+            json_array_append_new(list, json_string(tmpStr));
+        }
+
+        genQueryInp.continueInx = genQueryOut->continueInx;
+        if (genQueryInp.continueInx == 0) {
+            break;
+        }
+        freeGenQueryOut(&genQueryOut);
+    }
+
+    clearGenQueryInp(&genQueryInp);
+    freeGenQueryOut(&genQueryOut);
+    return list;
+}
+
+/*
+ * obtain ACLs for a collection
+ */
+static json_t *aclColl(rsComm_t *rsComm, long long id)
+{
+    char tmpStr[MAX_NAME_LEN];
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut;
+    sqlResult_t *users, *zones, *access;
+    json_t *list;
+
+    memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
+    snprintf(tmpStr, MAX_NAME_LEN, "='%lld'", id);
+    addInxVal(&genQueryInp.sqlCondInp, COL_COLL_ACCESS_COLL_ID, tmpStr);
+    addInxVal(&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE,
+              "='access_type'");
+    addInxIval(&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
+    addInxIval(&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
+    addInxIval(&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+    genQueryOut = NULL;
+
+    list = NULL;
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
+           genQueryOut->rowCnt != 0) {
+        users = getSqlResultByInx(genQueryOut, COL_COLL_USER_NAME);
+        zones = getSqlResultByInx(genQueryOut, COL_COLL_USER_ZONE);
+        access = getSqlResultByInx(genQueryOut, COL_COLL_ACCESS_NAME);
+
+        for (int i = 0; i < genQueryOut->rowCnt; i++) {
+            snprintf(tmpStr, MAX_NAME_LEN, "%s#%s:%s",
+                     &users->value[users->len * i],
+                     &zones->value[zones->len * i],
+                     &access->value[access->len * i]);
+            if (list == NULL) {
+                list = json_array();
+            }
+            json_array_append_new(list, json_string(tmpStr));
+        }
+
+        genQueryInp.continueInx = genQueryOut->continueInx;
+        if (genQueryInp.continueInx == 0) {
+            break;
+        }
+        freeGenQueryOut(&genQueryOut);
+    }
+
+    clearGenQueryInp(&genQueryInp);
+    freeGenQueryOut(&genQueryOut);
+    return list;
+}
+
+/*
  * pass on metadata from DataObjs in a given location to the archive
  */
 static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
@@ -160,6 +264,7 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
     genQueryOut_t *genQueryOut;
     sqlResult_t *names, *ids, *sizes, *owners, *zones, *ctimes, *mtimes,
                 *checksums;
+    long long dataId;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
     snprintf(collQCond, MAX_NAME_LEN, "='%lld'", collId);
@@ -187,6 +292,7 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
         checksums = getSqlResultByInx(genQueryOut, COL_D_DATA_CHECKSUM);
 
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
+            dataId = strtoll(&ids->value[ids->len * i], NULL, 10);
             a->addDataObj(coll + &names->value[names->len * i],
                           (size_t) strtoll(&sizes->value[sizes->len * i], NULL,
                                            10),
@@ -195,8 +301,8 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
                           &owners->value[owners->len * i],
                           &zones->value[zones->len * i],
                           &checksums->value[checksums->len * i],
-                          attrDataObj(rsComm, strtoll(&ids->value[ids->len * i],
-                                                      NULL, 10)));
+                          attrDataObj(rsComm, dataId),
+                          aclDataObj(rsComm, dataId));
         }
 
         genQueryInp.continueInx = genQueryOut->continueInx;
@@ -253,7 +359,8 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
                        strtoll(&mtimes->value[mtimes->len * i], NULL, 10),
                        &owners->value[owners->len * i],
                        &zones->value[zones->len * i],
-                       attrColl(rsComm, id));
+                       attrColl(rsComm, id),
+                       aclColl(rsComm, id));
 
             /*
              * maintain a list of collections to recursively query

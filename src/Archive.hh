@@ -186,7 +186,7 @@ public:
      */
     void addDataObj(std::string name, size_t size, time_t created,
                     time_t modified, std::string owner, std::string zone,
-                    std::string checksum, json_t *attributes) {
+                    std::string checksum, json_t *attributes, json_t *acls) {
         if (path.compare(origin + "/" + name) != 0) {
             json_t *json;
 
@@ -205,6 +205,9 @@ public:
             if (attributes != NULL) {
                 json_object_set(json, "attributes", attributes);
             }
+            if (acls != NULL) {
+                json_object_set(json, "ACL", acls);
+            }
             json_array_append_new(list, json);
 
             dataSize += (size + A_BLOCKSIZE - 1) & ~(A_BLOCKSIZE - 1);
@@ -216,7 +219,8 @@ public:
      * the actual archive will be created when construct() is called.
      */
     void addColl(std::string name, time_t created, time_t modified,
-                 std::string owner, std::string zone, json_t *attributes) {
+                 std::string owner, std::string zone, json_t *attributes,
+                 json_t *acls) {
         json_t *json;
 
         json = json_object();
@@ -228,6 +232,9 @@ public:
                             json_string((owner + "#" + zone).c_str()));
         if (attributes != NULL) {
             json_object_set(json, "attributes", attributes);
+        }
+        if (acls != NULL) {
+            json_object_set(json, "ACL", acls);
         }
         json_array_append_new(list, json);
     }
