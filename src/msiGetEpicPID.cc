@@ -64,7 +64,7 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(handleIn->type, STR_MS_T)) {
+    if (handleIn->type == NULL || strcmp(handleIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 

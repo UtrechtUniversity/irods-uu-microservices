@@ -102,10 +102,10 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(idIn->type, STR_MS_T)) {
+    if (idIn == NULL || strcmp(idIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(valueIn->type, STR_MS_T)) {
+    if (valueIn == NULL || strcmp(valueIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 

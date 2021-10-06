@@ -23,10 +23,11 @@ To build from source, the following build-time dependencies must be installed:
 - `libboost-dev`
 - `libcurl-openssl-dev`
 - `libjansson-dev`
+- `libarchive-dev`
 - `g++`
 
 ```
-apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev
+apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev libarchive-dev
 ```
 
 Follow these instructions to build from source:

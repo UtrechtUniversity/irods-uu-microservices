@@ -171,10 +171,10 @@ extern "C" {
     }
 
     /* Check input parameters. */
-    if (strcmp(handleIn->type, STR_MS_T)) {
+    if (handleIn->type == NULL || strcmp(handleIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
-    if (strcmp(typeIn->type, STR_MS_T)) {
+    if (typeIn->type == NULL || strcmp(typeIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     }
 
