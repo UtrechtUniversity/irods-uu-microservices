@@ -24,9 +24,10 @@ To build from source, the following build-time dependencies must be installed:
 - `libcurl-openssl-dev`
 - `libjansson-dev`
 - `libarchive-dev`
+- `g++`
 
 ```
-apt-get install irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev libarchive-dev
+apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev libarchive-dev
 ```
 
 Follow these instructions to build from source:
@@ -38,6 +39,19 @@ Follow these instructions to build from source:
   `umask` is not `0022`, run `umask 0022` to fix it. This is important
   for avoiding conflicts in created packages later on.
 
+- Access rights for iRODS group
+  ```
+  sudo chgrp irods /usr/lib/irods/plugins/microservices
+  sudo chmod g+w /usr/lib/irods/plugins/microservices
+  ```
+
+- Add your admin account ot the iRODS group, e.g.:
+  ```
+  sudo vigr
+  sudo vigr -s
+  ```
+  Logout and login, check with `id` if you are part of the iRODS group.
+  
 - Compile the project
 ```bash
 export PATH=/opt/irods-externals/cmake3.11.4-0/bin:$PATH
