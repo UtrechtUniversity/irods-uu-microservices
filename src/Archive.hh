@@ -93,8 +93,12 @@ public:
         if (a == NULL) {
             return NULL;
         }
+# if ARCHIVE_VERSION_NUMBER < 3002000  /* old version on centos7 */
+        if (archive_write_set_format_by_name(a, path.c_str()) != ARCHIVE_OK) {
+# else
         if (archive_write_set_format_filter_by_ext(a, path.c_str()) !=
                                                                 ARCHIVE_OK) {
+# endif
             archive_write_add_filter_gzip(a);
             archive_write_set_format_ustar(a);
         }
@@ -161,7 +165,7 @@ public:
         size = (size_t) archive_entry_size(entry);
         buf = new char[size + 1];
         buf[size] = '\0';
-        if (archive_read_data(a, buf, size) != (la_ssize_t) size ||
+        if (archive_read_data(a, buf, size) != (__LA_SSIZE_T) size ||
             (json=json_loads(buf, 0, &error)) == NULL) {
             delete buf;
             delete data;
@@ -269,7 +273,7 @@ public:
         if (creating) {
             json_t *json;
             char *str;
-            la_ssize_t len;
+            __LA_SSIZE_T len;
 
             /*
              * first entry, INDEX.json
@@ -283,7 +287,7 @@ public:
             str = json_dumps(json, JSON_INDENT(2));
             json_decref(json);
 
-            len = (la_ssize_t) strlen(str);
+            len = (__LA_SSIZE_T) strlen(str);
             entry = archive_entry_new();
             archive_entry_set_pathname(entry, "INDEX.json");
             archive_entry_set_filetype(entry, AE_IFREG);
@@ -329,7 +333,7 @@ public:
                     archive_entry_set_perm(entry, 0600);
                     size = (size_t) json_integer_value(json_object_get(json,
                                                                        "size"));
-                    archive_entry_set_size(entry, (la_int64_t) size);
+                    archive_entry_set_size(entry, (__LA_INT64_T) size);
                     if (archive_write_header(archive, entry) < 0) {
                         return SYS_TAR_APPEND_ERR;
                     }
@@ -401,7 +405,7 @@ public:
         } else {
             char buf[A_BUFSIZE];
             int fd, status;
-            la_ssize_t len;
+            __LA_SSIZE_T len;
 
             /*
              * DataObj
@@ -440,8 +444,11 @@ private:
      * open an iRODS DataObj
      */
     static int _open(Data *data, const char *name) {
+        char tmp[MAX_NAME_LEN];
+
         rstrcpy(data->open.objPath, name, MAX_NAME_LEN);
-        rmKeyVal(&data->open.condInput, TRANSLATED_PATH_KW);
+        rstrcpy(tmp, TRANSLATED_PATH_KW, MAX_NAME_LEN);
+        rmKeyVal(&data->open.condInput, tmp);
         return rsDataObjOpen(data->rsComm, &data->open);
     }
 
@@ -512,9 +519,9 @@ private:
     /*
      * libarchive wrapper for _read()
      */
-    static la_ssize_t a_read(struct archive *a, void *data, const void **buf) {
+    static __LA_SSIZE_T a_read(struct archive *a, void *data, const void **buf) {
         Data *d;
-        la_ssize_t status;
+        __LA_SSIZE_T status;
 
         d = (Data *) data;
         if (d->index < 0 ||
@@ -529,10 +536,10 @@ private:
     /*
      * libarchive wrapper for _write()
      */
-    static la_ssize_t a_write(struct archive *a, void *data, const void *buf,
-                              size_t size) {
+    static __LA_SSIZE_T a_write(struct archive *a, void *data, const void *buf,
+                                size_t size) {
         Data *d;
-        la_ssize_t status;
+        __LA_SSIZE_T status;
 
         d = (Data *) data;
         if (d->index < 0 ||
