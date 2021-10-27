@@ -93,13 +93,9 @@ public:
         if (a == NULL) {
             return NULL;
         }
-# if ARCHIVE_VERSION_NUMBER < 3002000  /* old version on centos7 */
-        if (archive_write_set_format_by_name(a, path.c_str()) != ARCHIVE_OK) {
-# else
-        if (archive_write_set_format_filter_by_ext(a, path.c_str()) !=
-                                                                ARCHIVE_OK) {
-# endif
-            archive_write_add_filter_gzip(a);
+        if (path.length() >= 4 && !path.compare(path.length() - 4, 4, ".zip")) {
+            archive_write_set_format_zip(a);
+        } else {
             archive_write_set_format_ustar(a);
         }
         data = new Data(rsComm, path.c_str());
