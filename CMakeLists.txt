@@ -125,7 +125,7 @@ set(CPACK_RPM_PACKAGE_URL "https://git.wur.nl/rdm-infrastructure/irods-microserv
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server = ${IRODS_VERSION}, irods-runtime = ${IRODS_VERSION}")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server (= ${IRODS_VERSION}), irods-runtime (= ${IRODS_VERSION})")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://git.wur.nl/rdm-infrastructure/irods-microservices")
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 
