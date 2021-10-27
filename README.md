@@ -18,8 +18,8 @@ iRODS microservices can be installed using the packages provided on the
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 
 **Navigate to the branch of the repository for your iRODS version**:
-- master irods4.2.8
-- irods4.2.7
+- master (irods4.2.8)
+- irods-4.2.7
 
 To get the patches for irods 4.2.10 do:
 ```
