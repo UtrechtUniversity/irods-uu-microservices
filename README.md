@@ -6,12 +6,26 @@ Miscellaneous iRODS microservices originally developed by Utrecht University.
   * msiDeleteEpicPID: API call to delete an Epic PID
   * msiGetEpicPID: API call to get an Epic PID
   * msiUpdateEpicPID: API call to update metadata for an Epic PID
+  * msiArchiveCreate: Building data archives in iRODS (tar, zip, bzip, ...)
+  * msiArchiveExtract: Extracting data archives, full extract or partial extract
+  * msiArchiveIndex: Lists contents of a data archive
+
 
 ## Installation
 iRODS microservices can be installed using the packages provided on the
 [releases page](https://git.wur.nl/rdm-infrastructure/irods-microservices/-/releases)
 
 You can also build the microservices yourself, see [Building from source](#building-from-source).
+
+**Navigate to the branch of the repository for your iRODS version**:
+- master irods4.2.8
+- irods4.2.7
+
+To get the patches for irods 4.2.10 do:
+```
+git clone <this repository> # you are on master after this
+git merge origin/-4.2.10
+```
 
 ## Building from source
 To build from source, the following build-time dependencies must be installed:
@@ -26,8 +40,13 @@ To build from source, the following build-time dependencies must be installed:
 - `libarchive-dev`
 - `g++`
 
+Ubuntu18:
 ```
 apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev libarchive-dev
+```
+Centos7:
+```
+sudo yum install gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel
 ```
 
 Follow these instructions to build from source:
