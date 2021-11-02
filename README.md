@@ -24,7 +24,7 @@ You can also build the microservices yourself, see [Building from source](#build
 To get the patches for irods 4.2.10 do:
 ```
 git clone <this repository> # you are on master after this
-git merge origin/-4.2.10
+git merge origin/irods-4.2.10
 ```
 
 ## Building from source
@@ -46,7 +46,7 @@ apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6
 ```
 Centos7:
 ```
-sudo yum install gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel
+sudo yum install gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang3.8-0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
