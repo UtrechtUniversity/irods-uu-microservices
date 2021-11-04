@@ -119,13 +119,13 @@ set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
-set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, boost-locale >= 1.51, libcurl >= 7.29.0, jansson >= 2.10")
+set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, libcurl >= 7.29.0, jansson >= 2.10, libarchive >= 3.1.2")
 set(CPACK_RPM_PACKAGE_CONFLICTS "rit-irods-microservices, irods-microservice-plugins-loadmeta")
 set(CPACK_RPM_PACKAGE_URL "https://git.wur.nl/rdm-infrastructure/irods-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server (= ${IRODS_VERSION}), irods-runtime (= ${IRODS_VERSION})")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server (= ${IRODS_VERSION}), libcurl4, libjansson4, libarchive13")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://git.wur.nl/rdm-infrastructure/irods-microservices")
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 
