@@ -73,8 +73,13 @@ extern "C" {
     }
 
     /* Parse input paramaters. */
-    std::string handle = parseMspForStr(handleIn);
-    std::string metaName = parseMspForStr(metaNameIn);
+    const char *handleStr = parseMspForStr(handleIn);
+    const char *metaNameStr = parseMspForStr(metaNameIn);
+    if (handleStr == NULL || metaNameStr == NULL) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string handle = handleStr;
+    std::string metaName = metaNameStr;
 
     /* Set default output */
     fillStrInMsParam(metaValOut, "");

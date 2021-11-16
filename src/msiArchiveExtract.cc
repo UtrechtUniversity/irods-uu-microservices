@@ -126,8 +126,13 @@ int msiArchiveExtract(msParam_t* archiveIn,
     }
 
     /* Parse input paramaters. */
-    std::string archive  = parseMspForStr(archiveIn);
-    std::string path     = parseMspForStr(pathIn);
+    const char *archiveStr  = parseMspForStr(archiveIn);
+    const char *pathStr     = parseMspForStr(pathIn);
+    if (archiveStr == NULL || pathStr == NULL) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string archive = archiveStr;
+    std::string path = pathStr;
     const char *extract = NULL;
     if (extractIn->type != NULL && strcmp(extractIn->type, STR_MS_T) == 0) {
         extract = parseMspForStr(extractIn);

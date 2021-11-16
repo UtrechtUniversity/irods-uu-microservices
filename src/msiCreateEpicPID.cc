@@ -110,8 +110,13 @@ extern "C" {
     }
 
     /* Parse input paramaters. */
-    std::string id        = parseMspForStr(idIn);
-    std::string value     = parseMspForStr(valueIn);
+    const char *idStr        = parseMspForStr(idIn);
+    const char *valueStr     = parseMspForStr(valueIn);
+    if (idStr == NULL || valueStr == NULL) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string id = idStr;
+    std::string value = valueStr;
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {

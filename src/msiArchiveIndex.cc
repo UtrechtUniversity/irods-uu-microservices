@@ -21,7 +21,11 @@ int msiArchiveIndex(msParam_t *archiveIn,
     }
 
     /* Parse input paramaters. */
-    std::string archive = parseMspForStr(archiveIn);
+    const char *archiveStr = parseMspForStr(archiveIn);
+    if (archiveStr == NULL) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string archive = archiveStr;
 
     Archive *a = Archive::open(rei->rsComm, archive, NULL);
     if (a == NULL) {

@@ -185,13 +185,23 @@ extern "C" {
     } else if (strcmp(typeIn->type, STR_MS_T)) {
       return SYS_INVALID_INPUT_PARAM;
     } else {
-      value = parseMspForStr(valueIn);
-      valueRef = &value;
+      const char *valueStr = parseMspForStr(valueIn);
+      if (valueStr == NULL) {
+        valueRef = NULL;
+      } else {
+        value = valueStr;
+        valueRef = &value;
+      }
     }
 
     /* Parse input paramaters. */
-    std::string handle    = parseMspForStr(handleIn);
-    std::string type      = parseMspForStr(typeIn);
+    const char *handleStr    = parseMspForStr(handleIn);
+    const char *typeStr      = parseMspForStr(typeIn);
+    if (handleStr == NULL || typeStr == NULL) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string handle = handleStr;
+    std::string type = typeStr;
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {

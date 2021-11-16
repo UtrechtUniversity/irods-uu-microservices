@@ -69,7 +69,11 @@ extern "C" {
     }
 
     /* Parse input paramaters. */
-    std::string handle = parseMspForStr(handleIn);
+    const char *handleStr = parseMspForStr(handleIn);
+    if (handleStr == NULL) {
+      return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string handle = handleStr;
 
     /* Bail if there is no EPIC server configured. */
     if (!credentials.has("epic_url")) {

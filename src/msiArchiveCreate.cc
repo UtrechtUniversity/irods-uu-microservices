@@ -410,8 +410,13 @@ int msiArchiveCreate(msParam_t *archiveIn,
     }
 
     /* Parse input paramaters. */
-    std::string archive    = parseMspForStr(archiveIn);
-    std::string collection = parseMspForStr(collectionIn);
+    const char *archiveStr    = parseMspForStr(archiveIn);
+    const char *collectionStr = parseMspForStr(collectionIn);
+    if (archiveStr == NULL || collectionStr == NULL) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    std::string archive = archiveStr;
+    std::string collection = collectionStr;
     const char *resource   = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
         resource = parseMspForStr(resourceIn);
