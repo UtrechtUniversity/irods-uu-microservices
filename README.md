@@ -46,7 +46,7 @@ apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6
 ```
 Centos7:
 ```
-sudo yum install gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
+sudo yum install gcc-c++ irods-devel irods-externals-cmake3.11.4-0 irods-externals-clang6.0-0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
