@@ -9,7 +9,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # standard libarary provided by iRODS-externals packages.
 # The following packages need to be installed to build the irods microservices:
 #
-# irods-externals-clang-runtime3.8-0
+# irods-externals-clang-runtime6.0-0
 # irods-externals-clang6.0-0
 
 set(RELEASE_VERSION "0.9.0")
@@ -37,6 +37,8 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
+
+set(BOOST_ROOT "/opt/irods-externals/boost1.67.0-0")
 
 find_package(Boost REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})

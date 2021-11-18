@@ -34,7 +34,6 @@ To build from source, the following build-time dependencies must be installed:
 - `irods-dev`
 - `irods-externals-cmake3.11.4`
 - `irods-externals-clang6.0`
-- `libboost-dev`
 - `libcurl-openssl-dev`
 - `libjansson-dev`
 - `libarchive-dev`
@@ -42,11 +41,11 @@ To build from source, the following build-time dependencies must be installed:
 
 Ubuntu18:
 ```
-apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libboost-dev libjansson-dev libarchive-dev
+apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libjansson-dev libarchive-dev
 ```
 Centos7:
 ```
-sudo yum install gcc-c++ irods-devel irods-externals-cmake3.11.4-0 irods-externals-clang6.0-0 make boost-devel jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
+sudo yum install gcc-c++ irods-devel irods-externals-cmake3.11.4-0 irods-externals-clang6.0-0 make jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
