@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.8 EXACT REQUIRED)
+find_package(IRODS 4.2.10 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -18,7 +18,7 @@ set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
 project(uu-msis CXX)
 
-add_compile_options(-std=c++14
+add_compile_options(-std=c++17
                     -Os
                     -fPIC
                     -DRODS_SERVER
@@ -38,7 +38,7 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
 
-set(BOOST_ROOT "/opt/irods-externals/boost1.60.0-0")
+set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
 find_package(Boost REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
@@ -56,20 +56,14 @@ include_directories(SYSTEM "/usr/include/irods")
 
 add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
 add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
-add_library(msiRegisterDataCiteDOI    SHARED src/msiRegisterDataCiteDOI.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
-add_library(msiGetDataCiteDOI         SHARED src/msiGetDataCiteDOI.cc)
-add_library(msiRemoveDataCiteMetadata SHARED src/msiRemoveDataCiteMetadata.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
 target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msiRegisterDataCiteDOI    LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
-target_link_libraries(msiGetDataCiteDOI         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiRemoveDataCiteMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
@@ -78,10 +72,7 @@ target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 install(TARGETS
         msiSetUpperCaseWhereQuery
         msiStrToUpper
-        msiRegisterDataCiteDOI
         msiRegisterEpicPID
-        msiGetDataCiteDOI
-        msiRemoveDataCiteMetadata
         msi_json_arrayops
         msi_json_objops
         msi_add_avu
@@ -100,15 +91,19 @@ install(TARGETS
 set(CPACK_MONOLITHIC_INSTALL 1)
 set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
 
-# Run custom CMake module to detect OS family
-include(${CMAKE_MODULE_PATH}/DetectOS.cmake)
-message(STATUS "Found Linux distro ${DETECTED_OS}")
+execute_process(
+  COMMAND "python" "-c" "from __future__ import print_function; import platform; print(platform.linux_distribution()[0].split()[0].strip().lower(), end='')"
+  RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME
+  OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_NAME
+)
+
+message(STATUS "Found Linux distro ${IRODS_LINUX_DISTRIBUTION_NAME}")
 
 # Determine which type of package should be generated
-if(DETECTED_OS MATCHES "^(Ubuntu|Debian)$")
+if(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(ubuntu|debian)$")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}-${UU_RELEASE_VERSION}")
-elseif(DETECTED_OS MATCHES "^(CentOS|RedHatCompatible)$")
+elseif(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(centos)$")
     set(CPACK_GENERATOR "RPM")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}_${UU_RELEASE_VERSION}")
 endif()

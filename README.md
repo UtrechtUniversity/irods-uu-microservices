@@ -3,11 +3,8 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
-  * msiGetDataCiteDOI: API call to retrieve record of a DOI from DataCite
-  * msiRegisterDataCiteDOI: API call to register a DOI with metadata or to mint a DOI
   * msiStrToUpper: Returns an uppercase string
   * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
-  * msiGenerateRandomID: Generate a Random ID to use as basis for a new DOI
 
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
