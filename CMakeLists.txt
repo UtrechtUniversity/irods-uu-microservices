@@ -54,15 +54,12 @@ include_directories(SYSTEM ${UUID_INCLUDE_DIR})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
-add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
-target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
@@ -70,8 +67,6 @@ target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
-        msiSetUpperCaseWhereQuery
-        msiStrToUpper
         msiRegisterEpicPID
         msi_json_arrayops
         msi_json_objops

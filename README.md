@@ -3,8 +3,7 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
-  * msiStrToUpper: Returns an uppercase string
-  * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
+  * msiRegisterEpicPID: Register an EPIC PID
 
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
