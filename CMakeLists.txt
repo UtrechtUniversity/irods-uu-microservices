@@ -35,8 +35,14 @@ add_compile_options(-std=c++14
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 link_libraries(c++abi)
+
+set(RUNTIME_LIBS
+    ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib/stdlibc++.so.1
+    ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib/libc++abi.so.1)
+
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("/usr/include/irods")
+
 
 set(BOOST_ROOT "/opt/irods-externals/boost1.67.0-0")
 
@@ -54,24 +60,60 @@ include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiCreateEpicPID      SHARED src/msiCreateEpicPID.cc)
-add_library(msiUpdateEpicPID      SHARED src/msiUpdateEpicPID.cc)
-add_library(msiGetEpicPID         SHARED src/msiGetEpicPID.cc)
-add_library(msiDeleteEpicPID      SHARED src/msiDeleteEpicPID.cc)
-add_library(msiHelloMyWorld       SHARED src/msiHelloMyWorld.cc)
-add_library(msiGetEpicPIDMetadata SHARED src/msiGetEpicPIDMetadata.cc)
-add_library(msiArchiveCreate      SHARED src/msiArchiveCreate.cc)
-add_library(msiArchiveExtract     SHARED src/msiArchiveExtract.cc)
-add_library(msiArchiveIndex       SHARED src/msiArchiveIndex.cc)
+set(
+  IRODS_MSI_PLUGINS
+  msiCreateEpicPID
+  msiUpdateEpicPID
+  msiGetEpicPID
+  msiDeleteEpicPID
+  msiHelloMyWorld
+  msiGetEpicPIDMetadata
+  msiArchiveCreate
+  msiArchiveExtract
+  msiArchiveIndex
+)
 
-target_link_libraries(msiCreateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiUpdateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGetEpicPID         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiDeleteEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiGetEpicPIDMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiArchiveCreate      LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiArchiveExtract     LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msiArchiveIndex       LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES})
+foreach(IRODS_CURRENT_PLUGIN_TARGET ${IRODS_MSI_PLUGINS})
+  add_library(${IRODS_CURRENT_PLUGIN_TARGET} SHARED src/${IRODS_CURRENT_PLUGIN_TARGET}.cc)
+endforeach()
+
+# add_library(msiCreateEpicPID      SHARED src/msiCreateEpicPID.cc)
+# add_library(msiUpdateEpicPID      SHARED src/msiUpdateEpicPID.cc)
+# add_library(msiGetEpicPID         SHARED src/msiGetEpicPID.cc)
+# add_library(msiDeleteEpicPID      SHARED src/msiDeleteEpicPID.cc)
+# add_library(msiHelloMyWorld       SHARED src/msiHelloMyWorld.cc)
+# add_library(msiGetEpicPIDMetadata SHARED src/msiGetEpicPIDMetadata.cc)
+# add_library(msiArchiveCreate      SHARED src/msiArchiveCreate.cc)
+# add_library(msiArchiveExtract     SHARED src/msiArchiveExtract.cc)
+# add_library(msiArchiveIndex       SHARED src/msiArchiveIndex.cc)
+
+target_link_libraries(msiCreateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiUpdateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiGetEpicPID         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiDeleteEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiGetEpicPIDMetadata LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiArchiveCreate      LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiArchiveExtract     LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiArchiveIndex       LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+
+foreach(IRODS_CURRENT_PLUGIN_TARGET ${IRODS_MSI_PLUGINS})
+  target_link_libraries(${IRODS_CURRENT_PLUGIN_TARGET}
+                        PRIVATE
+                        irods_server
+                        irods_common
+                        irods_plugin_dependencies
+                        #${RUNTIME_LIBS}
+                        )
+endforeach()
+    
+# target_link_libraries(msiCreateEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiUpdateEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiGetEpicPID         PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiDeleteEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiGetEpicPIDMetadata PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiArchiveCreate      PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiArchiveExtract     PRIVATE irods_server irods_common irods_plugin_dependencies )
+# target_link_libraries(msiArchiveIndex       PRIVATE irods_server irods_common irods_plugin_dependencies )
 
 install(TARGETS
         msiCreateEpicPID
