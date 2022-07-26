@@ -77,16 +77,6 @@ foreach(IRODS_CURRENT_PLUGIN_TARGET ${IRODS_MSI_PLUGINS})
   add_library(${IRODS_CURRENT_PLUGIN_TARGET} SHARED src/${IRODS_CURRENT_PLUGIN_TARGET}.cc)
 endforeach()
 
-# add_library(msiCreateEpicPID      SHARED src/msiCreateEpicPID.cc)
-# add_library(msiUpdateEpicPID      SHARED src/msiUpdateEpicPID.cc)
-# add_library(msiGetEpicPID         SHARED src/msiGetEpicPID.cc)
-# add_library(msiDeleteEpicPID      SHARED src/msiDeleteEpicPID.cc)
-# add_library(msiHelloMyWorld       SHARED src/msiHelloMyWorld.cc)
-# add_library(msiGetEpicPIDMetadata SHARED src/msiGetEpicPIDMetadata.cc)
-# add_library(msiArchiveCreate      SHARED src/msiArchiveCreate.cc)
-# add_library(msiArchiveExtract     SHARED src/msiArchiveExtract.cc)
-# add_library(msiArchiveIndex       SHARED src/msiArchiveIndex.cc)
-
 target_link_libraries(msiCreateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
 target_link_libraries(msiUpdateEpicPID      LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
 target_link_libraries(msiGetEpicPID         LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} )
@@ -105,15 +95,6 @@ foreach(IRODS_CURRENT_PLUGIN_TARGET ${IRODS_MSI_PLUGINS})
                         #${RUNTIME_LIBS}
                         )
 endforeach()
-    
-# target_link_libraries(msiCreateEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiUpdateEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiGetEpicPID         PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiDeleteEpicPID      PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiGetEpicPIDMetadata PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiArchiveCreate      PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiArchiveExtract     PRIVATE irods_server irods_common irods_plugin_dependencies )
-# target_link_libraries(msiArchiveIndex       PRIVATE irods_server irods_common irods_plugin_dependencies )
 
 install(TARGETS
         msiCreateEpicPID
