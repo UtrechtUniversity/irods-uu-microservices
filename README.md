@@ -17,21 +17,13 @@ iRODS microservices can be installed using the packages provided on the
 
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 
-**Navigate to the branch of the repository for your iRODS version**:
-- master (irods4.2.8)
-- irods-4.2.7
-
-To get the patches for irods 4.2.10 do:
-```
-git clone <this repository> # you are on master after this
-git merge origin/irods-4.2.10
-```
+The microservices are built for iRODS version 4.2.11.
 
 ## Building from source
 To build from source, the following build-time dependencies must be installed:
 
 - `make`
-- `irods-dev`
+- `irods-dev-4.2.11`
 - `irods-externals-cmake3.11.4`
 - `irods-externals-clang6.0`
 - `libcurl-openssl-dev`
@@ -41,11 +33,11 @@ To build from source, the following build-time dependencies must be installed:
 
 Ubuntu18:
 ```
-apt-get install g++ irods-dev irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libjansson-dev libarchive-dev
+apt-get install g++ irods-dev-4.2.11 irods-externals-cmake3.11.4 irods-externals-clang6.0 make libcurl4-openssl-dev libjansson-dev libarchive-dev
 ```
 Centos7:
 ```
-sudo yum install gcc-c++ irods-devel irods-externals-cmake3.11.4-0 irods-externals-clang6.0-0 make jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
+sudo yum install gcc-c++ irods-devel-4.2.11-1 irods-externals-cmake3.11.4-0 irods-externals-clang6.0-0 make jansson-devel libarchive-devel libcurl-devel openssl-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
