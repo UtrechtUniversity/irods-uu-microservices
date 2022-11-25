@@ -29,23 +29,6 @@ class Archive {
              name(name) {
             resource = NULL;
             index = 0;
-
-            /*
-             * initialize _creat() input
-             */
-            memset(&create, '\0', sizeof(dataObjInp_t));
-            create.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
-            if (resource != NULL) {
-                addKeyVal(&create.condInput, DEST_RESC_NAME_KW, resource);
-            }
-            addKeyVal(&create.condInput, FORCE_FLAG_KW, "");
-            addKeyVal(&create.condInput, TRANSLATED_PATH_KW, "");
-
-            /*
-             * initialize _open() input
-             */
-            memset(&open, '\0', sizeof(dataObjInp_t));
-            open.openFlags = O_RDONLY;
         }
 
         rsComm_t *rsComm;       /* iRODS context */
@@ -432,6 +415,14 @@ private:
      * create an iRODS DataObj
      */
     static int _creat(Data *data, const char *name) {
+        memset(&data->create, '\0', sizeof(dataObjInp_t));
+        data->create.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+        if (data->resource != NULL) {
+            addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW,
+                      data->resource);
+        }
+        addKeyVal(&data->create.condInput, FORCE_FLAG_KW, "");
+        addKeyVal(&data->create.condInput, TRANSLATED_PATH_KW, "");
         rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
         return rsDataObjCreate(data->rsComm, &data->create);
     }
@@ -440,11 +431,9 @@ private:
      * open an iRODS DataObj
      */
     static int _open(Data *data, const char *name) {
-        char tmp[MAX_NAME_LEN];
-
+        memset(&data->open, '\0', sizeof(dataObjInp_t));
+        data->open.openFlags = O_RDONLY;
         rstrcpy(data->open.objPath, name, MAX_NAME_LEN);
-        rstrcpy(tmp, TRANSLATED_PATH_KW, MAX_NAME_LEN);
-        rmKeyVal(&data->open.condInput, tmp);
         return rsDataObjOpen(data->rsComm, &data->open);
     }
 
