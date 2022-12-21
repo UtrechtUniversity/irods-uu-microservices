@@ -374,13 +374,15 @@ public:
     int extractItem(std::string filename) {
         if (archive_entry_filetype(entry) == AE_IFDIR) {
             collInp_t collCreateInp;
+            int err;
 
             /*
              * collection
              */
             memset(&collCreateInp, '\0', sizeof(collInp_t));
             rstrcpy(collCreateInp.collName, filename.c_str(), MAX_NAME_LEN);
-            return rsCollCreate(data->rsComm, &collCreateInp);
+            err = rsCollCreate(data->rsComm, &collCreateInp);
+            return (err == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) ? 0 : err;
         } else {
             char buf[A_BUFSIZE];
             int fd, status;
@@ -415,16 +417,35 @@ private:
      * create an iRODS DataObj
      */
     static int _creat(Data *data, const char *name) {
+        int fd;
+
+        /*
+         * workaround for https://github.com/irods/irods/issues/4692:
+         * don't use forceFlag with create
+         */
         memset(&data->create, '\0', sizeof(dataObjInp_t));
-        data->create.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+        data->create.openFlags = O_WRONLY | O_TRUNC;
         if (data->resource != NULL) {
             addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW,
                       data->resource);
         }
-        addKeyVal(&data->create.condInput, FORCE_FLAG_KW, "");
         addKeyVal(&data->create.condInput, TRANSLATED_PATH_KW, "");
         rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
-        return rsDataObjCreate(data->rsComm, &data->create);
+        fd = rsDataObjOpen(data->rsComm, &data->create);
+
+        if (fd == OBJ_PATH_DOES_NOT_EXIST) {
+            memset(&data->create, '\0', sizeof(dataObjInp_t));
+            data->create.openFlags = O_CREAT | O_WRONLY;
+            if (data->resource != NULL) {
+                addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW,
+                          data->resource);
+            }
+            addKeyVal(&data->create.condInput, TRANSLATED_PATH_KW, "");
+            rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
+            fd = rsDataObjCreate(data->rsComm, &data->create);
+        }
+
+        return fd;
     }
 
     /*
