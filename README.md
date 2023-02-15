@@ -16,6 +16,11 @@ Developed at Maastricht University:
   * msi\_add\_avu: Microservice to add AVU
   * msi\_rmw\_avu: Microservice to remove AVU
 
+Developed at Wageningen University & Research:
+  * msiArchiveCreate: create an archive
+  * msiArchiveExtract: extract from an archive
+  * msiArchiveIndex: index an archive
+
 ## Installation
 iRODS UU microservices can be installed using the packages provided on the
 [releases page](https://github.com/UtrechtUniversity/irods-uu-microservices/releases).
@@ -38,10 +43,11 @@ To build from source without using the Vagrant configuration, the following buil
 - `libcurl-devel`
 - `libuuid-devel`
 - `jansson-devel`
+- `libarchive-devel`
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
