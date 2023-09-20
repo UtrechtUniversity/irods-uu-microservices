@@ -97,6 +97,10 @@ extern "C" {
             outSizeOrIndex = (int) json_array_size(root);
         } else if ( strOps == "get" ) {
             json_t *elem = json_array_get(root, inIdx);
+            if (elem == NULL) {
+                json_decref(root);
+                return SYS_INVALID_INPUT_PARAM;
+            }
 
 	    /* output a string directly, but encode other json types using json_dumps with JSON_ENCODE_ANY set */
             if ( json_is_string(elem)) { 
