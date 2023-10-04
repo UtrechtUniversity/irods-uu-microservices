@@ -38,6 +38,7 @@ link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("${IRODS_EXTERNALS_FULLPATH_JSON}/include")
 include_directories("/usr/include/irods")
+include_directories("/opt/irods-externals/fmt6.1.2-1/include")
 
 set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
@@ -66,6 +67,7 @@ add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
+add_library(msi_dataObj_checksum      SHARED src/msi_dataObj_checksum.cpp)
 
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiArchiveCreate          LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
@@ -75,6 +77,7 @@ target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES}
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msi_dataObj_checksum      LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS})
 
 install(TARGETS
         msiRegisterEpicPID
@@ -85,6 +88,7 @@ install(TARGETS
         msi_json_objops
         msi_add_avu
         msi_rmw_avu
+        msi_dataObj_checksum
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
