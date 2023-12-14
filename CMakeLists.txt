@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang6.0-0
 
-set(UU_RELEASE_VERSION "0.8.2")
+set(UU_RELEASE_VERSION "0.8.3")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
@@ -125,7 +125,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices develop
 
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-set(CPACK_RPM_PACKAGE_RELEASE "2")
+set(CPACK_RPM_PACKAGE_RELEASE "0")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
 set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, boost-locale >= 1.51, libcurl >= 7.29.0, libxml2 >= 2.9.1, libxslt >= 1.1.28, jansson >= 2.10, libarchive >= 3.1.2")
 set(CPACK_RPM_PACKAGE_CONFLICTS "rit-irods-microservices, irods-microservice-plugins-loadmeta")
