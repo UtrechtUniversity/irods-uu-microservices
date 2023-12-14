@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.11 EXACT REQUIRED)
+find_package(IRODS 4.2.12 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang6.0-0
 
-set(UU_RELEASE_VERSION "0.8.2")
+set(UU_RELEASE_VERSION "0.8.3")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
@@ -36,6 +36,7 @@ add_compile_options(-std=c++17
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 link_libraries(c++abi)
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
+include_directories("${IRODS_EXTERNALS_FULLPATH_JSON}/include")
 include_directories("/usr/include/irods")
 
 set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
@@ -52,27 +53,34 @@ include_directories(SYSTEM ${JANSSON_INCLUDE_DIRS})
 find_package(uuid REQUIRED)
 include_directories(SYSTEM ${UUID_INCLUDE_DIR})
 
+find_package(LibArchive REQUIRED)
+include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
+
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiSetUpperCaseWhereQuery SHARED src/msiSetUpperCaseWhereQuery.cc)
-add_library(msiStrToUpper             SHARED src/msiStrToUpper.cc)
 add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
+add_library(msiArchiveCreate          SHARED src/msiArchiveCreate.cc)
+add_library(msiArchiveExtract         SHARED src/msiArchiveExtract.cc)
+add_library(msiArchiveIndex           SHARED src/msiArchiveIndex.cc)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
 
-target_link_libraries(msiStrToUpper             LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
+target_link_libraries(msiArchiveCreate          LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiArchiveExtract         LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiArchiveIndex           LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 
 install(TARGETS
-        msiSetUpperCaseWhereQuery
-        msiStrToUpper
         msiRegisterEpicPID
+        msiArchiveCreate
+        msiArchiveExtract
+        msiArchiveIndex
         msi_json_arrayops
         msi_json_objops
         msi_add_avu
@@ -117,9 +125,9 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices develop
 
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_RELEASE "0")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
-set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, boost-locale >= 1.51, libcurl >= 7.29.0, libxml2 >= 2.9.1, libxslt >= 1.1.28, jansson >= 2.10")
+set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, boost-locale >= 1.51, libcurl >= 7.29.0, libxml2 >= 2.9.1, libxslt >= 1.1.28, jansson >= 2.10, libarchive >= 3.1.2")
 set(CPACK_RPM_PACKAGE_CONFLICTS "rit-irods-microservices, irods-microservice-plugins-loadmeta")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)

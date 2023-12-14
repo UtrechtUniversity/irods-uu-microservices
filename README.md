@@ -3,8 +3,7 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
-  * msiStrToUpper: Returns an uppercase string
-  * msiSetUpperCaseWhereQuery: Set the UPPERCASE flag on a irods query.
+  * msiRegisterEpicPID: Register an EPIC PID
 
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
@@ -17,6 +16,11 @@ Developed at Maastricht University:
   * msi\_add\_avu: Microservice to add AVU
   * msi\_rmw\_avu: Microservice to remove AVU
 
+Developed at Wageningen University & Research:
+  * msiArchiveCreate: create an archive
+  * msiArchiveExtract: extract from an archive
+  * msiArchiveIndex: index an archive
+
 ## Installation
 iRODS UU microservices can be installed using the packages provided on the
 [releases page](https://github.com/UtrechtUniversity/irods-uu-microservices/releases).
@@ -24,7 +28,9 @@ iRODS UU microservices can be installed using the packages provided on the
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 
 ## Building from source
-To build from source, the following build-time dependencies must be installed:
+This repository includes a Vagrant configuration for building irods-uu-microservices from source on either CentOS 7 (for the RPM package) or Ubuntu 18.04 LTS (for the DEB package). It can be found in vagrant/build. In order to build a package using Vagrant, edit the .env file in the Vagrant build directory. Adjust the BOXNAME and IRODS_VERSION vars as needed. Then run vagrant up to provision the VM. The VM has all dependencies pre-installed, as well as a clone of the irods-uu-microservices repository. Log in on the VM using vagrant ssh and create the package (see below).
+
+To build from source without using the Vagrant configuration, the following build-time dependencies must be installed (package names may differ on your platform):
 
 - `make`
 - `gcc-c++`
@@ -37,10 +43,11 @@ To build from source, the following build-time dependencies must be installed:
 - `libcurl-devel`
 - `libuuid-devel`
 - `jansson-devel`
+- `libarchive-devel`
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
