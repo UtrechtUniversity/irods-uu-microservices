@@ -1,0 +1,12 @@
+CMakeCache.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+Makefile
+cmake_install.cmake
+install_manifest.txt
+*.deb
+*.rpm
+*.so
+_CPack_Packages/
+CMakeFiles/
+vagrant/build/.vagrant
