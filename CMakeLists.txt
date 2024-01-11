@@ -66,6 +66,7 @@ add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
+add_library(msi_stat_vault            SHARED src/msi_stat_vault.cpp)
 
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiArchiveCreate          LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
@@ -85,6 +86,7 @@ install(TARGETS
         msi_json_objops
         msi_add_avu
         msi_rmw_avu
+        msi_stat_vault
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
