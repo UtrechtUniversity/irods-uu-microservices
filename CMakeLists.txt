@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.8-0
 # irods-externals-clang6.0-0
 
-set(UU_RELEASE_VERSION "0.8.2")
+set(UU_RELEASE_VERSION "0.8.3")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
@@ -129,7 +129,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Miscellaneous iRODS microservices develop
 
 set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-set(CPACK_RPM_PACKAGE_RELEASE "2")
+set(CPACK_RPM_PACKAGE_RELEASE "0")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv3")
 set(CPACK_RPM_PACKAGE_REQUIRES "irods-server = ${IRODS_VERSION}, boost-locale >= 1.51, libcurl >= 7.29.0, libxml2 >= 2.9.1, libxslt >= 1.1.28, jansson >= 2.10, libarchive >= 3.1.2")
 set(CPACK_RPM_PACKAGE_CONFLICTS "rit-irods-microservices, irods-microservice-plugins-loadmeta")
@@ -137,7 +137,7 @@ set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microse
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server = ${IRODS_VERSION}, irods-runtime = ${IRODS_VERSION}")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server ( = ${IRODS_VERSION}-1~bionic ), irods-runtime ( = ${IRODS_VERSION}-1~bionic )")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 
