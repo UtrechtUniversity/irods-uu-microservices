@@ -15,58 +15,67 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define A_BUFSIZE       (1024 * 1024)
-#define A_BLOCKSIZE     ((size_t) 8192)
+#define A_BUFSIZE   (1024 * 1024)
+#define A_BLOCKSIZE ((size_t) 8192)
 
 /*
  * libarchive for iRODS
  */
-class Archive {
-    class Data {
-    public:
-        Data(rsComm_t *rsComm, const char *name) :
-             rsComm(rsComm),
-             name(name) {
+class Archive
+{
+    class Data
+    {
+      public:
+        Data(rsComm_t* rsComm, const char* name)
+            : rsComm(rsComm)
+            , name(name)
+        {
             resource = NULL;
             index = 0;
         }
 
-        rsComm_t *rsComm;       /* iRODS context */
-        const char *name;       /* name of file to open */
-        const char *resource;   /* resource to create the file on */
-        int index;              /* file index */
-        dataObjInp_t create;    /* cached create input */
-        dataObjInp_t open;      /* cached open input */
-        char buf[A_BUFSIZE];    /* buffer for reading */
+        rsComm_t* rsComm; /* iRODS context */
+        const char* name; /* name of file to open */
+        const char* resource; /* resource to create the file on */
+        int index; /* file index */
+        dataObjInp_t create; /* cached create input */
+        dataObjInp_t open; /* cached open input */
+        char buf[A_BUFSIZE]; /* buffer for reading */
     };
 
     /*
      * archive constructor
      */
-    Archive(struct archive *archive, Data *data, bool creating, json_t *list,
-            size_t dataSize, std::string &path, std::string &collection,
-            const char *resc, std::string indexString) :
-        archive(archive),
-        data(data),
-        creating(creating),
-        list(list),
-        dataSize(dataSize),
-        path(path),
-        origin(collection),
-        indexString(indexString)
+    Archive(struct archive* archive,
+            Data* data,
+            bool creating,
+            json_t* list,
+            size_t dataSize,
+            std::string& path,
+            std::string& collection,
+            const char* resc,
+            std::string indexString)
+        : archive(archive)
+        , data(data)
+        , creating(creating)
+        , list(list)
+        , dataSize(dataSize)
+        , path(path)
+        , origin(collection)
+        , indexString(indexString)
     {
         data->resource = resc;
         index = 0;
     }
 
-public:
+  public:
     /*
      * create archive
      */
-    static Archive *create(rsComm_t *rsComm, std::string path,
-                           std::string collection, const char *resc) {
-        struct archive *a;
-        Data *data;
+    static Archive* create(rsComm_t* rsComm, std::string path, std::string collection, const char* resc)
+    {
+        struct archive* a;
+        Data* data;
 
         /*
          * Create archive, determine format and compression mode based on
@@ -78,13 +87,13 @@ public:
         }
         if (path.length() >= 4 && !path.compare(path.length() - 4, 4, ".zip")) {
             archive_write_set_format_zip(a);
-        } else {
+        }
+        else {
             archive_write_set_format_ustar(a);
         }
         data = new Data(rsComm, path.c_str());
         data->resource = resc;
-        if (archive_write_open(a, data, &a_creat, &a_write, &a_close) !=
-                                                                ARCHIVE_OK) {
+        if (archive_write_open(a, data, &a_creat, &a_write, &a_close) != ARCHIVE_OK) {
             delete data;
             archive_write_free(a);
             return NULL;
@@ -93,23 +102,23 @@ public:
         /*
          * archive was created, call the constructor
          */
-        return new Archive(a, data, true, json_array(), 0, path, collection,
-                           resc, "");
+        return new Archive(a, data, true, json_array(), 0, path, collection, resc, "");
     }
 
     /*
      * open existing archive
      */
-    static Archive *open(rsComm_t *rsComm, std::string path, const char *resc) {
-        struct archive *a;
-        Data *data;
-        struct archive_entry *entry;
+    static Archive* open(rsComm_t* rsComm, std::string path, const char* resc)
+    {
+        struct archive* a;
+        Data* data;
+        struct archive_entry* entry;
         size_t size;
-        char *buf;
+        char* buf;
         json_t *json, *list;
         json_error_t error;
         std::string origin;
-        Archive *archive;
+        Archive* archive;
 
         /*
          * open any archive
@@ -121,9 +130,9 @@ public:
         archive_read_support_filter_all(a);
         archive_read_support_format_all(a);
         data = new Data(rsComm, path.c_str());
-        if (archive_read_open(a, data, &a_open, &a_read, &a_close) !=
-                                                                ARCHIVE_OK ||
-            archive_read_next_header(a, &entry) != ARCHIVE_OK) {
+        if (archive_read_open(a, data, &a_open, &a_read, &a_close) != ARCHIVE_OK ||
+            archive_read_next_header(a, &entry) != ARCHIVE_OK)
+        {
             delete data;
             archive_read_free(a);
             return NULL;
@@ -144,8 +153,7 @@ public:
         size = (size_t) archive_entry_size(entry);
         buf = new char[size + 1];
         buf[size] = '\0';
-        if (archive_read_data(a, buf, size) != (__LA_SSIZE_T) size ||
-            (json=json_loads(buf, 0, &error)) == NULL) {
+        if (archive_read_data(a, buf, size) != (__LA_SSIZE_T) size || (json = json_loads(buf, 0, &error)) == NULL) {
             delete buf;
             delete data;
             archive_read_free(a);
@@ -164,8 +172,7 @@ public:
         /*
          * safe to call the constructor
          */
-        archive = new Archive(a, data, false, list, size, path, origin, resc,
-                              buf);
+        archive = new Archive(a, data, false, list, size, path, origin, resc, buf);
         delete buf;
         return archive;
     }
@@ -173,11 +180,13 @@ public:
     /*
      * destruct archive, cleaning up if needed
      */
-    ~Archive() {
+    ~Archive()
+    {
         if (archive != NULL) {
             if (creating) {
                 archive_write_free(archive);
-            } else {
+            }
+            else {
                 archive_read_free(archive);
             }
         }
@@ -190,11 +199,18 @@ public:
      * Add a DataObj to an archive.  It will be added to the index at first,
      * the actual archive will be created when construct() is called.
      */
-    void addDataObj(std::string name, size_t size, time_t created,
-                    time_t modified, std::string owner, std::string zone,
-                    std::string checksum, json_t *attributes, json_t *acl) {
+    void addDataObj(std::string name,
+                    size_t size,
+                    time_t created,
+                    time_t modified,
+                    std::string owner,
+                    std::string zone,
+                    std::string checksum,
+                    json_t* attributes,
+                    json_t* acl)
+    {
         if (path.compare(origin + "/" + name) != 0) {
-            json_t *json;
+            json_t* json;
 
             json = json_object();
             json_object_set_new(json, "name", json_string(name.c_str()));
@@ -202,11 +218,9 @@ public:
             json_object_set_new(json, "size", json_integer((json_int_t) size));
             json_object_set_new(json, "created", json_integer(created));
             json_object_set_new(json, "modified", json_integer(modified));
-            json_object_set_new(json, "owner",
-                                json_string((owner + "#" + zone).c_str()));
+            json_object_set_new(json, "owner", json_string((owner + "#" + zone).c_str()));
             if (checksum.length() != 0) {
-                json_object_set_new(json, "checksum",
-                                    json_string(checksum.c_str()));
+                json_object_set_new(json, "checksum", json_string(checksum.c_str()));
             }
             if (attributes != NULL) {
                 json_object_set(json, "attributes", attributes);
@@ -224,18 +238,22 @@ public:
      * Add a collection to an archive.  It will be added to the index at first,
      * the actual archive will be created when construct() is called.
      */
-    void addColl(std::string name, time_t created, time_t modified,
-                 std::string owner, std::string zone, json_t *attributes,
-                 json_t *acl) {
-        json_t *json;
+    void addColl(std::string name,
+                 time_t created,
+                 time_t modified,
+                 std::string owner,
+                 std::string zone,
+                 json_t* attributes,
+                 json_t* acl)
+    {
+        json_t* json;
 
         json = json_object();
         json_object_set_new(json, "name", json_string(name.c_str()));
         json_object_set_new(json, "type", json_string("coll"));
         json_object_set_new(json, "created", json_integer(created));
         json_object_set_new(json, "modified", json_integer(modified));
-        json_object_set_new(json, "owner",
-                            json_string((owner + "#" + zone).c_str()));
+        json_object_set_new(json, "owner", json_string((owner + "#" + zone).c_str()));
         if (attributes != NULL) {
             json_object_set(json, "attributes", attributes);
         }
@@ -248,20 +266,19 @@ public:
     /*
      * construct an archive from the index, return status
      */
-    int construct() {
+    int construct()
+    {
         if (creating) {
-            json_t *json;
-            char *str;
+            json_t* json;
+            char* str;
             __LA_SSIZE_T len;
 
             /*
              * first entry, INDEX.json
              */
             json = json_object();
-            json_object_set_new(json, "collection",
-                                json_string(origin.c_str()));
-            json_object_set_new(json, "size",
-                                json_integer((json_int_t) dataSize));
+            json_object_set_new(json, "collection", json_string(origin.c_str()));
+            json_object_set_new(json, "size", json_integer((json_int_t) dataSize));
             json_object_set(json, "items", list);
             str = json_dumps(json, JSON_INDENT(2));
             json_decref(json);
@@ -272,8 +289,7 @@ public:
             archive_entry_set_filetype(entry, AE_IFREG);
             archive_entry_set_perm(entry, 0444);
             archive_entry_set_size(entry, len);
-            if (archive_write_header(archive, entry) < 0 ||
-                archive_write_data(archive, str, (size_t) len) < 0) {
+            if (archive_write_header(archive, entry) < 0 || archive_write_data(archive, str, (size_t) len) < 0) {
                 free(str);
                 return SYS_TAR_APPEND_ERR;
             }
@@ -283,7 +299,7 @@ public:
              * now add the DataObjs and collections
              */
             for (index = 0; index < json_array_size(list); index++) {
-                const char *filename;
+                const char* filename;
                 int fd;
                 size_t size;
                 time_t mtime;
@@ -294,8 +310,7 @@ public:
                 mtime = json_integer_value(json_object_get(json, "modified"));
                 archive_entry_set_pathname(entry, filename);
                 archive_entry_set_mtime(entry, mtime, 0);
-                if (strcmp(json_string_value(json_object_get(json, "type")),
-                           "coll") == 0) {
+                if (strcmp(json_string_value(json_object_get(json, "type")), "coll") == 0) {
                     /*
                      * collection
                      */
@@ -304,14 +319,14 @@ public:
                     if (archive_write_header(archive, entry) < 0) {
                         return SYS_TAR_APPEND_ERR;
                     }
-                } else {
+                }
+                else {
                     /*
                      * DataObj
                      */
                     archive_entry_set_filetype(entry, AE_IFREG);
                     archive_entry_set_perm(entry, 0600);
-                    size = (size_t) json_integer_value(json_object_get(json,
-                                                                       "size"));
+                    size = (size_t) json_integer_value(json_object_get(json, "size"));
                     archive_entry_set_size(entry, (__LA_INT64_T) size);
                     if (archive_write_header(archive, entry) < 0) {
                         return SYS_TAR_APPEND_ERR;
@@ -320,10 +335,8 @@ public:
                     if (fd < 0) {
                         return fd;
                     }
-                    while ((len=_read(data->rsComm, fd, data->buf,
-                                      sizeof(data->buf))) > 0) {
-                        if (archive_write_data(archive, data->buf,
-                                               (size_t) len) < 0) {
+                    while ((len = _read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
+                        if (archive_write_data(archive, data->buf, (size_t) len) < 0) {
                             _close(data->rsComm, fd);
                             return SYS_TAR_APPEND_ERR;
                         }
@@ -346,24 +359,28 @@ public:
     /*
      * return INDEX.json as a string
      */
-    std::string indexItems() {
+    std::string indexItems()
+    {
         return indexString;
     }
 
     /*
      * return size in blocks of items once extracted
      */
-    size_t size() {
+    size_t size()
+    {
         return dataSize;
     }
 
     /*
      * get metadata of next item (potentially skipping current) from archive
      */
-    json_t *nextItem() {
+    json_t* nextItem()
+    {
         if (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
             return json_array_get(list, index++);
-        } else {
+        }
+        else {
             return NULL;
         }
     }
@@ -371,7 +388,8 @@ public:
     /*
      * extract current item under the given filename
      */
-    int extractItem(std::string filename) {
+    int extractItem(std::string filename)
+    {
         if (archive_entry_filetype(entry) == AE_IFDIR) {
             collInp_t collCreateInp;
             int err;
@@ -383,7 +401,8 @@ public:
             rstrcpy(collCreateInp.collName, filename.c_str(), MAX_NAME_LEN);
             err = rsCollCreate(data->rsComm, &collCreateInp);
             return (err == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) ? 0 : err;
-        } else {
+        }
+        else {
             char buf[A_BUFSIZE];
             int fd, status;
             __LA_SSIZE_T len;
@@ -395,7 +414,7 @@ public:
             if (fd < 0) {
                 return fd;
             }
-            while ((len=archive_read_data(archive, buf, sizeof(buf))) > 0) {
+            while ((len = archive_read_data(archive, buf, sizeof(buf))) > 0) {
                 status = _write(data->rsComm, fd, buf, (size_t) len);
                 if (status < 0) {
                     _close(data->rsComm, fd);
@@ -412,11 +431,12 @@ public:
         return 0;
     }
 
-private:
+  private:
     /*
      * create an iRODS DataObj
      */
-    static int _creat(Data *data, const char *name) {
+    static int _creat(Data* data, const char* name)
+    {
         int fd;
 
         /*
@@ -426,8 +446,7 @@ private:
         memset(&data->create, '\0', sizeof(dataObjInp_t));
         data->create.openFlags = O_WRONLY | O_TRUNC;
         if (data->resource != NULL) {
-            addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW,
-                      data->resource);
+            addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW, data->resource);
         }
         addKeyVal(&data->create.condInput, TRANSLATED_PATH_KW, "");
         rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
@@ -437,8 +456,7 @@ private:
             memset(&data->create, '\0', sizeof(dataObjInp_t));
             data->create.openFlags = O_CREAT | O_WRONLY;
             if (data->resource != NULL) {
-                addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW,
-                          data->resource);
+                addKeyVal(&data->create.condInput, DEST_RESC_NAME_KW, data->resource);
             }
             addKeyVal(&data->create.condInput, TRANSLATED_PATH_KW, "");
             rstrcpy(data->create.objPath, name, MAX_NAME_LEN);
@@ -451,7 +469,8 @@ private:
     /*
      * open an iRODS DataObj
      */
-    static int _open(Data *data, const char *name) {
+    static int _open(Data* data, const char* name)
+    {
         memset(&data->open, '\0', sizeof(dataObjInp_t));
         data->open.openFlags = O_RDONLY;
         rstrcpy(data->open.objPath, name, MAX_NAME_LEN);
@@ -461,7 +480,8 @@ private:
     /*
      * read an iRODS DataObj
      */
-    static int _read(rsComm_t *rsComm, int index, void *buf, size_t len) {
+    static int _read(rsComm_t* rsComm, int index, void* buf, size_t len)
+    {
         openedDataObjInp_t input;
         bytesBuf_t rbuf;
 
@@ -476,7 +496,7 @@ private:
     /*
      * write to an iRODS DataObj
      */
-    static int _write(rsComm_t *rsComm, int index, const void *buf, size_t len)
+    static int _write(rsComm_t* rsComm, int index, const void* buf, size_t len)
     {
         openedDataObjInp_t input;
         bytesBuf_t wbuf;
@@ -484,7 +504,7 @@ private:
         memset(&input, '\0', sizeof(openedDataObjInp_t));
         input.l1descInx = index;
         input.len = (int) len;
-        wbuf.buf = (void *) buf;
+        wbuf.buf = (void*) buf;
         wbuf.len = (int) len;
         return rsDataObjWrite(rsComm, &input, &wbuf);
     }
@@ -492,7 +512,8 @@ private:
     /*
      * close an iRODS DatObj
      */
-    static int _close(rsComm_t *rsComm, int index) {
+    static int _close(rsComm_t* rsComm, int index)
+    {
         openedDataObjInp_t input;
 
         memset(&input, '\0', sizeof(openedDataObjInp_t));
@@ -503,10 +524,11 @@ private:
     /*
      * libarchive wrapper for _creat()
      */
-    static int a_creat(struct archive *a, void *data) {
-        Data *d;
+    static int a_creat(struct archive* a, void* data)
+    {
+        Data* d;
 
-        d = (Data *) data;
+        d = (Data*) data;
         d->index = _creat(d, d->name);
         return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
@@ -514,10 +536,11 @@ private:
     /*
      * libarchive wrapper for _open()
      */
-    static int a_open(struct archive *a, void *data) {
-        Data *d;
+    static int a_open(struct archive* a, void* data)
+    {
+        Data* d;
 
-        d = (Data *) data;
+        d = (Data*) data;
         d->index = _open(d, d->name);
         return (d->index >= 0) ? ARCHIVE_OK : ARCHIVE_FATAL;
     }
@@ -525,15 +548,16 @@ private:
     /*
      * libarchive wrapper for _read()
      */
-    static __LA_SSIZE_T a_read(struct archive *a, void *data, const void **buf) {
-        Data *d;
+    static __LA_SSIZE_T a_read(struct archive* a, void* data, const void** buf)
+    {
+        Data* d;
         __LA_SSIZE_T status;
 
-        d = (Data *) data;
-        if (d->index < 0 ||
-            (status=_read(d->rsComm, d->index, d->buf, sizeof(d->buf))) < 0) {
+        d = (Data*) data;
+        if (d->index < 0 || (status = _read(d->rsComm, d->index, d->buf, sizeof(d->buf))) < 0) {
             return -1;
-        } else {
+        }
+        else {
             *buf = d->buf;
             return status;
         }
@@ -542,16 +566,16 @@ private:
     /*
      * libarchive wrapper for _write()
      */
-    static __LA_SSIZE_T a_write(struct archive *a, void *data, const void *buf,
-                                size_t size) {
-        Data *d;
+    static __LA_SSIZE_T a_write(struct archive* a, void* data, const void* buf, size_t size)
+    {
+        Data* d;
         __LA_SSIZE_T status;
 
-        d = (Data *) data;
-        if (d->index < 0 ||
-            (status=_write(d->rsComm, d->index, buf, size)) < 0) {
+        d = (Data*) data;
+        if (d->index < 0 || (status = _write(d->rsComm, d->index, buf, size)) < 0) {
             return -1;
-        } else {
+        }
+        else {
             return status;
         }
     }
@@ -559,21 +583,22 @@ private:
     /*
      * libarchive wrapper for _close()
      */
-    static int a_close(struct archive *a, void *data) {
-        Data *d;
+    static int a_close(struct archive* a, void* data)
+    {
+        Data* d;
 
-        d = (Data *) data;
+        d = (Data*) data;
         return (d->index < 0 || _close(d->rsComm, d->index) < 0) ? -1 : 0;
     }
 
-    struct archive *archive;            /* libarchive reference */
-    struct archive_entry *entry;        /* archive entry */
-    Data *data;                         /* context data */
-    bool creating;                      /* new archive? */
-    json_t *list;                       /* list of items */
-    size_t index;                       /* index of current item */
-    size_t dataSize;                    /* total size of archived DataObjs */
-    std::string path;                   /* path of archive */
-    std::string origin;                 /* original collection */
-    std::string indexString;            /* index as a string */
+    struct archive* archive; /* libarchive reference */
+    struct archive_entry* entry; /* archive entry */
+    Data* data; /* context data */
+    bool creating; /* new archive? */
+    json_t* list; /* list of items */
+    size_t index; /* index of current item */
+    size_t dataSize; /* total size of archived DataObjs */
+    std::string path; /* path of archive */
+    std::string origin; /* original collection */
+    std::string indexString; /* index as a string */
 };
