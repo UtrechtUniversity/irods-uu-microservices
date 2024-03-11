@@ -7,12 +7,12 @@ jobs:
   clang-format:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install Clang Format
+      - name: Install ClangFormat
         run: |
           sudo apt-get install -y clang-format
 
-      - name: Run Clang-Format
+      - name: Run ClangFormat
         run: |
-          clang-format -n src/*
+          clang-format --dry-run -Werror src/*
