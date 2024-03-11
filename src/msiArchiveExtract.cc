@@ -13,15 +13,14 @@
 #include "rsModDataObjMeta.hpp"
 #include "rsModAVUMetadata.hpp"
 
-
 /*
  * obtain free space on resource, if set
  */
-static long long freeSpace(rsComm_t *rsComm, const char *resource)
+static long long freeSpace(rsComm_t* rsComm, const char* resource)
 {
     char rescQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     long long space;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
@@ -36,13 +35,12 @@ static long long freeSpace(rsComm_t *rsComm, const char *resource)
     if (space == 0) {
         if (genQueryOut->rowCnt != 1) {
             space = SYS_RESC_DOES_NOT_EXIST;
-        } else {
+        }
+        else {
             /*
              * the resource exists, but the free space might still be unset
              */
-            space = strtoll(getSqlResultByInx(genQueryOut,
-                                              COL_R_FREE_SPACE)->value,
-                            NULL, 10);
+            space = strtoll(getSqlResultByInx(genQueryOut, COL_R_FREE_SPACE)->value, NULL, 10);
         }
     }
     freeGenQueryOut(&genQueryOut);
@@ -53,7 +51,7 @@ static long long freeSpace(rsComm_t *rsComm, const char *resource)
 /*
  * change the modification time for an extracted DataObj
  */
-static void modify(rsComm_t *rsComm, std::string &file, json_t *json)
+static void modify(rsComm_t* rsComm, std::string& file, json_t* json)
 {
     modDataObjMeta_t modDataObj;
     dataObjInfo_t dataObjInfo;
@@ -65,41 +63,35 @@ static void modify(rsComm_t *rsComm, std::string &file, json_t *json)
     memset(&regParam, '\0', sizeof(keyValPair_t));
     rstrcpy(dataObjInfo.objPath, file.c_str(), MAX_NAME_LEN);
     modDataObj.dataObjInfo = &dataObjInfo;
-    snprintf(tmpStr, MAX_NAME_LEN, "%lld",
-             json_integer_value(json_object_get(json, "modified")));
+    snprintf(tmpStr, MAX_NAME_LEN, "%lld", json_integer_value(json_object_get(json, "modified")));
     addKeyVal(&regParam, DATA_MODIFY_KW, tmpStr);
     modDataObj.regParam = &regParam;
-    rsModDataObjMeta(rsComm, &modDataObj);      /* allowed to fail */
+    rsModDataObjMeta(rsComm, &modDataObj); /* allowed to fail */
 }
 
 /*
  * set the attributes of a collection or DataObj
  */
-static void attributes(rsComm_t *rsComm, std::string &file, const char *type,
-                       json_t *list)
+static void attributes(rsComm_t* rsComm, std::string& file, const char* type, json_t* list)
 {
     modAVUMetadataInp_t modAVUInp;
     size_t sz, i;
-    const char *name;
-    json_t *json;
+    const char* name;
+    json_t* json;
 
     memset(&modAVUInp, '\0', sizeof(modAVUMetadataInp_t));
-    modAVUInp.arg1 = (char *) type;
-    modAVUInp.arg2 = (char *) file.c_str();
+    modAVUInp.arg1 = (char*) type;
+    modAVUInp.arg2 = (char*) file.c_str();
     name = NULL;
     sz = json_array_size(list);
     for (i = 0; i < sz; i++) {
         json = json_array_get(list, i);
-        modAVUInp.arg3 = (char *)
-                         json_string_value(json_object_get(json, "name"));
-        modAVUInp.arg4 = (char *)
-                         json_string_value(json_object_get(json, "value"));
-        modAVUInp.arg5 = (char *)
-                         json_string_value(json_object_get(json, "unit"));
-        modAVUInp.arg0 = (name == NULL || strcmp(modAVUInp.arg3, name) != 0) ?
-                          (char *) "set" : (char *) "add";
+        modAVUInp.arg3 = (char*) json_string_value(json_object_get(json, "name"));
+        modAVUInp.arg4 = (char*) json_string_value(json_object_get(json, "value"));
+        modAVUInp.arg5 = (char*) json_string_value(json_object_get(json, "unit"));
+        modAVUInp.arg0 = (name == NULL || strcmp(modAVUInp.arg3, name) != 0) ? (char*) "set" : (char*) "add";
         name = modAVUInp.arg3;
-        rsModAVUMetadata(rsComm, &modAVUInp);   /* allowed to fail */
+        rsModAVUMetadata(rsComm, &modAVUInp); /* allowed to fail */
     }
 }
 
@@ -110,10 +102,10 @@ int msiArchiveExtract(msParam_t* archiveIn,
                       msParam_t* extractIn,
                       msParam_t* resourceIn,
                       msParam_t* statusOut,
-                      ruleExecInfo_t *rei)
+                      ruleExecInfo_t* rei)
 {
     collInp_t collCreateInp;
-    json_t *json;
+    json_t* json;
     int status;
     long long space;
 
@@ -126,26 +118,27 @@ int msiArchiveExtract(msParam_t* archiveIn,
     }
 
     /* Parse input paramaters. */
-    const char *archiveStr  = parseMspForStr(archiveIn);
-    const char *pathStr     = parseMspForStr(pathIn);
+    const char* archiveStr = parseMspForStr(archiveIn);
+    const char* pathStr = parseMspForStr(pathIn);
     if (archiveStr == NULL || pathStr == NULL) {
         return SYS_INVALID_INPUT_PARAM;
     }
     std::string archive = archiveStr;
     std::string path = pathStr;
-    const char *extract = NULL;
+    const char* extract = NULL;
     if (extractIn->type != NULL && strcmp(extractIn->type, STR_MS_T) == 0) {
         extract = parseMspForStr(extractIn);
     }
-    const char *resource = NULL;
+    const char* resource = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
         resource = parseMspForStr(resourceIn);
     }
 
-    Archive *a = Archive::open(rei->rsComm, archive, resource);
+    Archive* a = Archive::open(rei->rsComm, archive, resource);
     if (a == NULL) {
         status = SYS_TAR_OPEN_ERR;
-    } else {
+    }
+    else {
         status = 0;
         space = 0;
         if (resource != NULL) {
@@ -155,8 +148,8 @@ int msiArchiveExtract(msParam_t* archiveIn,
             space = freeSpace(rei->rsComm, resource);
             if (space < 0) {
                 status = (int) space;
-            } else if (space != 0 && extract == NULL &&
-                       a->size() > (size_t) (space - space / 10)) {
+            }
+            else if (space != 0 && extract == NULL && a->size() > (size_t) (space - space / 10)) {
                 /*
                  * the choice of status code is rather a shot in the dark
                  */
@@ -179,17 +172,15 @@ int msiArchiveExtract(msParam_t* archiveIn,
         /*
          * extract items
          */
-        while ((json=a->nextItem()) != NULL) {
+        while ((json = a->nextItem()) != NULL) {
             std::string file;
-            const char *type;
-            json_t *list;
+            const char* type;
+            json_t* list;
 
             file = json_string_value(json_object_get(json, "name"));
             if (extract == NULL || file.compare(extract) == 0) {
                 if (extract != NULL) {
-                    if (space != 0 &&
-                       json_integer_value(json_object_get(json, "size")) >
-                                                        space - space / 10) {
+                    if (space != 0 && json_integer_value(json_object_get(json, "size")) > space - space / 10) {
                         /*
                          * single-file space check failed
                          */
@@ -205,11 +196,8 @@ int msiArchiveExtract(msParam_t* archiveIn,
                          * extract in collection
                          */
                         memset(&collCreateInp, '\0', sizeof(collInp_t));
-                        rstrcpy(collCreateInp.collName,
-                                (path + "/" + file.substr(0, found)).c_str(),
-                                MAX_NAME_LEN);
-                        addKeyVal(&collCreateInp.condInput, RECURSIVE_OPR__KW,
-                                  "");
+                        rstrcpy(collCreateInp.collName, (path + "/" + file.substr(0, found)).c_str(), MAX_NAME_LEN);
+                        addKeyVal(&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
                         rsCollCreate(rei->rsComm, &collCreateInp);
                     }
                 }
@@ -230,7 +218,8 @@ int msiArchiveExtract(msParam_t* archiveIn,
                     if (list != NULL) {
                         attributes(rei->rsComm, file, "-C", list);
                     }
-                } else {
+                }
+                else {
                     modify(rei->rsComm, file, json);
                     if (list != NULL) {
                         attributes(rei->rsComm, file, "-d", list);
@@ -249,25 +238,15 @@ int msiArchiveExtract(msParam_t* archiveIn,
     return status;
 }
 
-irods::ms_table_entry *plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(5);
+irods::ms_table_entry* plugin_factory()
+{
+    irods::ms_table_entry* msvc = new irods::ms_table_entry(5);
 
-    msvc->add_operation<
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        ruleExecInfo_t*>("msiArchiveExtract",
-                         std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             ruleExecInfo_t*)>(msiArchiveExtract));
+    msvc->add_operation<msParam_t*, msParam_t*, msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*>(
+        "msiArchiveExtract",
+        std::function<int(msParam_t*, msParam_t*, msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*)>(
+            msiArchiveExtract));
 
     return msvc;
 }
-
 }

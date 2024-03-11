@@ -14,11 +14,11 @@
 /*
  * obtain ID of a collection, or a negative error status
  */
-static long long collID(rsComm_t *rsComm, std::string &coll)
+static long long collID(rsComm_t* rsComm, std::string& coll)
 {
     char collQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     long long collId;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
@@ -33,9 +33,9 @@ static long long collID(rsComm_t *rsComm, std::string &coll)
     if (collId == 0) {
         if (genQueryOut->rowCnt != 1) {
             collId = CAT_UNKNOWN_COLLECTION;
-        } else {
-            collId = strtoll(getSqlResultByInx(genQueryOut, COL_COLL_ID)->value,
-                             NULL, 10);
+        }
+        else {
+            collId = strtoll(getSqlResultByInx(genQueryOut, COL_COLL_ID)->value, NULL, 10);
         }
     }
     freeGenQueryOut(&genQueryOut);
@@ -46,11 +46,11 @@ static long long collID(rsComm_t *rsComm, std::string &coll)
 /*
  * obtain attribute metadata for a DataObj
  */
-static json_t *attrDataObj(rsComm_t *rsComm, long long id)
+static json_t* attrDataObj(rsComm_t* rsComm, long long id)
 {
     char dataQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     sqlResult_t *names, *values, *units;
     json_t *list, *json;
 
@@ -64,20 +64,16 @@ static json_t *attrDataObj(rsComm_t *rsComm, long long id)
     genQueryOut = NULL;
 
     list = NULL;
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         names = getSqlResultByInx(genQueryOut, COL_META_DATA_ATTR_NAME);
         values = getSqlResultByInx(genQueryOut, COL_META_DATA_ATTR_VALUE);
         units = getSqlResultByInx(genQueryOut, COL_META_DATA_ATTR_UNITS);
 
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
             json = json_object();
-            json_object_set_new(json, "name",
-                                json_string(&names->value[names->len * i]));
-            json_object_set_new(json, "value",
-                                json_string(&values->value[values->len * i]));
-            json_object_set_new(json, "unit",
-                                json_string(&units->value[units->len * i]));
+            json_object_set_new(json, "name", json_string(&names->value[names->len * i]));
+            json_object_set_new(json, "value", json_string(&values->value[values->len * i]));
+            json_object_set_new(json, "unit", json_string(&units->value[units->len * i]));
             if (list == NULL) {
                 list = json_array();
             }
@@ -99,11 +95,11 @@ static json_t *attrDataObj(rsComm_t *rsComm, long long id)
 /*
  * obtain attribute metadata for a collection
  */
-static json_t *attrColl(rsComm_t *rsComm, long long id)
+static json_t* attrColl(rsComm_t* rsComm, long long id)
 {
     char collQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     sqlResult_t *names, *values, *units;
     json_t *list, *json;
 
@@ -117,20 +113,16 @@ static json_t *attrColl(rsComm_t *rsComm, long long id)
     genQueryOut = NULL;
 
     list = NULL;
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         names = getSqlResultByInx(genQueryOut, COL_META_COLL_ATTR_NAME);
         values = getSqlResultByInx(genQueryOut, COL_META_COLL_ATTR_VALUE);
         units = getSqlResultByInx(genQueryOut, COL_META_COLL_ATTR_UNITS);
 
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
             json = json_object();
-            json_object_set_new(json, "name",
-                                json_string(&names->value[names->len * i]));
-            json_object_set_new(json, "value",
-                                json_string(&values->value[values->len * i]));
-            json_object_set_new(json, "unit",
-                                json_string(&units->value[units->len * i]));
+            json_object_set_new(json, "name", json_string(&names->value[names->len * i]));
+            json_object_set_new(json, "value", json_string(&values->value[values->len * i]));
+            json_object_set_new(json, "unit", json_string(&units->value[units->len * i]));
             if (list == NULL) {
                 list = json_array();
             }
@@ -152,19 +144,18 @@ static json_t *attrColl(rsComm_t *rsComm, long long id)
 /*
  * obtain ACLs for a DataObj
  */
-static json_t *aclDataObj(rsComm_t *rsComm, long long id)
+static json_t* aclDataObj(rsComm_t* rsComm, long long id)
 {
     char tmpStr[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     sqlResult_t *users, *zones, *access;
-    json_t *list;
+    json_t* list;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
     snprintf(tmpStr, MAX_NAME_LEN, "='%lld'", id);
     addInxVal(&genQueryInp.sqlCondInp, COL_DATA_ACCESS_DATA_ID, tmpStr);
-    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE,
-              "='access_type'");
+    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_TOKEN_NAMESPACE, "='access_type'");
     addInxIval(&genQueryInp.selectInp, COL_USER_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_USER_ZONE, 1);
     addInxIval(&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
@@ -172,14 +163,15 @@ static json_t *aclDataObj(rsComm_t *rsComm, long long id)
     genQueryOut = NULL;
 
     list = NULL;
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         users = getSqlResultByInx(genQueryOut, COL_USER_NAME);
         zones = getSqlResultByInx(genQueryOut, COL_USER_ZONE);
         access = getSqlResultByInx(genQueryOut, COL_DATA_ACCESS_NAME);
 
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
-            snprintf(tmpStr, MAX_NAME_LEN, "%s#%s:%s",
+            snprintf(tmpStr,
+                     MAX_NAME_LEN,
+                     "%s#%s:%s",
                      &users->value[users->len * i],
                      &zones->value[zones->len * i],
                      &access->value[access->len * i]);
@@ -204,19 +196,18 @@ static json_t *aclDataObj(rsComm_t *rsComm, long long id)
 /*
  * obtain ACLs for a collection
  */
-static json_t *aclColl(rsComm_t *rsComm, long long id)
+static json_t* aclColl(rsComm_t* rsComm, long long id)
 {
     char tmpStr[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     sqlResult_t *users, *zones, *access;
-    json_t *list;
+    json_t* list;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
     snprintf(tmpStr, MAX_NAME_LEN, "='%lld'", id);
     addInxVal(&genQueryInp.sqlCondInp, COL_COLL_ACCESS_COLL_ID, tmpStr);
-    addInxVal(&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE,
-              "='access_type'");
+    addInxVal(&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, "='access_type'");
     addInxIval(&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
     addInxIval(&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
@@ -224,14 +215,15 @@ static json_t *aclColl(rsComm_t *rsComm, long long id)
     genQueryOut = NULL;
 
     list = NULL;
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         users = getSqlResultByInx(genQueryOut, COL_COLL_USER_NAME);
         zones = getSqlResultByInx(genQueryOut, COL_COLL_USER_ZONE);
         access = getSqlResultByInx(genQueryOut, COL_COLL_ACCESS_NAME);
 
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
-            snprintf(tmpStr, MAX_NAME_LEN, "%s#%s:%s",
+            snprintf(tmpStr,
+                     MAX_NAME_LEN,
+                     "%s#%s:%s",
                      &users->value[users->len * i],
                      &zones->value[zones->len * i],
                      &access->value[access->len * i]);
@@ -256,14 +248,12 @@ static json_t *aclColl(rsComm_t *rsComm, long long id)
 /*
  * pass on metadata from DataObjs in a given location to the archive
  */
-static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
-                       long long collId)
+static void dirDataObj(Archive* a, rsComm_t* rsComm, std::string coll, long long collId)
 {
     char collQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
-    sqlResult_t *names, *ids, *sizes, *owners, *zones, *ctimes, *mtimes,
-                *checksums;
+    genQueryOut_t* genQueryOut;
+    sqlResult_t *names, *ids, *sizes, *owners, *zones, *ctimes, *mtimes, *checksums;
     long long dataId;
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
@@ -281,8 +271,7 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
     genQueryInp.maxRows = MAX_SQL_ROWS;
     genQueryOut = NULL;
 
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         names = getSqlResultByInx(genQueryOut, COL_DATA_NAME);
         ids = getSqlResultByInx(genQueryOut, COL_D_DATA_ID);
         sizes = getSqlResultByInx(genQueryOut, COL_DATA_SIZE);
@@ -295,8 +284,7 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
         for (int i = 0; i < genQueryOut->rowCnt; i++) {
             dataId = strtoll(&ids->value[ids->len * i], NULL, 10);
             a->addDataObj(coll + &names->value[names->len * i],
-                          (size_t) strtoll(&sizes->value[sizes->len * i], NULL,
-                                           10),
+                          (size_t) strtoll(&sizes->value[sizes->len * i], NULL, 10),
                           strtoll(&ctimes->value[ctimes->len * i], NULL, 10),
                           strtoll(&mtimes->value[mtimes->len * i], NULL, 10),
                           &owners->value[owners->len * i],
@@ -320,16 +308,15 @@ static void dirDataObj(Archive *a, rsComm_t *rsComm, std::string coll,
 /*
  * recursively pass on metadata for collections to the archive
  */
-static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
-                    std::string &path)
+static void dirColl(Archive* a, rsComm_t* rsComm, std::string& coll, std::string& path)
 {
     char collQCond[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t* genQueryOut;
     sqlResult_t *names, *ids, *owners, *zones, *ctimes, *mtimes;
     long long id;
-    char *name;
-    std::list<std::pair<std::string, long long>> dirs = { };
+    char* name;
+    std::list<std::pair<std::string, long long>> dirs = {};
 
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
     snprintf(collQCond, MAX_NAME_LEN, "='%s'", path.c_str());
@@ -343,8 +330,7 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
     genQueryInp.maxRows = MAX_SQL_ROWS;
     genQueryOut = NULL;
 
-    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 &&
-           genQueryOut->rowCnt != 0) {
+    while (rsGenQuery(rsComm, &genQueryInp, &genQueryOut) == 0 && genQueryOut->rowCnt != 0) {
         names = getSqlResultByInx(genQueryOut, COL_COLL_NAME);
         ids = getSqlResultByInx(genQueryOut, COL_COLL_ID);
         owners = getSqlResultByInx(genQueryOut, COL_COLL_OWNER_NAME);
@@ -385,18 +371,17 @@ static void dirColl(Archive *a, rsComm_t *rsComm, std::string &coll,
      */
     for (auto dir = dirs.begin(); dir != dirs.end(); dir++) {
         dirColl(a, rsComm, coll, dir->first);
-        dirDataObj(a, rsComm, dir->first.substr(coll.length() + 1) + "/",
-                   dir->second);
+        dirDataObj(a, rsComm, dir->first.substr(coll.length() + 1) + "/", dir->second);
     }
 }
 
 extern "C" {
 
-int msiArchiveCreate(msParam_t *archiveIn,
-                     msParam_t *collectionIn,
-                     msParam_t *resourceIn,
-                     msParam_t *statusOut,
-                     ruleExecInfo_t *rei)
+int msiArchiveCreate(msParam_t* archiveIn,
+                     msParam_t* collectionIn,
+                     msParam_t* resourceIn,
+                     msParam_t* statusOut,
+                     ruleExecInfo_t* rei)
 {
     long long id;
     int status;
@@ -410,14 +395,14 @@ int msiArchiveCreate(msParam_t *archiveIn,
     }
 
     /* Parse input paramaters. */
-    const char *archiveStr    = parseMspForStr(archiveIn);
-    const char *collectionStr = parseMspForStr(collectionIn);
+    const char* archiveStr = parseMspForStr(archiveIn);
+    const char* collectionStr = parseMspForStr(collectionIn);
     if (archiveStr == NULL || collectionStr == NULL) {
         return SYS_INVALID_INPUT_PARAM;
     }
     std::string archive = archiveStr;
     std::string collection = collectionStr;
-    const char *resource   = NULL;
+    const char* resource = NULL;
     if (resourceIn->type != NULL && strcmp(resourceIn->type, STR_MS_T) == 0) {
         resource = parseMspForStr(resourceIn);
     }
@@ -428,15 +413,16 @@ int msiArchiveCreate(msParam_t *archiveIn,
          * no such collection
          */
         status = (int) id;
-    } else {
+    }
+    else {
         /*
          * create archive
          */
-        Archive *a = Archive::create(rei->rsComm, archive, collection,
-                                     resource);
+        Archive* a = Archive::create(rei->rsComm, archive, collection, resource);
         if (a == NULL) {
             status = SYS_TAR_OPEN_ERR;
-        } else {
+        }
+        else {
             /*
              * add collections and DataObjs to archive
              */
@@ -455,23 +441,14 @@ int msiArchiveCreate(msParam_t *archiveIn,
     return status;
 }
 
-irods::ms_table_entry *plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(4);
+irods::ms_table_entry* plugin_factory()
+{
+    irods::ms_table_entry* msvc = new irods::ms_table_entry(4);
 
-    msvc->add_operation<
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        msParam_t*,
-        ruleExecInfo_t*>("msiArchiveCreate",
-                         std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             msParam_t*,
-                             ruleExecInfo_t*)>(msiArchiveCreate));
+    msvc->add_operation<msParam_t*, msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*>(
+        "msiArchiveCreate",
+        std::function<int(msParam_t*, msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*)>(msiArchiveCreate));
 
     return msvc;
 }
-
 }

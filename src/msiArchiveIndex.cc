@@ -11,9 +11,7 @@
 
 extern "C" {
 
-int msiArchiveIndex(msParam_t *archiveIn,
-                    msParam_t *indexOut,
-                    ruleExecInfo_t *rei)
+int msiArchiveIndex(msParam_t* archiveIn, msParam_t* indexOut, ruleExecInfo_t* rei)
 {
     /* Check input parameters. */
     if (archiveIn->type == NULL || strcmp(archiveIn->type, STR_MS_T)) {
@@ -21,13 +19,13 @@ int msiArchiveIndex(msParam_t *archiveIn,
     }
 
     /* Parse input paramaters. */
-    const char *archiveStr = parseMspForStr(archiveIn);
+    const char* archiveStr = parseMspForStr(archiveIn);
     if (archiveStr == NULL) {
         return SYS_INVALID_INPUT_PARAM;
     }
     std::string archive = archiveStr;
 
-    Archive *a = Archive::open(rei->rsComm, archive, NULL);
+    Archive* a = Archive::open(rei->rsComm, archive, NULL);
     if (a == NULL) {
         return SYS_TAR_OPEN_ERR;
     }
@@ -37,19 +35,13 @@ int msiArchiveIndex(msParam_t *archiveIn,
     return 0;
 }
 
-irods::ms_table_entry *plugin_factory() {
-    irods::ms_table_entry *msvc = new irods::ms_table_entry(2);
+irods::ms_table_entry* plugin_factory()
+{
+    irods::ms_table_entry* msvc = new irods::ms_table_entry(2);
 
-    msvc->add_operation<
-        msParam_t*,
-        msParam_t*,
-        ruleExecInfo_t*>("msiArchiveIndex",
-                         std::function<int(
-                             msParam_t*,
-                             msParam_t*,
-                             ruleExecInfo_t*)>(msiArchiveIndex));
+    msvc->add_operation<msParam_t*, msParam_t*, ruleExecInfo_t*>(
+        "msiArchiveIndex", std::function<int(msParam_t*, msParam_t*, ruleExecInfo_t*)>(msiArchiveIndex));
 
     return msvc;
 }
-
 }
