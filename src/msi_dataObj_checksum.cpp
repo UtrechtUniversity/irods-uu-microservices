@@ -71,7 +71,7 @@ int calculate_checksum(rsComm_t* rsComm, std::string const& dataObjInp, std::str
     status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
     if (status >= 0) {
         if (genQueryOut->rowCnt != 1) {
-            rodsLog(LOG_ERROR, "msi_dataObj_checksum: unkown file");
+            rodsLog(LOG_ERROR, "msi_dataObj_checksum: unknown file");
             ret = CAT_UNKNOWN_FILE;
         }
         else {
