@@ -1,0 +1,7 @@
+## 2024-04-17 v1.0.0
+
+- Add non-persistent checksum microservice
+- Add vault stat microservice
+- Adapt build scripts for Ubuntu 20.04 LTS
+
+Previous versions not tracked in CHANGELOG
