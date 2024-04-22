@@ -173,7 +173,7 @@ int msiStatVault(msParam_t* _resource_name,
     // Return error if resource does not exist
     if (status_resource_id == CAT_NO_ROWS_FOUND) {
         rodsLog(LOG_ERROR, "msi_stat_vault: could not find resource [%s]", resource_name_str);
-        return status_resource_id;
+        return CAT_UNKNOWN_RESOURCE;
     }
     else if (status_resource_id < 0) {
         rodsLog(LOG_ERROR,
