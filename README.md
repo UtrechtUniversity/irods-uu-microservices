@@ -3,14 +3,16 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
+  * msi_dataObj_checksum: Calculate a checksum of a replica without persisting it in the iCAT database
   * msiRegisterEpicPID: Register an EPIC PID
+  * msi_stat_vault: Get properties of a physical file or directory in the vault of a unixfilesystem resource
 
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
   * msi\_json\_arrayops: get, add and set values in a json array. modified to handle arrays of arrays
 
   The msi\_json\_arrayops and msi\_json\_objops microservices are derived from
-  ork from the Donders Institute. The license in DONDERS-LICENSE applies
+  work at the Donders Institute. The license in DONDERS-LICENSE applies
 
 Developed at Maastricht University:
   * msi\_add\_avu: Microservice to add AVU
