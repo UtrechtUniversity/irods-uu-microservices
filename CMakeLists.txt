@@ -67,7 +67,7 @@ add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
 add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
-add_library(msi_dataObj_checksum      SHARED src/msi_dataObj_checksum.cpp)
+add_library(msi_file_checksum         SHARED src/msi_file_checksum.cpp)
 add_library(msi_stat_vault            SHARED src/msi_stat_vault.cpp)
 
 target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
@@ -79,7 +79,7 @@ target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES}
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_stat_vault            LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(msi_dataObj_checksum      LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS})
+target_link_libraries(msi_file_checksum      LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS})
 
 install(TARGETS
         msiRegisterEpicPID
@@ -91,7 +91,7 @@ install(TARGETS
         msi_add_avu
         msi_rmw_avu
 	msi_stat_vault
-        msi_dataObj_checksum
+        msi_file_checksum
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
