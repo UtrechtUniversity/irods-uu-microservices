@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 find_package(IRODS 4.2.12 EXACT REQUIRED)
-
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
 # Note: Microservices for iRODS >= 4.2 need to be built with the compiler and
@@ -15,15 +15,26 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 set(UU_RELEASE_VERSION "0.8.3")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
+set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
+set(CMAKE_MODULE_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 
-project(uu-msis CXX)
+project(uu-msis LANGUAGES CXX)
 
-add_compile_options(-std=c++17
-                    -Os
-                    -fPIC
-                    -DRODS_SERVER
-                    -nostdinc++
-                    -Wall
+set(CMAKE_SKIP_BUILD_RPATH OFF)
+set(CMAKE_SKIP_INSTALL_RPATH OFF)
+set(CMAKE_SKIP_RPATH OFF)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+
+include(${IRODS_TARGETS_PATH})
+include(GNUInstallDirs)
+include(UseLibCXX)
+
+add_compile_options(-Wall
                     -Wextra
                     -Wpedantic
                     -Wcast-align
@@ -33,12 +44,10 @@ add_compile_options(-std=c++17
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-link_libraries(c++abi)
+include_directories("${IRODS_INCLUDE_DIRS}")
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("${IRODS_EXTERNALS_FULLPATH_JSON}/include")
-include_directories("/usr/include/irods")
-include_directories("/opt/irods-externals/fmt6.1.2-1/include")
+include_directories("${IRODS_EXTERNALS_FULLPATH_FMT}/include")
 
 set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
@@ -81,6 +90,35 @@ target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_stat_vault            LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_dataObj_checksum      LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS})
 
+add_library(
+    msi_dir_list
+    MODULE
+    src/msi_dir_list.cpp
+)
+
+target_include_directories(
+    msi_dir_list
+    PRIVATE
+    ${IRODS_INCLUDE_DIRS}
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+)
+
+target_link_libraries(
+    msi_dir_list
+    PRIVATE
+    irods_server
+    irods_common
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+)
+
+target_compile_definitions(
+    msi_dir_list
+    PRIVATE
+    RODS_SERVER
+    ${IRODS_COMPILE_DEFINITIONS}
+    BOOST_SYSTEM_NO_DEPRECATED
+)
+
 install(TARGETS
         msiRegisterEpicPID
         msiArchiveCreate
@@ -90,8 +128,9 @@ install(TARGETS
         msi_json_objops
         msi_add_avu
         msi_rmw_avu
-	msi_stat_vault
+        msi_stat_vault
         msi_dataObj_checksum
+        msi_dir_list
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
