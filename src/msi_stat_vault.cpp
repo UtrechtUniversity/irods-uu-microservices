@@ -27,17 +27,23 @@
    # Example code to call microservice:
 
    runVaultStat {
-         *filename='/etc/hostname';
-         *rescname='demoResc';
+         *filename='/var/lib/irods/Vault1_2/yoda/licenses/GNU General Public License v3.0.txt';
+         *rescname='dev001_2';
          *type='';
          *size='';
          writeLine("serverLog","Running vault stat for *filename");
-         msi_stat_vault(*filename, *rescname, *type, *size);
+         msi_stat_vault(*rescname, *filename, *type, *size);
          writeLine("serverLog","Ran vault stat for *filename. Result: *type / *size");
    }
 
    input null
    output ruleExecOut
+
+   # If the rule is stored in a file named `rule.r`, it can be executed using:
+   #
+   # $ irule -r irods_rule_engine_plugin-irods_rule_language-instance -F rule.r
+   #
+   # The output of the rule is then logged in the rodsLog.
  *
  */
 
@@ -167,7 +173,7 @@ int msiStatVault(msParam_t* _resource_name,
     // Return error if resource does not exist
     if (status_resource_id == CAT_NO_ROWS_FOUND) {
         rodsLog(LOG_ERROR, "msi_stat_vault: could not find resource [%s]", resource_name_str);
-        return status_resource_id;
+        return CAT_UNKNOWN_RESOURCE;
     }
     else if (status_resource_id < 0) {
         rodsLog(LOG_ERROR,

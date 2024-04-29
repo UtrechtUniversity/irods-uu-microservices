@@ -3,14 +3,16 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
+  * msi_file_checksum: Calculate a checksum of a physical file without persisting it in the iCAT database
   * msiRegisterEpicPID: Register an EPIC PID
+  * msi_stat_vault: Get properties of a physical file or directory in the vault of a unixfilesystem resource
 
 Developed at Donders Institute:
   * msi\_json\_objops: get, add and set values in a json object
   * msi\_json\_arrayops: get, add and set values in a json array. modified to handle arrays of arrays
 
   The msi\_json\_arrayops and msi\_json\_objops microservices are derived from
-  ork from the Donders Institute. The license in DONDERS-LICENSE applies
+  work at the Donders Institute. The license in DONDERS-LICENSE applies
 
 Developed at Maastricht University:
   * msi\_add\_avu: Microservice to add AVU
@@ -28,7 +30,7 @@ iRODS UU microservices can be installed using the packages provided on the
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 
 ## Building from source
-This repository includes a Vagrant configuration for building irods-uu-microservices from source on either CentOS 7 (for the RPM package) or Ubuntu 18.04 LTS (for the DEB package). It can be found in vagrant/build. In order to build a package using Vagrant, edit the .env file in the Vagrant build directory. Adjust the BOXNAME and IRODS_VERSION vars as needed. Then run vagrant up to provision the VM. The VM has all dependencies pre-installed, as well as a clone of the irods-uu-microservices repository. Log in on the VM using vagrant ssh and create the package (see below).
+This repository includes a Vagrant configuration for building irods-uu-microservices from source on either CentOS 7 (for the RPM package) or Ubuntu 20.04 LTS (for the DEB package). It can be found in vagrant/build. In order to build a package using Vagrant, edit the .env file in the Vagrant build directory. Adjust the BOXNAME and IRODS_VERSION vars as needed. Then run vagrant up to provision the VM. The VM has all dependencies pre-installed, as well as a clone of the irods-uu-microservices repository. Log in on the VM using vagrant ssh and create the package (see below).
 
 To build from source without using the Vagrant configuration, the following build-time dependencies must be installed (package names may differ on your platform):
 
