@@ -87,8 +87,13 @@ int msiDirList(msParam_t* _path, msParam_t* _list, ruleExecInfo_t* _rei)
                     }
 
                     std::time_t modifiedTime = fs::last_write_time(entry.path());
-                    entryJson.put("modified_timestamp", std::asctime(std::localtime(&modifiedTime)));
+                    char* localModifiedTime = std::asctime(std::localtime(&modifiedTime));
 
+                    // Remove trailing newline.
+                    localModifiedTime[strcspn(localModifiedTime, "\n")] = '\0';
+                    std::string modifiedTimestamp(localModifiedTime);
+
+                    entryJson.put("modified_timestamp", modifiedTimestamp);
                     jsonResult.push_back(std::make_pair("", entryJson));
                 }
 
