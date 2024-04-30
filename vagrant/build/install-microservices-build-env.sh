@@ -102,5 +102,13 @@ else
 
 fi
 
+wget -q "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
+sudo mkdir "cmake-${CMAKE_VERSION}"
+cd "cmake-${CMAKE_VERSION}"
+bash "../cmake-${CMAKE_VERSION}-linux-x86_64.sh" --skip-license
+cd ..
+sudo mv "cmake-${CMAKE_VERSION}" "/usr/local/cmake-${CMAKE_VERSION}"
+sudo ln -sf /usr/local/cmake-${CMAKE_VERSION}/bin/cmake /usr/local/bin/cmake
+
 git clone https://github.com/UtrechtUniversity/irods-uu-microservices.git
 chown -R vagrant:vagrant irods-uu-microservices
