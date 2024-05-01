@@ -2,6 +2,7 @@
 
 ## Unreleased version
 
+- Vault stat microservice: fix error code if resource vault path could not be determined
 - Vault stat microservice: return more specific error code if resource not found.
 
 ## 2024-04-17 v1.0.0

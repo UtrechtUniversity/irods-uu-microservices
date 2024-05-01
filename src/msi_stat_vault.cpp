@@ -218,7 +218,7 @@ int msiStatVault(msParam_t* _resource_name,
                 "msi_stat_vault: error while looking up resource vault path of resource [%s]: %d",
                 resource_name_str,
                 status_resource_vault_path);
-        return status_resource_type;
+        return status_resource_vault_path;
     }
 
     // Check that canonical physical path is in resource vault path. Return error if not.
