@@ -2,6 +2,8 @@
 
 ## Unreleased version
 
+- Add dir list microservice for listing contents of a directory
+- Non-persistent checksum microservice: change it so that it works on physical paths rather than logic paths.
 - Vault stat microservice: fix error code if resource vault path could not be determined
 - Vault stat microservice: return more specific error code if resource not found.
 

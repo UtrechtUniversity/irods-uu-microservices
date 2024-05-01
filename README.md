@@ -3,6 +3,7 @@ Miscellaneous iRODS microservices developed or modified by Utrecht University.
 
 ## Included microservices
 Developed at Utrecht University:
+  * msi\_dir\_list: Lists the contents of a physical directory
   * msi_file_checksum: Calculate a checksum of a physical file without persisting it in the iCAT database
   * msiRegisterEpicPID: Register an EPIC PID
   * msi_stat_vault: Get properties of a physical file or directory in the vault of a unixfilesystem resource
