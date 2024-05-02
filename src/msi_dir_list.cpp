@@ -94,7 +94,7 @@ int msiDirList(msParam_t* _path, msParam_t* _list, ruleExecInfo_t* _rei)
                     std::string modifiedTimestamp(localModifiedTime);
 
                     entryJson.put("modified_timestamp", modifiedTimestamp);
-                    jsonResult.push_back(std::make_pair("", entryJson));
+                    jsonResult.push_back(std::make_pair(entry.path().string(), entryJson));
                 }
 
                 std::stringstream ss;
