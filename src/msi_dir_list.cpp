@@ -227,23 +227,22 @@ int msiDirList(msParam_t* _path, msParam_t* _rescName, msParam_t* _list, ruleExe
         pt::write_json(ss, jsonResult);
         fillStrInMsParam(_list, ss.str().c_str());
     }
-}
-catch (const fs::filesystem_error& error) {
-    rodsLog(LOG_ERROR, "msi_dir_list: filesystem error for <%s> - %s", path_str, error.what());
-    return SYS_INVALID_FILE_PATH;
-}
+    catch (const fs::filesystem_error& error) {
+        rodsLog(LOG_ERROR, "msi_dir_list: filesystem error for <%s> - %s", path_str, error.what());
+        return SYS_INVALID_FILE_PATH;
+    }
 
-_rei->status = 0;
+    _rei->status = 0;
 
-return _rei->status;
+    return _rei->status;
 }
 
 extern "C" irods::ms_table_entry* plugin_factory()
 {
-    irods::ms_table_entry* msvc = new irods::ms_table_entry(2);
+    irods::ms_table_entry* msvc = new irods::ms_table_entry(3);
 
-    msvc->add_operation<msParam_t*, msParam_t*, ruleExecInfo_t*>(
-        "msiDirList", std::function<int(msParam_t*, msParam_t*, ruleExecInfo_t*)>(msiDirList));
+    msvc->add_operation<msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*>(
+        "msiDirList", std::function<int(msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*)>(msiDirList));
 
     return msvc;
 }
