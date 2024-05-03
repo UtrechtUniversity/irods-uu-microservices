@@ -238,7 +238,7 @@ int msiFileChecksum(msParam_t* _path, msParam_t* _rescName, msParam_t* _checksum
             return USER_INVALID_RESC_INPUT;
         }
     }
-    
+
     return _rei->status;
 }
 
