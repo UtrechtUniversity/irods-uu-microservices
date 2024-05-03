@@ -232,7 +232,9 @@ int msiFileChecksum(msParam_t* _path, msParam_t* _rescName, msParam_t* _checksum
             return _rei->status;
         }
         else {
-            rodsLog(LOG_ERROR, "msi_file_checksum: failed to calculate checksum as hostname is different from location of the given resource.");
+            rodsLog(LOG_ERROR, 
+                    "msi_file_checksum: failed to calculate checksum as hostname is different from location of the "
+                    "given resource.");
             return USER_INVALID_RESC_INPUT;
         }        
     }
