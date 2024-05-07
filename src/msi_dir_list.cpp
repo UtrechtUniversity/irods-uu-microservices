@@ -187,7 +187,7 @@ int msiDirList(msParam_t* _path, msParam_t* _rescName, msParam_t* _list, ruleExe
         fs::directory_iterator endIter;
 
         // Iterate through directory.
-        for (fs::directory_iterator iter(normalized_physical_path_bp); iter != endIter; ++iter) {
+        for (fs::directory_iterator iter(physical_path_bp); iter != endIter; ++iter) {
             const fs::directory_entry entry = *iter;
             pt::ptree entryJson;
 
