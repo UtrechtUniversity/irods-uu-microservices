@@ -194,13 +194,13 @@ int msiDirList(msParam_t* _path, msParam_t* _rescName, msParam_t* _list, ruleExe
             entryJson.put("name", entry.path().filename().string());
 
             if (fs::is_regular_file(entry.status())) {
-                entryJson.put("type", "file");
+                entryJson.put("type", "FILE");
             }
             else if (fs::is_directory(entry.status())) {
-                entryJson.put("type", "directory");
+                entryJson.put("type", "DIR");
             }
             else if (fs::is_symlink(entry.symlink_status())) {
-                entryJson.put("type", "symlink");
+                entryJson.put("type", "SYMLINK");
             }
 
             if (fs::is_regular_file(entry.status())) {
