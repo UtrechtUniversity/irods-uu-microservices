@@ -68,7 +68,7 @@ static int get_resource_attribute_by_name(rsComm_t* rsComm,
         else {
             if ((resource_data = getSqlResultByInx(genQueryOut, column_number)) == NULL) {
                 rodsLog(LOG_ERROR,
-                        "msi_file_checksum: getSqlResultByInx for column %d failed on lookup of %s",
+                        "msi_dir_list: getSqlResultByInx for column %d failed on lookup of %s",
                         column_number,
                         resource_name);
                 out_status = UNMATCHED_KEY_OR_INDEX;
@@ -103,6 +103,14 @@ static int get_resource_id(rsComm_t* rsComm, char* resource_name, char* resource
 static int get_resource_vault_path(rsComm_t* rsComm, char* resource_name, char* resource_vault_path_out)
 {
     return get_resource_attribute_by_name(rsComm, resource_name, resource_vault_path_out, COL_R_VAULT_PATH);
+}
+
+/** This function retrieves the location of a resource based on its name
+ *  to resource_loc_out
+ */
+static int get_resource_loc(rsComm_t* rsComm, char* resource_name, char* resource_loc_out)
+{
+    return get_resource_attribute_by_name(rsComm, resource_name, resource_loc_out, COL_R_LOC);
 }
 
 int msiDirList(msParam_t* _path, msParam_t* _rescName, msParam_t* _list, ruleExecInfo_t* _rei)
@@ -180,6 +188,24 @@ int msiDirList(msParam_t* _path, msParam_t* _rescName, msParam_t* _list, ruleExe
         rodsLog(
             LOG_ERROR, "msi_dir_list: physical path is not inside resource vault for %s", normalized_physical_path_str);
         return SYS_INVALID_FILE_PATH;
+    }
+
+    // Retrieve resource location
+    char resource_loc[MAX_NAME_LEN + 1];
+    memset(&resource_loc, '\0', MAX_NAME_LEN + 1);
+    int status_resource_loc = get_resource_loc(_rei->rsComm, rescName, resource_loc);
+    if (status_resource_loc < 0) {
+        rodsLog(LOG_ERROR,
+                "msi_dir_list: error while looking up resource vault path of resource [%s]: %d",
+                rescName,
+                status_resource_loc);
+        return status_resource_loc;
+    }
+
+    // Check if the hostname and resource location are the same.
+    if (strcmp(_rei->rsComm->myEnv.rodsHost, resource_loc) != 0) {
+        rodsLog(LOG_ERROR, "msi_dir_list: hostname differs from resource location");
+        return USER_INVALID_RESC_INPUT;
     }
 
     try {
