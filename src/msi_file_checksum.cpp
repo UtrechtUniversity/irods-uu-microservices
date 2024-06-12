@@ -112,7 +112,7 @@ int msiFileChecksum(msParam_t* _physical_path_name,
 
     // Check that file exists in path.
     if (!boost::filesystem::is_regular_file(physical_path_str)) {
-        rodsLog(LOG_ERROR, "msi_file_checksum: path <%s> is not a file", physical_path_str);
+        rodsLog(LOG_ERROR, "msi_file_checksum: invalid file path <%s>", physical_path_str);
         return SYS_INVALID_FILE_PATH;
     }
 
