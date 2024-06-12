@@ -70,15 +70,15 @@
 /** Internal function to get attributes of a resource, based on its name
  */
 
-static json_t* get_resource_info_by_name(RsComm& _comm,
-                                    char* resource_name)
-{    
+static json_t* get_resource_info_by_name(RsComm& _comm, char* resource_name)
+{
     json_t* list;
     const std::string qstr = fmt::format("SELECT RESC_ID, "
-                                        "RESC_TYPE_NAME, "
-                                        "RESC_VAULT_PATH "
-                                        "WHERE RESC_NAME = '{}'", resource_name);
-    
+                                         "RESC_TYPE_NAME, "
+                                         "RESC_VAULT_PATH "
+                                         "WHERE RESC_NAME = '{}'",
+                                         resource_name);
+
     list = NULL;
 
     irods::experimental::query_builder qb;
