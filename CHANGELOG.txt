@@ -1,11 +1,13 @@
 # Change log
 
-## Unreleased version
+## 2024-06-20 v1.1.0
 
 - Add dir list microservice for listing contents of a directory
 - Non-persistent checksum microservice: change it so that it works on physical paths rather than logic paths.
+- Non-persistent checksum microservice: replace GenQuery with query_builder
 - Vault stat microservice: fix error code if resource vault path could not be determined
 - Vault stat microservice: return more specific error code if resource not found.
+- Vault stat microservice: replace GenQuery with query_builder
 
 ## 2024-04-17 v1.0.0
 
