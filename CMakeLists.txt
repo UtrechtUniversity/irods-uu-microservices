@@ -88,7 +88,7 @@ target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES}
 target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_stat_vault            LINK_PUBLIC ${Boost_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msi_file_checksum         LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS})
+target_link_libraries(msi_file_checksum         LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS} ${JANSSON_LIBRARIES})
 
 add_library(
     msi_dir_list
