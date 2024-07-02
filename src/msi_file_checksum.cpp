@@ -161,8 +161,6 @@ int msiFileChecksum(msParam_t* _physical_path_name,
         return SYS_INVALID_FILE_PATH;
     }
 
-    rodsLog(LOG_ERROR, "The resource location is <%s>", resource_loc);
-
     // Call rsFileStat to determine size and type
     fileStatInp_t fileStatInp;
     rodsStat_t* fileStatOut = NULL;
