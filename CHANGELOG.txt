@@ -1,10 +1,5 @@
 # Change log
 
-## 2024-07-03 v1.1.1
-
-- Non-persistent checksum microservice: add Jansson library for handling JSON data.
-- Non-persistent checksum microservice: remove extra logging for resource information. 
-
 ## 2024-06-20 v1.1.0
 
 - Add dir list microservice for listing contents of a directory
