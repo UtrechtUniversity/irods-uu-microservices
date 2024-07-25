@@ -1,25 +1,21 @@
-cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
-
+cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 find_package(IRODS 4.2.12 EXACT REQUIRED)
+
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
 # Note: Microservices for iRODS >= 4.2 need to be built with the compiler and
 # standard libarary provided by iRODS-externals packages.
 # The following packages need to be installed to build the uu microservices:
 #
-# irods-externals-clang-runtime3.8-0
+# irods-externals-clang-runtime3.11.4
 # irods-externals-clang6.0-0
 
 set(UU_RELEASE_VERSION "1.1.1")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
-set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 
 project(uu-msis LANGUAGES CXX)
 
@@ -30,11 +26,12 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
-include(${IRODS_TARGETS_PATH})
-include(GNUInstallDirs)
-include(UseLibCXX)
-
-add_compile_options(-Wall
+add_compile_options(-std=c++17
+                    -Os
+                    -fPIC
+                    -DRODS_SERVER
+                    -nostdinc++
+                    -Wall
                     -Wextra
                     -Wpedantic
                     -Wcast-align
@@ -43,6 +40,9 @@ add_compile_options(-Wall
                     -Wconversion
                     -Wno-missing-field-initializers
                     -Wno-unused-parameter)
+
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+link_libraries(c++abi)
 
 include_directories("${IRODS_INCLUDE_DIRS}")
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
@@ -68,27 +68,27 @@ include_directories(SYSTEM ${LibArchive_INCLUDE_DIRS})
 
 include_directories(SYSTEM "/usr/include/irods")
 
-add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
 add_library(msiArchiveCreate          SHARED src/msiArchiveCreate.cc)
 add_library(msiArchiveExtract         SHARED src/msiArchiveExtract.cc)
 add_library(msiArchiveIndex           SHARED src/msiArchiveIndex.cc)
+add_library(msiRegisterEpicPID        SHARED src/msiRegisterEpicPID.cc)
+add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
+add_library(msi_file_checksum         SHARED src/msi_file_checksum.cpp)
 add_library(msi_json_arrayops         SHARED src/msi_json_arrayops.cc)
 add_library(msi_json_objops           SHARED src/msi_json_objops.cc)
-add_library(msi_add_avu               SHARED src/msi_add_avu.cpp)
 add_library(msi_rmw_avu               SHARED src/msi_rmw_avu.cpp)
-add_library(msi_file_checksum         SHARED src/msi_file_checksum.cpp)
 add_library(msi_stat_vault            SHARED src/msi_stat_vault.cpp)
 
-target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
 target_link_libraries(msiArchiveCreate          LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
 target_link_libraries(msiArchiveExtract         LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
 target_link_libraries(msiArchiveIndex           LINK_PUBLIC ${LibArchive_LIBRARIES} ${JANSSON_LIBRARIES} )
+target_link_libraries(msiRegisterEpicPID        LINK_PUBLIC ${CURL_LIBRARIES} ${JANSSON_LIBRARIES} ${UUID_LIBRARIES})
+target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(msi_file_checksum         LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS} ${JANSSON_LIBRARIES})
 target_link_libraries(msi_json_arrayops         LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(msi_json_objops           LINK_PUBLIC ${JANSSON_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(msi_add_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_rmw_avu               LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(msi_stat_vault            LINK_PUBLIC ${Boost_LIBRARIES} ${JANSSON_LIBRARIES})
-target_link_libraries(msi_file_checksum         LINK_PUBLIC ${Boost_LIBRARIES} ${LIB_NAME} ${CMAKE_DL_LIBS} ${JANSSON_LIBRARIES})
 
 add_library(
     msi_dir_list
@@ -120,17 +120,17 @@ target_compile_definitions(
 )
 
 install(TARGETS
-        msiRegisterEpicPID
         msiArchiveCreate
         msiArchiveExtract
         msiArchiveIndex
-        msi_json_arrayops
-        msi_json_objops
+        msiRegisterEpicPID
         msi_add_avu
-        msi_rmw_avu
-        msi_stat_vault
         msi_dir_list
         msi_file_checksum
+        msi_json_arrayops
+        msi_json_objops
+        msi_rmw_avu
+        msi_stat_vault
         DESTINATION
         /usr/lib/irods/plugins/microservices)
 
