@@ -89,7 +89,7 @@ class Archive
             archive_write_set_format_zip(a);
         }
         else {
-            archive_write_set_format_ustar(a);
+            archive_write_set_format_pax(a);
         }
         data = new Data(rsComm, path.c_str());
         data->resource = resc;
