@@ -289,7 +289,9 @@ class Archive
             archive_entry_set_filetype(entry, AE_IFREG);
             archive_entry_set_perm(entry, 0444);
             archive_entry_set_size(entry, len);
-            if (archive_write_header(archive, entry) < 0 || archive_write_data(archive, str, (size_t) len) < 0) {
+            if (archive_write_header(archive, entry) < ARCHIVE_OK ||
+                archive_write_data(archive, str, (size_t) len) < ARCHIVE_OK) {
+                rodsLog(LOG_ERROR, "msiArchiveCreate: %s", archive_error_string(archive));
                 free(str);
                 return SYS_TAR_APPEND_ERR;
             }
@@ -316,7 +318,8 @@ class Archive
                      */
                     archive_entry_set_filetype(entry, AE_IFDIR);
                     archive_entry_set_perm(entry, 0750);
-                    if (archive_write_header(archive, entry) < 0) {
+                    if (archive_write_header(archive, entry) < ARCHIVE_OK) {
+                        rodsLog(LOG_ERROR, "msiArchiveCreate: %s", archive_error_string(archive));
                         return SYS_TAR_APPEND_ERR;
                     }
                 }
@@ -328,7 +331,8 @@ class Archive
                     archive_entry_set_perm(entry, 0600);
                     size = (size_t) json_integer_value(json_object_get(json, "size"));
                     archive_entry_set_size(entry, (__LA_INT64_T) size);
-                    if (archive_write_header(archive, entry) < 0) {
+                    if (archive_write_header(archive, entry) < ARCHIVE_OK) {
+                        rodsLog(LOG_ERROR, "msiArchiveCreate: %s", archive_error_string(archive));
                         return SYS_TAR_APPEND_ERR;
                     }
                     fd = _open(data, (origin + "/" + filename).c_str());
@@ -336,12 +340,14 @@ class Archive
                         return fd;
                     }
                     while ((len = _read(data->rsComm, fd, data->buf, sizeof(data->buf))) > 0) {
-                        if (archive_write_data(archive, data->buf, (size_t) len) < 0) {
+                        if (archive_write_data(archive, data->buf, (size_t) len) < ARCHIVE_OK) {
+                            rodsLog(LOG_ERROR, "msiArchiveCreate: %s", archive_error_string(archive));
                             _close(data->rsComm, fd);
                             return SYS_TAR_APPEND_ERR;
                         }
                     }
                     if (len < 0) {
+                        rodsLog(LOG_ERROR, "msiArchiveCreate: Error while reading data object");
                         _close(data->rsComm, fd);
                         return SYS_TAR_APPEND_ERR;
                     }
