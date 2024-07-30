@@ -12,7 +12,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-clang-runtime3.11.4
 # irods-externals-clang6.0-0
 
-set(UU_RELEASE_VERSION "1.1.1")
+set(UU_RELEASE_VERSION "1.2.0")
 
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})

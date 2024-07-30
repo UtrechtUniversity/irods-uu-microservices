@@ -1,17 +1,21 @@
-# Change log
+# Changelog
+
+## 2024-07-29 v1.2.0
+
+- Archive create microservice: change archive format from ustar to pax, which does not have restrictions on file sizes
 
 ## 2024-07-03 v1.1.1
 
-- Non-persistent checksum microservice: add Jansson library for handling JSON data.
-- Non-persistent checksum microservice: remove extra logging for resource information. 
+- Non-persistent checksum microservice: add Jansson library for handling JSON data
+- Non-persistent checksum microservice: remove extra logging for resource information.
 
 ## 2024-06-20 v1.1.0
 
 - Add dir list microservice for listing contents of a directory
-- Non-persistent checksum microservice: change it so that it works on physical paths rather than logic paths.
+- Non-persistent checksum microservice: change it so that it works on physical paths rather than logic paths
 - Non-persistent checksum microservice: replace GenQuery with query_builder
 - Vault stat microservice: fix error code if resource vault path could not be determined
-- Vault stat microservice: return more specific error code if resource not found.
+- Vault stat microservice: return more specific error code if resource not found
 - Vault stat microservice: replace GenQuery with query_builder
 
 ## 2024-04-17 v1.0.0
