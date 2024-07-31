@@ -101,7 +101,7 @@ int msiRegisterEpicPID(msParam_t* valueIn, msParam_t* idInOut, msParam_t* httpCo
     CURL* curl;
     CURLcode res;
 
-    /* Check if user is priviliged. */
+    /* Check if user is privileged. */
     if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         return SYS_USER_NO_PERMISSION;
     }
@@ -116,7 +116,7 @@ int msiRegisterEpicPID(msParam_t* valueIn, msParam_t* idInOut, msParam_t* httpCo
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    /* Parse input paramaters. */
+    /* Parse input parameters. */
     std::string value = parseMspForStr(valueIn);
     std::string uuid = parseMspForStr(idInOut);
 

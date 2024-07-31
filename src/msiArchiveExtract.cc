@@ -117,7 +117,7 @@ int msiArchiveExtract(msParam_t* archiveIn,
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    /* Parse input paramaters. */
+    /* Parse input parameters. */
     const char* archiveStr = parseMspForStr(archiveIn);
     const char* pathStr = parseMspForStr(pathIn);
     if (archiveStr == NULL || pathStr == NULL) {

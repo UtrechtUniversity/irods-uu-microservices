@@ -394,7 +394,7 @@ int msiArchiveCreate(msParam_t* archiveIn,
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    /* Parse input paramaters. */
+    /* Parse input parameters. */
     const char* archiveStr = parseMspForStr(archiveIn);
     const char* collectionStr = parseMspForStr(collectionIn);
     if (archiveStr == NULL || collectionStr == NULL) {

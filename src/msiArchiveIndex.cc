@@ -18,7 +18,7 @@ int msiArchiveIndex(msParam_t* archiveIn, msParam_t* indexOut, ruleExecInfo_t* r
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    /* Parse input paramaters. */
+    /* Parse input parameters. */
     const char* archiveStr = parseMspForStr(archiveIn);
     if (archiveStr == NULL) {
         return SYS_INVALID_INPUT_PARAM;
