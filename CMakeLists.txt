@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.2.12 EXACT REQUIRED)
+find_package(IRODS 4.3.3 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
@@ -9,8 +9,8 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # standard library provided by iRODS-externals packages.
 # The following packages need to be installed to build the uu microservices:
 #
-# irods-externals-clang-runtime3.11.4
-# irods-externals-clang6.0-0
+# irods-externals-clang-runtime13.0.0-0
+# irods-externals-clang13.0.0-0
 
 set(UU_RELEASE_VERSION "1.2.0")
 
@@ -31,6 +31,8 @@ add_compile_options(-std=c++17
                     -fPIC
                     -DRODS_SERVER
                     -nostdinc++
+                    -I/opt/irods-externals/json3.10.4-0/include
+                    -I/opt/irods-externals/fmt8.1.1-0/include
                     -Wall
                     -Wextra
                     -Wpedantic
@@ -179,7 +181,7 @@ set(CPACK_RPM_PACKAGE_URL "https://github.com/UtrechtUniversity/irods-uu-microse
 set(CPACK_RPM_PACKAGE_AUTOREQ 0)
 set(CPACK_RPM_PACKAGE_AUTOPROV 0)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server ( = ${IRODS_VERSION}-1~bionic ), irods-runtime ( = ${IRODS_VERSION}-1~bionic )")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "irods-server ( = ${IRODS_VERSION}-0~jammy_amd64 ), irods-runtime ( = ${IRODS_VERSION}-0~jammy_amd64 )")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/UtrechtUniversity/irods-uu-microservices")
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 
