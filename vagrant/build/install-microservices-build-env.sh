@@ -14,12 +14,13 @@ then source "$SETTINGSFILE"
 else echo "Error: settings file $SETTINGSFILE not found." && exit 1
 fi
 
-if [ -f /etc/centos-release ]
+if [ -f /etc/redhat-release ]
 then
 
-  echo "Installing iRODS UU microservices build environment on CentOS."
+  echo "Installing iRODS UU microservices build environment on AlmaLinux."
 
   echo "Installing dependencies ..."
+  sudo dnf config-manager --set-enabled crb
   sudo yum -y install wget epel-release yum-plugin-versionlock
 
   echo "Adding iRODS repository ..."
@@ -56,35 +57,10 @@ deb [arch=${APT_IRODS_REPO_ARCHITECTURE}] $APT_IRODS_REPO_URL $APT_IRODS_REPO_DI
 ENDAPTREPO
   sudo apt update
 
-  echo "Installing dependencies ..."
-  sudo apt-get -y install aptitude libboost-locale-dev
-
-  sudo apt install -y libpython2-stdlib libpython2.7-minimal libpython2.7-stdlib \
-          python-is-python2 python-six python2 python2-minimal python2.7 python2.7-minimal \
-          python-certifi python-chardet python-idna python-pkg-resources python-setuptools
-
-  PY_URLLIB_PREFIX="http://security.ubuntu.com/ubuntu/pool/main/p/python-urllib3"
-  PY_URLLIB_FILENAME="python-urllib3_1.22-1ubuntu0.18.04.2_all.deb"
-  PY_REQUESTS_PREFIX="http://security.ubuntu.com/ubuntu/pool/main/r/requests"
-  PY_REQUESTS_FILENAME="python-requests_2.18.4-2ubuntu0.1_all.deb"
-  OPENSSL_PREFIX="http://security.ubuntu.com/ubuntu/pool/main/o/openssl1.0"
-  OPENSSL_FILENAME="libssl1.0.0_1.0.2n-1ubuntu5.13_amd64.deb"
-
-  wget \
-        ${PY_URLLIB_PREFIX}/${PY_URLLIB_FILENAME} \
-        ${PY_REQUESTS_PREFIX}/${PY_REQUESTS_FILENAME} \
-        ${OPENSSL_PREFIX}/${OPENSSL_FILENAME}
-
-  for package in $PY_URLLIB_FILENAME $PY_REQUESTS_FILENAME $OPENSSL_FILENAME
-  do echo "Installing package ${package%.*}"
-     sudo dpkg -i "$package"
-     rm "$package"
-  done
-
   for package in $APT_IRODS_PACKAGES
   do echo "Installing package $package and its dependencies"
-     sudo apt-get -y install "$package=${IRODS_VERSION}-1~bionic"
-     sudo aptitude hold "$package"
+     sudo apt-get -y install "$package=${IRODS_VERSION}"
+     sudo apt-mark hold "$package"
   done
 
   for package in $APT_IRODS_EXTERNAL_PACKAGES
@@ -101,14 +77,6 @@ else
   echo "Error: install script is not suitable for this box."
 
 fi
-
-wget -q "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
-sudo mkdir "cmake-${CMAKE_VERSION}"
-cd "cmake-${CMAKE_VERSION}"
-bash "../cmake-${CMAKE_VERSION}-linux-x86_64.sh" --skip-license
-cd ..
-sudo mv "cmake-${CMAKE_VERSION}" "/usr/local/cmake-${CMAKE_VERSION}"
-sudo ln -sf /usr/local/cmake-${CMAKE_VERSION}/bin/cmake /usr/local/bin/cmake
 
 git clone https://github.com/UtrechtUniversity/irods-uu-microservices.git
 chown -R vagrant:vagrant irods-uu-microservices

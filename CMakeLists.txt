@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21.4 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 find_package(IRODS 4.3.3 EXACT REQUIRED)
@@ -9,7 +9,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # standard library provided by iRODS-externals packages.
 # The following packages need to be installed to build the uu microservices:
 #
-# irods-externals-clang-runtime13.0.0-0
+# irods-externals-cmake3.21.4-0
 # irods-externals-clang13.0.0-0
 
 set(UU_RELEASE_VERSION "1.2.0")
@@ -31,8 +31,6 @@ add_compile_options(-std=c++17
                     -fPIC
                     -DRODS_SERVER
                     -nostdinc++
-                    -I/opt/irods-externals/json3.10.4-0/include
-                    -I/opt/irods-externals/fmt8.1.1-0/include
                     -Wall
                     -Wextra
                     -Wpedantic
@@ -148,7 +146,7 @@ set(CPACK_MONOLITHIC_INSTALL 1)
 set(CPACK_CMAKE_GENERATOR "Unix Makefiles")
 
 execute_process(
-  COMMAND "python" "-c" "from __future__ import print_function; import platform; print(platform.linux_distribution()[0].split()[0].strip().lower(), end='')"
+  COMMAND "python3" "-c" "from __future__ import print_function; import distro; print(distro.id(), end='')"
   RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME
   OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_NAME
 )
@@ -156,10 +154,10 @@ execute_process(
 message(STATUS "Found Linux distro ${IRODS_LINUX_DISTRIBUTION_NAME}")
 
 # Determine which type of package should be generated
-if(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(ubuntu|debian)$")
+if (IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(ubuntu|debian)$")
     set(CPACK_GENERATOR "DEB")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}-${UU_RELEASE_VERSION}")
-elseif(IRODS_LINUX_DISTRIBUTION_NAME MATCHES "^(centos)$")
+elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "almalinux")
     set(CPACK_GENERATOR "RPM")
     set(CPACK_PACKAGE_VERSION "${IRODS_VERSION}_${UU_RELEASE_VERSION}")
 endif()
