@@ -31,15 +31,15 @@ iRODS UU microservices can be installed using the packages provided on the
 You can also build the microservices yourself, see [Building from source](#building-from-source).
 
 ## Building from source
-This repository includes a Vagrant configuration for building irods-uu-microservices from source on either CentOS 7 (for the RPM package) or Ubuntu 20.04 LTS (for the DEB package). It can be found in vagrant/build. In order to build a package using Vagrant, edit the .env file in the Vagrant build directory. Adjust the BOXNAME and IRODS_VERSION vars as needed. Then run vagrant up to provision the VM. The VM has all dependencies pre-installed, as well as a clone of the irods-uu-microservices repository. Log in on the VM using vagrant ssh and create the package (see below).
+This repository includes a Vagrant configuration for building irods-uu-microservices from source on either AlmaLinux 9 (for the RPM package) or Ubuntu 22.04 LTS (for the DEB package). It can be found in vagrant/build. In order to build a package using Vagrant, edit the .env file in the Vagrant build directory. Adjust the BOXNAME and IRODS_VERSION vars as needed. Then run vagrant up to provision the VM. The VM has all dependencies pre-installed, as well as a clone of the irods-uu-microservices repository. Log in on the VM using vagrant ssh and create the package (see below).
 
 To build from source without using the Vagrant configuration, the following build-time dependencies must be installed (package names may differ on your platform):
 
 - `make`
 - `gcc-c++`
 - `irods-devel`
-- `irods-externals-cmake3.5.2-0`
-- `irods-externals-clang6.0-0`
+- `irods-externals-cmake3.21.4-0`
+- `irods-externals-clang13.0.0-0`
 - `boost-devel`
 - `boost-locale`
 - `openssl-devel`
@@ -50,7 +50,7 @@ To build from source without using the Vagrant configuration, the following buil
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-cmake3.5.2-0 irods-externals-clang6.0-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-clang13.0.0-0 irods-externals-cmake3.21.4-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
@@ -64,7 +64,7 @@ Follow these instructions to build from source:
 
 - Compile the project
 ```bash
-export PATH=/opt/irods-externals/cmake3.5.2-0/bin:$PATH
+export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
 cmake .
 make
 ```
