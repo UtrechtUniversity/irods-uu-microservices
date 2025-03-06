@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21.4 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-find_package(IRODS 4.3.3 EXACT REQUIRED)
+find_package(IRODS 4.3.4 EXACT REQUIRED)
 
 message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 
