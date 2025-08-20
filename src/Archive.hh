@@ -290,7 +290,8 @@ class Archive
             archive_entry_set_perm(entry, 0444);
             archive_entry_set_size(entry, len);
             if (archive_write_header(archive, entry) < ARCHIVE_OK ||
-                archive_write_data(archive, str, (size_t) len) < ARCHIVE_OK) {
+                archive_write_data(archive, str, (size_t) len) < ARCHIVE_OK)
+            {
                 rodsLog(LOG_ERROR, "msiArchiveCreate: %s", archive_error_string(archive));
                 free(str);
                 return SYS_TAR_APPEND_ERR;
