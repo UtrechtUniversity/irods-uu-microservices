@@ -1,7 +1,7 @@
 # Call with
-# irule -F msi_add_avu_test.r
+# irule -F msi_archive_create_test.r
 # Or call specifically with: 
-# /bin/irule -r irods_rule_engine_plugin-irods_rule_language-instance -F msi_archive_create.r 
+# /bin/irule -r irods_rule_engine_plugin-irods_rule_language-instance -F msi_archive_create_test.r
 
 testArchiveCreation {
     *sourceCollection = "/nlmumc/home/rods/test-data-collection";
