@@ -39,7 +39,7 @@ To build from source without using the Vagrant configuration, the following buil
 - `gcc-c++`
 - `irods-devel`
 - `irods-externals-cmake3.21.4-0`
-- `irods-externals-clang13.0.0-0`
+- `irods-externals-clang16.0.6-0`
 - `boost-devel`
 - `boost-locale`
 - `openssl-devel`
@@ -50,7 +50,7 @@ To build from source without using the Vagrant configuration, the following buil
 - `rpmdevtools` (if you are creating an RPM)
 
 ```
-sudo yum install make gcc-c++ irods-devel irods-externals-clang13.0.0-0 irods-externals-cmake3.21.4-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
+sudo yum install make gcc-c++ irods-devel irods-externals-clang16.0.6-0 irods-externals-cmake3.21.4-0 boost-devel boost-locale openssl-devel libcurl-devel jansson-devel libuuid-devel libarchive-devel rpmdevtools
 ```
 
 Follow these instructions to build from source:
@@ -65,7 +65,9 @@ Follow these instructions to build from source:
 - Compile the project
 ```bash
 export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
-cmake .
+mkdir build
+cd build
+cmake ..
 make
 ```
 
