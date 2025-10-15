@@ -1,5 +1,9 @@
 # Changelog
 
+## 2025-10-10 v1.3.0
+
+- Deprecate msi_add_avu and msi_rmw_avu microservices
+
 ## 2024-07-29 v1.2.0
 
 - Archive create microservice: change archive format from ustar to pax, which does not have restrictions on file sizes
@@ -7,7 +11,7 @@
 ## 2024-07-03 v1.1.1
 
 - Non-persistent checksum microservice: add Jansson library for handling JSON data
-- Non-persistent checksum microservice: remove extra logging for resource information.
+- Non-persistent checksum microservice: remove extra logging for resource information
 
 ## 2024-06-20 v1.1.0
 

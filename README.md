@@ -15,10 +15,6 @@ Developed at Donders Institute:
   The msi\_json\_arrayops and msi\_json\_objops microservices are derived from
   work at the Donders Institute. The license in DONDERS-LICENSE applies
 
-Developed at Maastricht University:
-  * msi\_add\_avu: Microservice to add AVU
-  * msi\_rmw\_avu: Microservice to remove AVU
-
 Developed at Wageningen University & Research:
   * msiArchiveCreate: create an archive
   * msiArchiveExtract: extract from an archive
