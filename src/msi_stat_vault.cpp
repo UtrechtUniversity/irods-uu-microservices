@@ -1,5 +1,12 @@
 /*
-
+ * \file
+ * \brief     iRODS microservice to stat on a filename within a resource vault
+ * \author    Sietse Snel
+ * \author    Sirjan Kaur
+ * \copyright Copyright (c) 2024-2025, Utrecht University
+ *
+ * This file is part of irods-uu-microservices.
+ *
  * This microservice performs a stat on a filename within a unixfilesystem
  * resource vault, checking whether the filename refers to an existing file
  * and returning its size if present. It can be used to help verify integrity
@@ -7,14 +14,6 @@
  *
  * Example code to invoke this microservice:
  *
- *
-   # \file
-   # \brief job
-   # \author Sietse Snel
-   # \author Sirjan Kaur
-   # \copyright Copyright (c) 2024, Utrecht university. All rights reserved
-   # \license GPLv3, see LICENSE
-   #
    # Run vault stat service for testing
    #
    # Input parameters:
@@ -65,7 +64,6 @@
 #include <string_view>
 #include <vector>
 #include <string>
-#include <fmt/format.h>
 
 /** Internal function to get attributes of a resource, based on its name
  */
@@ -73,11 +71,9 @@
 static json_t* get_resource_info_by_name(RsComm& _comm, char* resource_name)
 {
     json_t* list;
-    const std::string qstr = fmt::format("SELECT RESC_ID, "
-                                         "RESC_TYPE_NAME, "
-                                         "RESC_VAULT_PATH "
-                                         "WHERE RESC_NAME = '{}'",
-                                         resource_name);
+    const std::string qstr = std::string("SELECT RESC_ID, RESC_TYPE_NAME, RESC_VAULT_PATH "
+                                         "WHERE RESC_NAME = '") +
+                             resource_name + "'";
 
     list = NULL;
 

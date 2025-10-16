@@ -3,7 +3,7 @@
  * \brief     iRODS microservice to compute SHA256 checksum of a data object replica
  * \author    Sirjan Kaur
  * \author    Lazlo Westerhof
- * \copyright Copyright (c) 2024, Utrecht University
+ * \copyright Copyright (c) 2024-2025, Utrecht University
  *
  * This file is part of irods-uu-microservices.
  *
@@ -38,7 +38,6 @@
 #include <string_view>
 #include <vector>
 #include <string>
-#include <fmt/format.h>
 
 /** Internal function to get attributes of a resource, based on its name
  */
@@ -46,11 +45,9 @@
 static json_t* get_resource_info_by_name(RsComm& _comm, char* resource_name)
 {
     json_t* list;
-    const std::string qstr = fmt::format("SELECT RESC_ID, "
-                                         "RESC_VAULT_PATH, "
-                                         "RESC_LOC"
-                                         "WHERE RESC_NAME = '{}'",
-                                         resource_name);
+    const std::string qstr = std::string("SELECT RESC_ID, RESC_VAULT_PATH, RESC_LOC "
+                                         "WHERE RESC_NAME = '") +
+                             resource_name + "'";
 
     list = NULL;
 

@@ -49,7 +49,6 @@ add_compile_options(-std=c++17
 include_directories("${IRODS_INCLUDE_DIRS}")
 include_directories("${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1")
 include_directories("${IRODS_EXTERNALS_FULLPATH_JSON}/include")
-include_directories("${IRODS_EXTERNALS_FULLPATH_FMT}/include")
 
 set(BOOST_ROOT "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
