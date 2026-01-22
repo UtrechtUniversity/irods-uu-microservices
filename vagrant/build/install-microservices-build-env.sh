@@ -55,7 +55,13 @@ then
 cat << ENDAPTREPO | sudo tee /etc/apt/sources.list.d/irods.list
 deb [arch=${APT_IRODS_REPO_ARCHITECTURE}] $APT_IRODS_REPO_URL $APT_IRODS_REPO_DISTRIBUTION $APT_IRODS_REPO_COMPONENT
 ENDAPTREPO
-  sudo apt update
+  sudo apt-get update
+  
+  # Downgrade runtime libs so -dev packages can install
+  sudo apt-get install --allow-downgrades -y \
+    libxml2=2.9.14+dfsg-1.3ubuntu3.6 \
+    libzstd1=1.5.5+dfsg2-2build1.1 \
+    libarchive13t64=3.7.2-2ubuntu0.5
 
   for package in $APT_IRODS_PACKAGES
   do echo "Installing package $package and its dependencies"
