@@ -55,8 +55,8 @@ then
 cat << ENDAPTREPO | sudo tee /etc/apt/sources.list.d/irods.list
 deb [arch=${APT_IRODS_REPO_ARCHITECTURE}] $APT_IRODS_REPO_URL $APT_IRODS_REPO_DISTRIBUTION $APT_IRODS_REPO_COMPONENT
 ENDAPTREPO
-  sudo apt update
-
+  sudo apt-get update
+  
   for package in $APT_IRODS_PACKAGES
   do echo "Installing package $package and its dependencies"
      sudo apt-get -y install "$package=${IRODS_VERSION}"
@@ -70,7 +70,7 @@ ENDAPTREPO
 
   for package in $APT_GEN_PACKAGES
   do echo "Installing package $package and its dependencies"
-     sudo apt-get -y install "$package"
+     sudo apt-get -y --allow-downgrades install "$package"
   done
 
 else
