@@ -259,7 +259,7 @@ static void dirDataObj(Archive* a, rsComm_t* rsComm, std::string coll, long long
     memset(&genQueryInp, '\0', sizeof(genQueryInp_t));
     snprintf(collQCond, MAX_NAME_LEN, "='%lld'", collId);
     addInxVal(&genQueryInp.sqlCondInp, COL_D_COLL_ID, collQCond);
-    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_REPL_NUM, "='0'");
+    addInxVal(&genQueryInp.sqlCondInp, COL_D_REPL_STATUS, "='1'");
     addInxIval(&genQueryInp.selectInp, COL_DATA_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_D_DATA_ID, 1);
     addInxIval(&genQueryInp.selectInp, COL_DATA_SIZE, 1);
