@@ -41,8 +41,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       s.inline = "sudo hostnamectl hostname $1"
       s.args   = HOST
     end
-    dev.vm.provision "shell",
-      inline: "sudo timedatectl set-timezone Europe/Amsterdam"
+    dev.vm.provision "shell", inline: <<-SHELL
+      sudo timedatectl set-timezone Europe/Amsterdam
+      sudo rm -f /etc/apt/sources.list.d/home-alvistack.sources
+    SHELL
     dev.vm.provision "file", source: ".env", destination: "/tmp/irods-test.env"
     dev.vm.provision :shell, :path => 'install-microservices-build-env.sh', :args => "/tmp/irods-test.env"
   end
