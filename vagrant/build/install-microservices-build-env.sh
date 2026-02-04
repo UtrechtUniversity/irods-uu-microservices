@@ -57,12 +57,6 @@ deb [arch=${APT_IRODS_REPO_ARCHITECTURE}] $APT_IRODS_REPO_URL $APT_IRODS_REPO_DI
 ENDAPTREPO
   sudo apt-get update
   
-  # Downgrade runtime libs so -dev packages can install
-  sudo apt-get install --allow-downgrades -y \
-    libxml2=2.9.14+dfsg-1.3ubuntu3.6 \
-    libzstd1=1.5.5+dfsg2-2build1.1 \
-    libarchive13t64=3.7.2-2ubuntu0.5
-
   for package in $APT_IRODS_PACKAGES
   do echo "Installing package $package and its dependencies"
      sudo apt-get -y install "$package=${IRODS_VERSION}"
@@ -76,7 +70,7 @@ ENDAPTREPO
 
   for package in $APT_GEN_PACKAGES
   do echo "Installing package $package and its dependencies"
-     sudo apt-get -y install "$package"
+     sudo apt-get -y --allow-downgrades install "$package"
   done
 
 else
