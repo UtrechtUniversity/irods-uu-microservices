@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-02-09 v1.3.1
+
+- Archive create microservice: ensure only good replicas of data objects are used
+
 ## 2025-10-10 v1.3.0
 
 - Deprecate msi_add_avu and msi_rmw_avu microservices

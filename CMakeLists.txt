@@ -14,7 +14,7 @@ message(STATUS "Building for irods-server version ${IRODS_VERSION}")
 # irods-externals-cmake3.21.4-0
 # irods-externals-clang16.0.6-0
 
-set(UU_RELEASE_VERSION "1.3.0")
+set(UU_RELEASE_VERSION "1.3.1")
 
 include(IrodsCXXCompiler)
 
