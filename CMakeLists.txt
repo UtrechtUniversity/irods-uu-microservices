@@ -127,7 +127,7 @@ install(TARGETS
         msi_json_objops
         msi_stat_vault
         DESTINATION
-        /usr/lib/irods/plugins/microservices)
+        ${CMAKE_INSTALL_LIBDIR}/irods/plugins/microservices)
 
 # Packaging {{{
 
